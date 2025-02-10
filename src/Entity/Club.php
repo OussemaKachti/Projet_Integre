@@ -27,6 +27,12 @@ class Club
     #[ORM\Column(type: "string", enumType: StatutClubEnum::class)]
     private StatutClubEnum $status;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
+
+    #[ORM\Column(type: Types::INTEGER)]
+    private int $points = 0;
+
     #[ORM\OneToMany(targetEntity: Evenement::class, mappedBy: "club", cascade: ["persist", "remove"])]
     private Collection $evenements;
 
@@ -92,7 +98,35 @@ class Club
     {
         $this->status = $status;
         return $this;
-    }    public function getProduits(): Collection
+    }   
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
+        return $this;
+    }
+
+    public function getPoints(): int
+    {
+        return $this->points;
+    }
+
+    public function setPoints(int $points): static
+    {
+        $this->points = $points;
+        return $this;
+    }
+
+    public function addPoints(int $points): static
+    {
+        $this->points += $points;
+        return $this;
+    }
+    public function getProduits(): Collection
     {
         return $this->produits;
     }
