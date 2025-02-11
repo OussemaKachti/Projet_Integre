@@ -34,6 +34,11 @@ class User
 
     #[ORM\Column(type: "string", enumType: RoleEnum::class)]
     private RoleEnum $role;
+
+    #[Assert\NotBlank]
+#[Assert\Length(min: 8, max: 15)]
+#[ORM\Column(length: 15, nullable: true)]
+private ?string $tel = null;
     
     #[ORM\OneToMany(targetEntity: Sondage::class, mappedBy: "user", cascade: ["persist", "remove"])]
     private Collection $sondages;
@@ -110,6 +115,17 @@ class User
 
         return $this;
     }
+
+    public function getTel(): ?string
+{
+    return $this->tel;
+}
+
+public function setTel(string $tel): static
+{
+    $this->tel = $tel;
+    return $this;
+}
 
     public function getRole(): RoleEnum
     {
