@@ -19,6 +19,12 @@ class Saison
 
     #[ORM\Column(length: 255)]
     private ?string $nomSaison = null;
+    
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $descSaison = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $dateFin = null;
 
     #[ORM\OneToMany(targetEntity: Competition::class, mappedBy: "saison", cascade: ["persist", "remove"])]
     private Collection $competitions;
@@ -47,6 +53,28 @@ class Saison
     {
         $this->nomSaison = $nomSaison;
 
+        return $this;
+    }
+
+    public function getDescSaison(): ?string
+    {
+        return $this->descSaison;
+    }
+
+    public function setDescSaison(?string $descSaison): static
+    {
+        $this->descSaison = $descSaison;
+        return $this;
+    }
+
+    public function getDateFin(): ?\DateTimeInterface
+    {
+        return $this->dateFin;
+    }
+
+    public function setDateFin(?\DateTimeInterface $dateFin): static
+    {
+        $this->dateFin = $dateFin;
         return $this;
     }
 }
