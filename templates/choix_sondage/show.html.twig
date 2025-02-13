@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ChoixSondage{% endblock %}
+
+{% block body %}
+    <h1>ChoixSondage</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ choix_sondage.id }}</td>
+            </tr>
+            <tr>
+                <th>Contenu</th>
+                <td>{{ choix_sondage.contenu }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_choix_sondage_index') }}">back to list</a>
+
+    <a href="{{ path('app_choix_sondage_edit', {'id': choix_sondage.id}) }}">edit</a>
+
+    {{ include('choix_sondage/_delete_form.html.twig') }}
+{% endblock %}

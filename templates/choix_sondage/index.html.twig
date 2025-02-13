@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ChoixSondage index{% endblock %}
+
+{% block body %}
+    <h1>ChoixSondage index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Contenu</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for choix_sondage in choix_sondages %}
+            <tr>
+                <td>{{ choix_sondage.id }}</td>
+                <td>{{ choix_sondage.contenu }}</td>
+                <td>
+                    <a href="{{ path('app_choix_sondage_show', {'id': choix_sondage.id}) }}">show</a>
+                    <a href="{{ path('app_choix_sondage_edit', {'id': choix_sondage.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_choix_sondage_new') }}">Create new</a>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New ChoixSondage{% endblock %}
+
+{% block body %}
+    <h1>Create new ChoixSondage</h1>
+
+    {{ include('choix_sondage/_form.html.twig') }}
+
+    <a href="{{ path('app_choix_sondage_index') }}">back to list</a>
+{% endblock %}

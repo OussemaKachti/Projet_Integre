@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Sondage index{% endblock %}
+
+{% block body %}
+    <h1>Sondage index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Question</th>
+                <th>CreatedAt</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for sondage in sondages %}
+            <tr>
+                <td>{{ sondage.id }}</td>
+                <td>{{ sondage.question }}</td>
+                <td>{{ sondage.createdAt ? sondage.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_sondage_show', {'id': sondage.id}) }}">show</a>
+                    <a href="{{ path('app_sondage_edit', {'id': sondage.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_sondage_new') }}">Create new</a>
+{% endblock %}
