@@ -1,0 +1,424 @@
+{% extends 'base.html.twig' %}
+{% block title %}  {% endblock %}
+
+{% block body %}
+   <main>
+
+         <!-- breadcrumb area start -->
+        <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" 
+         data-background="{{ asset('front_assets/img/event/eventpage.png') }}">
+
+
+            <div class="container">
+               <div class="row">
+                  <div class="col-xxl-12">
+                     <div class="breadcrumb__content text-center p-relative z-index-1">
+                        <h3 class="breadcrumb__title">Event</h3>
+                        <div class="breadcrumb__list">
+                           <span><a href="index.html">Home</a></span>
+                           <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
+                           <span>Event</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+         <!-- breadcrumb area end -->
+
+         <!-- event area start -->
+         <section class="event__area pt-115">
+            <div class="container">
+               <div class="row">
+                  <div class="col-xxl-12">
+                     <div class="section__title-wrapper-2 text-center mb-60">
+                        <span class="section__title-pre-2">Upcoming Events</span>
+                        <h3 class="section__title-2">Join our upcoming event</h3>
+                     </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-xxl-12">
+                     <div class="event__item white-bg mb-10 transition-3 p-relative d-lg-flex align-items-center justify-content-between">
+                        <div class="event__left d-sm-flex align-items-center">
+                           <div class="event__date">
+                              <h4>02</h4>
+                              <p>October, 2022</p>
+                           </div>
+                           <div class="event__content">
+                              <div class="event__meta">
+                                 <ul>
+                                    <li>
+                                       <a href="#"><svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                          <path d="M8.49992 9.51253C9.72047 9.51253 10.7099 8.52308 10.7099 7.30253C10.7099 6.08198 9.72047 5.09253 8.49992 5.09253C7.27937 5.09253 6.28992 6.08198 6.28992 7.30253C6.28992 8.52308 7.27937 9.51253 8.49992 9.51253Z" stroke="#5F6160" stroke-width="1.5"/>
+                                          <path d="M2.56416 6.01334C3.95958 -0.120822 13.0475 -0.113738 14.4358 6.02043C15.2504 9.61876 13.0121 12.6646 11.05 14.5488C9.62625 15.9229 7.37375 15.9229 5.94291 14.5488C3.98791 12.6646 1.74958 9.61168 2.56416 6.01334Z" stroke="#5F6160" stroke-width="1.5"/>
+                                          </svg>
+                                          New York, US</a>
+                                    </li>
+                                 </ul>
+                              </div>
+                              <h3 class="event__title">
+                                 <a href="event-details.html">Event 1</a>
+                              </h3>
+
+                              <style>
+                                 /* Conteneur */
+                                 .event__person-type {
+                                     display: flex;
+                                     align-items: center;
+                                     gap: 10px; /* Espace entre les éléments */
+                                 }
+                                 
+                                 /* Style du badge */
+                                 .event-type, .event-category {
+                                     display: flex;
+                                     align-items: center;
+                                     gap: 5px; /* Espace entre l'icône et le texte */
+                                     padding: 5px 12px;
+                                     font-size: 14px;
+                                     font-weight: 600;
+                                     border-radius: 12px;
+                                     text-transform: uppercase;
+                                     color: white;
+                                 }
+                                 
+                                 /* Type d'événement */
+                                 .open-event {
+                                     background-color: #28a745; /* Vert */
+                                 }
+                                 
+                                 .closed-event {
+                                     background-color: #dc3545; /* Rouge */
+                                 }
+                                 
+                                 /* Catégories */
+                                 .sport-event {
+                                     background-color: #007bff; /* Bleu */
+                                 }
+                                 
+                                 .music-event {
+                                     background-color: #ff5722; /* Orange */
+                                 }
+                                 
+                                 .tech-event {
+                                     background-color: #6c757d; /* Gris */
+                                 }
+                                 
+                                 .art-event {
+                                     background-color: #9c27b0; /* Violet */
+                                 }
+                                 
+                                 /* Icône */
+                                 .event-type i, .event-category i {
+                                     font-size: 16px;
+                                 }
+                                 </style>
+                                 
+                                 <div class="event__person-type">
+                                    <!-- Organisateur -->
+                                    <div class="event__person">
+                                       <ul>
+                                          <li>
+                                             <a href="#">
+                                              <img src="{{ asset('front_assets/img/event/ieeelogo.png') }}" alt="">
+
+                                                <span class="event__person-name">IEEE</span>
+                                             </a>
+                                          </li>
+                                       </ul>
+                                    </div>
+                                 
+                                    <!-- Type d'événement (Ouvert ou Fermé) -->
+                                    <span class="event-type closed-event">
+                                       <i class="fas fa-unlock"></i> closed
+                                    </span>
+                                 
+                                    <!-- Catégorie de l'événement -->
+                                    <span class="event-category tech-event">
+                                       <i class="fas fa-laptop-code"></i> Technologique
+                                    </span>
+                                 </div>
+                                 
+                           </div>
+                        </div>
+                        <div class="event__right d-sm-flex align-items-center">
+                           <div class="event__time">
+                              <span>
+                                 <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M13.75 7.50024C13.75 10.9502 10.95 13.7502 7.5 13.7502C4.05 13.7502 1.25 10.9502 1.25 7.50024C1.25 4.05024 4.05 1.25024 7.5 1.25024C10.95 1.25024 13.75 4.05024 13.75 7.50024Z" stroke="#258E46" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M9.8188 9.48735L7.8813 8.3311C7.5438 8.1311 7.2688 7.64985 7.2688 7.2561V4.6936" stroke="#258E46" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                 </svg>
+                                 10:30am - 12:30pm
+                              </span>
+                           </div>
+                           <div class="event__more ml-30">
+<a href="{{ path('eventdetails') }}" class="tp-btn-5 tp-btn-7">View Events</a>
+
+</div>
+
+                        </div>
+                     </div>
+                     <div class="event__item white-bg mb-10 transition-3 p-relative d-lg-flex align-items-center justify-content-between">
+                        <div class="event__left d-sm-flex align-items-center">
+                           <div class="event__date">
+                              <h4>06</h4>
+                              <p>August, 2022</p>
+                           </div>
+                           <div class="event__content">
+                              <div class="event__meta">
+                                 <ul>
+                                    <li>
+                                       <a href="#"><svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                          <path d="M8.49992 9.51253C9.72047 9.51253 10.7099 8.52308 10.7099 7.30253C10.7099 6.08198 9.72047 5.09253 8.49992 5.09253C7.27937 5.09253 6.28992 6.08198 6.28992 7.30253C6.28992 8.52308 7.27937 9.51253 8.49992 9.51253Z" stroke="#5F6160" stroke-width="1.5"/>
+                                          <path d="M2.56416 6.01334C3.95958 -0.120822 13.0475 -0.113738 14.4358 6.02043C15.2504 9.61876 13.0121 12.6646 11.05 14.5488C9.62625 15.9229 7.37375 15.9229 5.94291 14.5488C3.98791 12.6646 1.74958 9.61168 2.56416 6.01334Z" stroke="#5F6160" stroke-width="1.5"/>
+                                          </svg>
+                                          New York, US</a>
+                                    </li>
+                                 </ul>
+                              </div>
+                              <h3 class="event__title">
+                                 <a href="event-details.html">University seminar series on global health.</a>
+                              </h3>
+
+                              <div class="event__person">
+                                 
+                                       
+                                          <style>
+                                             /* Conteneur */
+                                             .event__person-type {
+                                                 display: flex;
+                                                 align-items: center;
+                                                 gap: 10px; /* Espace entre le nom et le badge */
+                                             }
+                                             
+                                             /* Style du badge */
+                                             .event-type {
+                                                 display: flex;
+                                                 align-items: center;
+                                                 gap: 5px; /* Espace entre l'icône et le texte */
+                                                 padding: 5px 12px;
+                                                 font-size: 12px;
+                                                 font-weight: 400;
+                                                 border-radius: 8px;
+                                                 text-transform: uppercase;
+                                                 color: white;
+                                             }
+                                             
+                                             /* Type Ouvert */
+                                             .open-event {
+                                                 background-color: #0c561d; /* Vert */
+                                             }
+                                             
+                                             /* Icône */
+                                             .event-type i {
+                                                 font-size: 16px;
+                                             }
+                                             </style>
+                                             
+                                             <div class="event__person-type">
+                                                <ul>
+                                                   <li>
+                                                      <a href="#">
+                                                  <img src="{{ asset('front_assets/img/event/aiesec.jpg') }}" alt="">
+
+                                                         <span>Aiesec</span>
+                                                      </a>
+                                                   </li>
+                                                </ul>
+                                                <span class="event-type open-event">
+                                                   <i class="fas fa-unlock"></i> Ouvert
+                                                </span>
+                                             </div>
+                                             
+                                       </a>
+                                    </li>
+                                 </ul>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="event__right d-sm-flex align-items-center">
+                           <div class="event__time">
+                              <span>
+                                 <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M13.75 7.50024C13.75 10.9502 10.95 13.7502 7.5 13.7502C4.05 13.7502 1.25 10.9502 1.25 7.50024C1.25 4.05024 4.05 1.25024 7.5 1.25024C10.95 1.25024 13.75 4.05024 13.75 7.50024Z" stroke="#258E46" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M9.8188 9.48735L7.8813 8.3311C7.5438 8.1311 7.2688 7.64985 7.2688 7.2561V4.6936" stroke="#258E46" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                 </svg>
+                                 11:00am - 12:00pm
+                              </span>
+                           </div>
+                           <div class="event__more ml-30">
+                              <a href="event-details.html" class="tp-btn-5 tp-btn-7">View Events </a>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="event__item white-bg mb-10 transition-3 p-relative d-lg-flex align-items-center justify-content-between">
+                        <div class="event__left d-sm-flex align-items-center">
+                           <div class="event__date">
+                              <h4>18</h4>
+                              <p>March, 2022</p>
+                           </div>
+                           <div class="event__content">
+                              <div class="event__meta">
+                                 <ul>
+                                    <li>
+                                       <a href="#"><svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                          <path d="M8.49992 9.51253C9.72047 9.51253 10.7099 8.52308 10.7099 7.30253C10.7099 6.08198 9.72047 5.09253 8.49992 5.09253C7.27937 5.09253 6.28992 6.08198 6.28992 7.30253C6.28992 8.52308 7.27937 9.51253 8.49992 9.51253Z" stroke="#5F6160" stroke-width="1.5"/>
+                                          <path d="M2.56416 6.01334C3.95958 -0.120822 13.0475 -0.113738 14.4358 6.02043C15.2504 9.61876 13.0121 12.6646 11.05 14.5488C9.62625 15.9229 7.37375 15.9229 5.94291 14.5488C3.98791 12.6646 1.74958 9.61168 2.56416 6.01334Z" stroke="#5F6160" stroke-width="1.5"/>
+                                          </svg>
+                                          New York, US</a>
+                                    </li>
+                                 </ul>
+                              </div>
+                              <h3 class="event__title">
+                                 <a href="event-details.html">Virtual spring part-time jobs fair for student.</a>
+                              </h3>
+
+                              <div class="event__person">
+                                 <ul>
+                                    <li>
+                                       <a href="#">
+                                        <img src="{{ asset('front_assets/img/event/ieeelogo.png') }}" alt="">
+
+                                         
+                                          <span>IEEE</span>
+                                       </a>
+                                    </li>
+                                 </ul>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="event__right d-sm-flex align-items-center">
+                           <div class="event__time">
+                              <span>
+                                 <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M13.75 7.50024C13.75 10.9502 10.95 13.7502 7.5 13.7502C4.05 13.7502 1.25 10.9502 1.25 7.50024C1.25 4.05024 4.05 1.25024 7.5 1.25024C10.95 1.25024 13.75 4.05024 13.75 7.50024Z" stroke="#258E46" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M9.8188 9.48735L7.8813 8.3311C7.5438 8.1311 7.2688 7.64985 7.2688 7.2561V4.6936" stroke="#258E46" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                 </svg>
+                                 09:45am - 11:30pm
+                              </span>
+                           </div>
+                           <div class="event__more ml-30">
+                              <a href="event-details.html" class="tp-btn-5 tp-btn-7">View Events </a>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="event__item white-bg mb-10 transition-3 p-relative d-lg-flex align-items-center justify-content-between">
+                        <div class="event__left d-sm-flex align-items-center">
+                           <div class="event__date">
+                              <h4>27</h4>
+                              <p>October, 2022</p>
+                           </div>
+                           <div class="event__content">
+                              <div class="event__meta">
+                                 <ul>
+                                    <li>
+                                       <a href="#"><svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                          <path d="M8.49992 9.51253C9.72047 9.51253 10.7099 8.52308 10.7099 7.30253C10.7099 6.08198 9.72047 5.09253 8.49992 5.09253C7.27937 5.09253 6.28992 6.08198 6.28992 7.30253C6.28992 8.52308 7.27937 9.51253 8.49992 9.51253Z" stroke="#5F6160" stroke-width="1.5"/>
+                                          <path d="M2.56416 6.01334C3.95958 -0.120822 13.0475 -0.113738 14.4358 6.02043C15.2504 9.61876 13.0121 12.6646 11.05 14.5488C9.62625 15.9229 7.37375 15.9229 5.94291 14.5488C3.98791 12.6646 1.74958 9.61168 2.56416 6.01334Z" stroke="#5F6160" stroke-width="1.5"/>
+                                          </svg>
+                                          New York, US</a>
+                                    </li>
+                                 </ul>
+                              </div>
+                              <h3 class="event__title">
+                                 <a href="event-details.html">Scottish creatives to receive funded business.</a>
+                              </h3>
+
+                              <div class="event__person">
+                                 <ul>
+                                    <li>
+                                       <a href="#">
+                                         <img src="{{ asset('front_assets/img/event/je.png') }}" alt="">
+
+                                         
+                                          <span>Junior</span>
+                                       </a>
+                                    </li>
+                                 </ul>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="event__right d-sm-flex align-items-center">
+                           <div class="event__time">
+                              <span>
+                                 <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M13.75 7.50024C13.75 10.9502 10.95 13.7502 7.5 13.7502C4.05 13.7502 1.25 10.9502 1.25 7.50024C1.25 4.05024 4.05 1.25024 7.5 1.25024C10.95 1.25024 13.75 4.05024 13.75 7.50024Z" stroke="#258E46" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M9.8188 9.48735L7.8813 8.3311C7.5438 8.1311 7.2688 7.64985 7.2688 7.2561V4.6936" stroke="#258E46" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                 </svg>
+                                 04:00pm - 06:30pm
+                              </span>
+                           </div>
+                           <div class="event__more ml-30">
+                              <a href="event-details.html" class="tp-btn-5 tp-btn-7">View Events </a>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+         <!-- event area end -->
+          <!-- Pagination -->
+<div class="pagination-container">
+   <nav aria-label="Page navigation">
+       <ul class="pagination">
+           <li class="page-item disabled">
+               <a class="page-link" href="#" tabindex="-1" aria-disabled="true">«</a>
+           </li>
+           <li class="page-item active">
+               <a class="page-link" href="#">1</a>
+           </li>
+           <li class="page-item">
+               <a class="page-link" href="#">2</a>
+           </li>
+           <li class="page-item">
+               <a class="page-link" href="#">3</a>
+           </li>
+           <li class="page-item">
+               <a class="page-link" href="#">»</a>
+           </li>
+       </ul>
+   </nav>
+</div>
+<style>
+.pagination-container {
+   display: flex;
+   justify-content: center;
+   margin: 50px 0; /* Ajoute de l'espace avant le footer */
+}
+
+.pagination {
+   list-style: none;
+   display: flex;
+   padding: 0;
+}
+
+.pagination .page-item {
+   margin: 0 5px;
+}
+
+.pagination .page-link {
+   padding: 10px 15px;
+   border-radius: 5px;
+   border: 1px solid #007bff;
+   color: #007bff;
+   text-decoration: none;
+   font-weight: bold;
+   transition: 0.3s;
+}
+
+.pagination .page-link:hover {
+   background-color: #007bff;
+   color: white;
+}
+
+.pagination .active .page-link {
+   background-color: #007bff;
+   color: white;
+   border: 1px solid #007bff;
+}
+</style>
+
+
+      </main>
+{% endblock %}

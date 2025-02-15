@@ -14,10 +14,18 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/evenement')]
 class EvenementController extends AbstractController
 {
-    #[Route('/', name: 'app_evenement_index', methods: ['GET'])]
+    #[Route('/', name: 'event', methods: ['GET'])]
     public function index(EvenementRepository $evenementRepository): Response
     {
-        return $this->render('evenement/index.html.twig', [
+        return $this->render('evenement/event.html.twig', [
+            'evenements' => $evenementRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/details', name: 'eventdetails', methods: ['GET'])]
+    public function index2(EvenementRepository $evenementRepository): Response
+    {
+        return $this->render('evenement/eventdetails.html.twig', [
             'evenements' => $evenementRepository->findAll(),
         ]);
     }
@@ -45,7 +53,7 @@ class EvenementController extends AbstractController
     #[Route('/{id}', name: 'app_evenement_show', methods: ['GET'])]
     public function show(Evenement $evenement): Response
     {
-        return $this->render('evenement/show.html.twig', [
+        return $this->render('evenement/eventClub.html.twig', [
             'evenement' => $evenement,
         ]);
     }
