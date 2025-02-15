@@ -257,7 +257,86 @@
 
 
 
+.btn-see-comments {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
+.btn-see-comments:hover {
+  background-color: #0056b3;
+}
+
+/* Modal */
+.modal-dialog {
+  max-width: 900px;
+}
+
+.modal-content {
+  border-radius: 8px;
+}
+
+.modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+  border-radius: 8px 8px 0 0;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.modal-footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #ddd;
+  border-radius: 0 0 8px 8px;
+}
+
+.modal-body {
+  padding: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.comment-box {
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.comment-info {
+  margin-bottom: 10px;
+}
+
+.comment-avatar img {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+}
+
+.avatar-name h5 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.post-meta {
+  font-size: 14px;
+  color: #888;
+}
+
+.comment-text p {
+  font-size: 16px;
+  color: #161616;
+  padding-left: 145px; /* Ajuste la valeur selon tes besoins */
+}
 
 
 
@@ -6178,10 +6257,10 @@ input[type=color] {
   }
 }
 .postbox__comment h3 {
-  font-size: 26px;
+  font-size: 18px;
   font-weight: 600;
   margin-bottom: 5px;
-  margin-top: 15px;
+  margin-top: 0px; /* Réduit la marge supérieure pour le déplacer vers le haut */
 }
 .postbox__comment-input input, .postbox__comment-input textarea {
   width: 100%;
@@ -6414,6 +6493,10 @@ input[type=color] {
 .rc__title a:hover {
   color: var(--tp-theme-1);
 }
+
+
+
+
 
 /* comment box */
 .latest-comments h3 {
