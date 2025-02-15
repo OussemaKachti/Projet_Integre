@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Competition{% endblock %}
+
+{% block body %}
+    <h1>Competition</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ competition.id }}</td>
+            </tr>
+            <tr>
+                <th>NomComp</th>
+                <td>{{ competition.nomComp }}</td>
+            </tr>
+            <tr>
+                <th>DescComp</th>
+                <td>{{ competition.descComp }}</td>
+            </tr>
+            <tr>
+                <th>StartDate</th>
+                <td>{{ competition.startDate ? competition.startDate|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>EndDate</th>
+                <td>{{ competition.endDate ? competition.endDate|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_competition_index') }}">back to list</a>
+
+    <a href="{{ path('app_competition_edit', {'id': competition.id}) }}">edit</a>
+
+    {{ include('competition/_delete_form.html.twig') }}
+{% endblock %}

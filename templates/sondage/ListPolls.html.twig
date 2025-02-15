@@ -1,0 +1,305 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{% endblock %}
+
+{% block body %}
+    <main>
+
+         <!-- breadcrumb area start -->
+         <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="{{ asset('front_assets/img/breadcrumb/poll.jpg') }}">
+            <div class="container">
+               <div class="row">
+                  <div class="col-xxl-12">
+                     <div class="breadcrumb__content text-center p-relative z-index-1">
+                        <h3 class="breadcrumb__title">Our Polls</h3>
+                        <div class="breadcrumb__list">
+                           <span><a href="index.html">Home</a></span>
+                           <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
+                           <span>Polls</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+         <!-- breadcrumb area end -->
+        
+        
+         <!-- blog area start -->
+         <section class="blog__area pt-120 pb-120">
+            <div class="container">
+               <div class="row">
+                  <div class="col-xxl-8 col-xl-8 col-lg-8">
+                     <div class="postbox__wrapper postbox__details pr-20">
+                        <div class="postbox__item transition-3 mb-70">
+
+
+
+
+
+
+                              
+                           <!-- lehna tebda liste taa polls -->
+                           
+                           <div class="postbox__content">
+                               
+  <!-- awel poll 
+
+  
+
+-->
+<div class="poll-container">
+   {% for sondage in sondages %}
+   <div class="user-info">
+      <img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="User">
+      <b>{{ sondage.user.nom }} {{ sondage.user.prenom }}</b> | 
+      <span>{{ sondage.createdAt|date('d M Y') }}</span>
+
+         <span class="menu-icon" onclick="toggleMenu(event)">&#8230;</span>
+         <div class="menu-list">
+            <ul>
+               <li onclick="editPoll()">Edit Poll</li>
+               <li onclick="deletePoll({{ sondage.id }})">Delete Poll</li>
+            </ul>
+         </div>
+   </div>     
+
+   <div class="poll-title">{{ sondage.question }}</div>
+
+   {% for choix in sondage.choix %}
+      <input type="radio" name="poll" id="none" checked hidden>
+
+      <div class="poll-option option-{{ loop.index }}">
+         <input type="radio" name="poll" id="option-{{ loop.index }}">
+         <label>{{ choix.contenu }}</label>
+         <div class="progress-bar">
+            <div class="progress"></div>
+         </div>
+      </div>
+   {% endfor %}
+
+   {% endfor %}
+</div>
+
+
+
+    <!-- partie comments -->
+
+  <div class="latest-comments mb-65">
+   <h3>2 Comments</h3>
+   <ul>
+      <li>
+         <div class="comments-box grey-bg-2">
+           <div class="comments-info d-flex">
+             <div class="comments-avatar mr-20">
+               <img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="">
+             </div>
+             <div class="avatar-name">
+               <h5>Oussema Kachti</h5>
+               <span class="post-meta">July 14, 2022</span>
+             </div>
+             <div class="comments-replay">
+               <a href="#">delete</a>
+             </div>
+           </div>
+           <div class="comments-text ml-65">
+             <p>Ce sondage est très pertinent et permet de mieux comprendre l'avis des membres du club. C'est une excellente initiative pour impliquer tout le monde dans les décisions. Hâte de voir les résultats !</p>
+           </div>
+         </div>
+       </li>
+       
+
+       <li>
+         <div class="comments-box grey-bg-2">
+           <div class="comments-info d-flex">
+             <div class="comments-avatar mr-20">
+               <img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="">
+             </div>
+             <div class="avatar-name">
+               <h5>Foulen Fouleni</h5>
+               <span class="post-meta">July 14, 2022</span>
+             </div>
+             <div class="comments-replay">
+               <a href="#">delete</a>
+             </div>
+           </div>
+           <div class="comments-text ml-65">
+             <p>Can we do it Saturday night please?</p>
+           </div>
+         </div>
+       </li>
+   
+   </ul>
+</div>
+
+
+
+<div class="postbox__comment">
+   <h3>Write a comment</h3>
+   <form action="#">
+      <div class="row">
+         
+         <div class="col-xxl-12">
+            <div class="postbox__comment-input">
+               <textarea placeholder="Enter your comment ..."></textarea>
+            </div>
+         </div>
+         
+         <div class="col-xxl-12">
+            <div class="postbox__comment-btn">
+               <button type="submit" class="tp-btn">Post Comment</button>
+            </div>
+         </div>
+      </div>
+   </form>
+</div>
+
+</div>
+
+
+                        </div>
+                    
+                        
+                     </div>
+                  </div>
+                  <div class="col-xxl-4 col-xl-4 col-lg-4">
+                     <div class="blog__sidebar pl-70">
+                       
+                        
+                        <!-- Poll Creation Form Section -->
+                      
+                        <form id="poll-form" method="POST" action="{{ path('api_poll_new') }}">
+    <div class="poll-creation-container">
+        <h2>Create a Poll</h2>
+        
+        <!-- Champ pour la question -->
+        <input type="text" class="input-box" placeholder="Type your question here" name="question">
+    
+        <h2>Options</h2>
+        <div id="options-container">
+            <input type="text" class="input-box" placeholder="Option 1" name="choix[0][contenu]">
+            <input type="text" class="input-box" placeholder="Option 2" name="choix[1][contenu]">
+        </div>
+
+        <button type="button" class="add-option" onclick="addOption()">+ Add option</button>
+
+        <div class="admin-message">
+            <p><strong>Note:</strong> Ensure the question and options follow club rules.</p>
+        </div>
+
+        <button type="submit" class="create-btn">Create Poll</button>
+    </div>
+</form>
+
+<script>
+    // Fonction pour ajouter une option dynamiquement
+    function addOption() {
+        let optionsContainer = document.getElementById("options-container");
+        let index = optionsContainer.children.length;
+        
+        let newOptionDiv = document.createElement("div");
+        newOptionDiv.className = "option-wrapper";
+
+        let newOption = document.createElement("input");
+        newOption.type = "text";
+        newOption.name = "choix[" + index + "][contenu]";
+        newOption.className = "input-box";
+        newOption.placeholder = "New Option";
+
+        newOptionDiv.appendChild(newOption);
+        optionsContainer.appendChild(newOptionDiv);
+    }
+
+    // Interception du formulaire pour envoi AJAX
+   document.getElementById("poll-form").addEventListener("submit", function(event) {
+    event.preventDefault(); // Empêcher la soumission normale du formulaire
+
+    let formData = new FormData(this);
+    let pollData = {
+        question: formData.get("question"),
+        choix: []
+    };
+
+    // Récupérer les choix
+    document.querySelectorAll("#options-container input").forEach(input => {
+        if (input.value.trim() !== "") {
+            pollData.choix.push({ contenu: input.value });
+        }
+    });
+
+    // Envoi des données avec fetch en JSON
+    fetch("{{ path('api_poll_new') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(pollData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert(data.message); // Afficher un message de succès
+            location.reload(); // Recharger la page après création
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("Une erreur est survenue.");
+    });
+});
+
+</script>
+
+
+
+                        <!-- add poll  -->
+
+
+                         <!-- Consulter les sondages / View Polls Button -->
+                         <button style="--clr: #7808d0" class="button" onclick="window.location.href='allPolls.html';">
+                           <span class="button__icon-wrapper">
+                             <svg
+                               width="10"
+                               class="button__icon-svg"
+                               xmlns="http://www.w3.org/2000/svg"
+                               fill="none"
+                               viewBox="0 0 14 15"
+                             >
+                               <path
+                                 fill="currentColor"
+                                 d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z"
+                               ></path>
+                             </svg>
+                         
+                             <svg
+                               class="button__icon-svg button__icon-svg--copy"
+                               xmlns="http://www.w3.org/2000/svg"
+                               width="10"
+                               fill="none"
+                               viewBox="0 0 14 15"
+                             >
+                               <path
+                                 fill="currentColor"
+                                 d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z"
+                               ></path>
+                             </svg>
+                           </span>
+                           View all polls
+                         </button>
+                         
+                         
+                         
+                         
+                         
+
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+         <!-- blog area end -->
+
+      </main>
+{% endblock %}
