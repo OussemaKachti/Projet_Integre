@@ -11,7 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+class User 
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -58,7 +58,7 @@ private ?string $tel = null;
         $this->participations = new ArrayCollection();
         $this->commentaires = new ArrayCollection();
         $this->likes = new ArrayCollection();
-
+        $this->sondages = new ArrayCollection();
 
     }
 

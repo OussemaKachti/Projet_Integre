@@ -39,6 +39,7 @@ class Sondage
 
     public function __construct()
     {
+        $this->createdAt = new \DateTime();
         $this->choix = new ArrayCollection();
         $this->reponses = new ArrayCollection();
         $this->commentaires = new ArrayCollection();    }
@@ -77,9 +78,23 @@ class Sondage
         return $this;
     }
 
-    public function setUser(User $user): self
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
+        return $this;
+    }
+
+public function getUser(): User
 {
-    $this->user = $user;
-    return $this;
+    return $this->user;
 }
+
+
+// src/Entity/Sondage.php
+
+public function getChoix(): Collection
+{
+    return $this->choix;
+}
+
 }

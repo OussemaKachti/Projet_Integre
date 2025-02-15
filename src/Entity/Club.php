@@ -43,6 +43,11 @@ class Club
     private Collection $participations;
 
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+#[ORM\JoinColumn(nullable: false)]
+private ?User $president = null;
+
+
 
     public function __construct()
     {
@@ -135,4 +140,16 @@ class Club
     {
         return $this->participations;
     }
+
+
+    public function getPresident(): ?User
+{
+    return $this->president;
+}
+
+public function setPresident(User $president): static
+{
+    $this->president = $president;
+    return $this;
+}
 }

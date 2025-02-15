@@ -19,9 +19,9 @@ class ChoixSondage
     #[ORM\Column(length: 255)]
     private ?string $contenu = null;
 
-    #[ORM\ManyToOne(targetEntity: Sondage::class, inversedBy: "choix")]
-    #[ORM\JoinColumn(nullable: false)]
-    private Sondage $sondage;
+    #[ORM\ManyToOne(targetEntity: Sondage::class, inversedBy: "choix", cascade: ["persist"])]
+#[ORM\JoinColumn(nullable: false)]
+private Sondage $sondage;
 
     #[ORM\OneToMany(targetEntity: Reponse::class, mappedBy: "choixSondage", cascade: ["persist", "remove"])]
     private Collection $reponses;
@@ -53,5 +53,10 @@ class ChoixSondage
         return $this;
     }
 
-    
+    public function setSondage(Sondage $sondage): self
+{
+    $this->sondage = $sondage;
+
+    return $this;  // Return $this for method chaining
+}
 }
