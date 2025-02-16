@@ -1,139 +1,130 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Evenement{% endblock %}
+{% block title %}Create a New Event{% endblock %}
 
 {% block body %}
-   <main>
+<main>
 
-         <!-- breadcrumb area start -->
-     <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="{{ asset('front_assets/img/breadcrumb/event.png') }}">
-
-            <div class="container">
-               <div class="row">
-                  <div class="col-xxl-12">
-                     <div class="breadcrumb__content text-center p-relative z-index-1">
+    <!-- breadcrumb area start -->
+    <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="{{ asset('front_assets/img/breadcrumb/event.png') }}">
+        <div class="container">
+            <div class="row">
+                <div class="col-xxl-12">
+                    <div class="breadcrumb__content text-center p-relative z-index-1">
                         <h3 class="breadcrumb__title">Event</h3>
                         <div class="breadcrumb__list">
-                           <span><a href="index.html">Home</a></span>
-                           <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
-                           <span>Event</span>
+                            <span><a href="index.html">Home</a></span>
+                            <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
+                            <span>Create Event</span>
                         </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </section>
-         <!-- breadcrumb area end -->
-
-    
-
-<!-- Modal for Adding New Category Start -->
-<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
-   <div class="modal-dialog">
-       <div class="modal-content">
-           <div class="modal-header">
-               <h5 class="modal-title" id="addCategoryModalLabel">Add New Event Category</h5>
-               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-           </div>
-           <div class="modal-body">
-               <form action="#" method="POST">
-                   <div class="form-group">
-                       <label for="categoryName">Category Name</label>
-                       <input type="text" class="form-control" id="categoryName" name="categoryName" placeholder="Enter category name" required>
-                   </div>
-                  
-                   <div class="form-group mt-4">
-                       <button type="submit" class="tp-btn-5 tp-btn-7">Add Category</button>
-                   </div>
-               </form>
-           </div>
-       </div>
-   </div>
-</div>
-<!-- Modal End -->
-
-<!-- Event Creation Area Start -->
-<section class="event__area pt-115">
-   <div class="container">
-       <div class="row">
-           <div class="col-xxl-12">
-               <div class="section__title-wrapper-2 text-center mb-60">
-                   <span class="section__title-pre-2">Create New Event</span>
-                   <h3 class="section__title-2">Organize your event</h3>
-               </div>
-           </div>
-       </div>
-       <div class="row">
-           <div class="col-xxl-12">
-               <form action="submit_event.php" method="POST">
-                   <div class="event__form white-bg p-30 transition-3">
-                       <div class="form-group mb-3">
-                           <label for="event_title">Event Title</label>
-                           <input type="text" id="event_title" name="event_title" class="form-control" placeholder="Enter event title" required>
-                       </div>
-                       
-                       <div class="form-group mb-3">
-                           <label for="event_description">Event Description</label>
-                           <textarea id="event_description" name="event_description" class="form-control" rows="4" placeholder="Describe the event" required></textarea>
-                       </div>
-                       <div class="form-group mb-3">
-                           <label for="event_location">Event Location</label>
-                           <input type="text" id="event_location" name="event_location" class="form-control" placeholder="Enter event location" required>
-                       </div>
-                       <div class="form-group mb-3">
-                        <label for="event_date">Event StartDate</label>
-                        <input type="date" id="event_date" name="event_date" class="form-control" required>
                     </div>
-                       <div class="form-group mb-3">
-                           <label for="event_time">Event EndDate</label>
-                           <input type="time" id="event_time" name="event_time" class="form-control" required>
-                       </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- breadcrumb area end -->
 
-<!-- Event Type Section -->
-<div class="form-group mb-4">
-   <label for="event_type" class="form-label">Event Type</label>
-   <input type="text" id="event_type" name="event_type" class="form-control" list="event_type_list" placeholder="Select Event Type" required>
-   <datalist id="event_type_list">
-       <option value="Open">
-       <option value="Closed">
-   </datalist>
-</div>
+    <!-- Event Creation Area Start -->
+    <section class="event__area pt-115">
+        <div class="container">
+            <div class="row">
+                <div class="col-xxl-12">
+                    <div class="section__title-wrapper-2 text-center mb-60">
+                        <span class="section__title-pre-2">Create New Event</span>
+                        <h3 class="section__title-2">Organize Your Event</h3>
+                    </div>
+                </div>
+            </div>
 
+            <div class="row">
+                <div class="col-xxl-12">
+                    
+                    <!-- Afficher les messages flash -->
+                    {% if app.flashes('success') %}
+                        <div class="alert alert-success">
+                            {% for message in app.flashes('success') %}
+                                <p>{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
 
-<!-- Event Category Section -->
-<div class="form-group mb-4">
-   <label for="event_category" class="form-label">Category</label>
-   <div class="d-flex justify-content-between">
-       <select id="event_category" name="event_category" class="form-control w-75" required>
-           <option value="">Select a Category</option>
-           <!-- Categories dynamically populated -->
-           <option value="sports">Sports</option>
-           <option value="music">Music</option>
-           <option value="art">Art</option>
-       </select>
-       <button type="button" class="btn btn-link p-0 text-decoration-none mt-1" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-           <i class="fas fa-plus-circle"></i> Add New Category
-       </button>
-   </div>
-</div>
+                    {{ form_start(form) }}
+                    <div class="event__form white-bg p-30 transition-3">
 
+                        <!-- Event Name -->
+                        <div class="form-group mb-3">
+                            {{ form_label(form.nomEvent) }}
+                            <div class="input-group">
+                                {{ form_widget(form.nomEvent, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            {{ form_errors(form.nomEvent) }}
+                        </div>
 
-                       <div class="form-group mb-3">
-                           <button type="submit" class="tp-btn-5 tp-btn-7">Create Event</button>
-                       </div>
-                   </div>
-               </form>
-           </div>
-       </div>
-   </div>
-</section>
+                        <!-- Event Description -->
+                        <div class="form-group mb-3">
+                            {{ form_label(form.descEvent) }}
+                            <div class="input-group">
+                                {{ form_widget(form.descEvent, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            {{ form_errors(form.descEvent) }}
+                        </div>
 
-<!-- Event Creation Area End -->
+                        <!-- Event Location -->
+                        <div class="form-group mb-3">
+                            {{ form_label(form.lieux) }}
+                            <div class="input-group">
+                                {{ form_widget(form.lieux, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            {{ form_errors(form.lieux) }}
+                        </div>
 
+                        <!-- Event Start Date -->
+                        <div class="form-group mb-3">
+                            {{ form_label(form.startDate) }}
+                            <div class="input-group">
+                                {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            {{ form_errors(form.startDate) }}
 
- 
+                        </div>
+                            <div class="form-group mb-3">
+                            {{ form_label(form.endDate) }}
+                            <div class="input-group">
+                                {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            {{ form_errors(form.endDate) }}
+                        </div>
 
+                        <!-- Event Type -->
+                        <div class="form-group mb-3">
+                            {{ form_label(form.type) }}
+                            <div class="input-group">
+                                {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            {{ form_errors(form.type) }}
+                        </div>
 
+                        <!-- Event Image -->
+                        <div class="form-group mb-3">
+                            {{ form_label(form.imageEvent) }}
+                            <div class="input-group">
+                                {{ form_widget(form.imageEvent, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            {{ form_errors(form.imageEvent) }}
+                        </div>
 
-      </main>
+                        <!-- Submit Button -->
+                        <div class="form-group mb-3">
+                            <button type="submit" class="tp-btn-5 tp-btn-7 w-100">Create Event</button>
+                        </div>
+
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Event Creation Area End -->
+
+</main>
 {% endblock %}

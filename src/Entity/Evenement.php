@@ -1,4 +1,5 @@
-<?php
+<?php 
+// src/Entity/Evenement.php
 
 namespace App\Entity;
 
@@ -30,16 +31,21 @@ class Evenement
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $startDate = null;
+
+    // Ajout de la propriété endDate
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $endDate = null;
+
     #[ORM\Column(length: 255)]
-private ?string $lieux = null;
+    private ?string $lieux = null;
 
     #[ORM\ManyToOne(targetEntity: Club::class, inversedBy: "evenements")]
     #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private Club $club;
 
     #[ORM\ManyToOne(targetEntity: Categorie::class, inversedBy: "evenements")]
-    #[ORM\JoinColumn(nullable: false)]
-    private Categorie $categorie;
+    #[ORM\JoinColumn(nullable: true)] // La catégorie peut être null
+    private ?Categorie $categorie = null;
 
     #[ORM\OneToMany(targetEntity: Like::class, mappedBy: "evenement", cascade: ["persist", "remove"])]
     private Collection $likes;
@@ -79,15 +85,15 @@ private ?string $lieux = null;
     }
 
     public function getLieux(): ?string
-{
-    return $this->lieux;
-}
+    {
+        return $this->lieux;
+    }
 
-public function setLieux(string $lieux): static
-{
-    $this->lieux = $lieux;
-    return $this;
-}
+    public function setLieux(string $lieux): static
+    {
+        $this->lieux = $lieux;
+        return $this;
+    }
 
     public function getType(): ?string
     {
@@ -124,12 +130,26 @@ public function setLieux(string $lieux): static
 
         return $this;
     }
-    public function getCategorie(): Categorie
+
+    // Getter et setter pour endDate
+    public function getEndDate(): ?\DateTimeInterface
+    {
+        return $this->endDate;
+    }
+
+    public function setEndDate(?\DateTimeInterface $endDate): static
+    {
+        $this->endDate = $endDate;
+
+        return $this;
+    }
+
+    public function getCategorie(): ?Categorie
     {
         return $this->categorie;
     }
 
-    public function setCategorie(Categorie $categorie): self
+    public function setCategorie(?Categorie $categorie): self
     {
         $this->categorie = $categorie;
         return $this;

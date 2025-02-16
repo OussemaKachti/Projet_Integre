@@ -1,380 +1,189 @@
 {% extends 'base.html.twig' %}
-{% block title %}  {% endblock %}
+
+{% block title %}{{ evenement.nomEvent }}{% endblock %}
 
 {% block body %}
-
-
-
-
-
-      <main>
-
-         <!-- event area start -->
-         <section class="event__area pt-115 p-relative">
-            <div class="page__title-shape">
-             <img class="page-title-shape-5 d-none d-sm-block" src="{{ asset('front_assets/img/breadcrumb/page-title-shape-1.png') }}" alt="">
-<img class="page-title-shape-6" src="{{ asset('front_assets/img/breadcrumb/page-title-shape-2.png') }}" alt="">
-<img class="page-title-shape-7" src="{{ asset('front_assets/img/breadcrumb/page-title-shape-4.png') }}" alt="">
-<img class="page-title-shape-8" src="{{ asset('front_assets/img/breadcrumb/page-title-shape-5.png') }}" alt="">
-
-            </div>
-            <div class="container">
-               <div class="row">
-                  <div class="col-xxl-8">
-                     <div class="event__wrapper">
-                        <div class="page__title-content mb-25">                          
-                           <div class="breadcrumb__list breadcrumb__list-2 mb-10">
-                              <span><a href="index.html">Home</a></span>
-                              <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
-                              <span>Event-Details</span>
-                           </div>
-                           <div class="course__update mr-80 mb-30">
-                              <div class="course__category" style="display: inline-flex; align-items: center; background-color: #e0f7fa; padding: 8px 20px; border-radius: 25px;">
-                                 <!-- Texte "Category:" -->
-                                 <span style="color: #021715; font-weight: bold; font-size: 16px; margin-right: 10px;">Category:</span>
-                           
-                                 <!-- Icône pour la catégorie -->
-                                 <i class="fa-solid fa-brain" style="margin-right: 10px; color: #00796b; font-size: 18px;"></i>
-                                 
-                                 <!-- Texte de la catégorie -->
-                                 <span style="color: #021715; font-weight: bold; font-size: 16px;">Technology</span>
-                              </div>
-                           </div>
-                           
-                           <h5 class="breadcrumb__title-2">AI & Machine Learning Symposium by IEEE</h5>
+<main>
+    <section class="event__area pt-115 p-relative">
+        <div class="container">
+            <div class="row">
+                <div class="col-xxl-8">
+                    <div class="event__wrapper">
+                        <div class="page__title-content mb-25">
+                            <h5 class="breadcrumb__title-2">{{ evenement.nomEvent }}</h5>
                         </div>
+
                         <div class="course__meta-2 d-sm-flex align-items-center mb-30">
-                           <div class="course__teacher-3 d-flex align-items-center mr-70 mb-30">
-                              <div class="course__teacher-thumb-3 mr-15">
-                             <img src="{{ asset('front_assets/img/event/ieeelogo.png') }}" alt="">
-
-                              </div>
-                              <div class="course__teacher-info-3">
-                                 <h5>Creator</h5>
-                                 <p><a href="#">IEEE Club</a></p>
-                              </div>
-                           </div>
-                          
-                           
-                           <style>
-                              /* Conteneur pour le rating et le like */
-                              .course__rating-2 {
-                                  display: flex;
-                                  align-items: center;
-                                  gap: 15px; /* Espacement entre l'élément like et le texte */
-                              }
-                              
-                              /* Icone du cœur */
-                              .course__like-btn {
-                                  font-size: 20px;
-                                  cursor: pointer;
-                                  color: #ccc; /* Gris par défaut */
-                              }
-                              
-                              /* Icone du cœur lorsqu'il est "liké" */
-                              .course__like-btn.liked {
-                                  color: #e74c3c; /* Rouge lorsqu'il est liké */
-                              }
-                              
-                              /* Nombre de likes */
-                              .course__rating-inner p {
-                                  font-weight: bold;
-                                  font-size: 18px;
-                                  color: #333;
-                              }
-                              </style>
-                              
-                              <div class="course__rating-2 mb-30">
-                                  <h5>Likes:</h5>
-                                  <div class="course__rating-inner d-flex align-items-center">
-                                      <!-- Bouton like (cœur) -->
-                                      <i id="like-btn" class="fa-solid fa-heart course__like-btn" onclick="toggleLike()"></i>
-                                      
-                                      <!-- Nombre de likes -->
-                                      <p id="like-count">120</p>
-                                  </div>
-                              </div>
-                              
-                              <script>
-                              // Fonction pour changer l'état du like
-                              function toggleLike() {
-                                  const likeBtn = document.getElementById("like-btn");
-                                  const likeCount = document.getElementById("like-count");
-                                  
-                                  // Vérifie si l'élément a la classe "liked"
-                                  if (likeBtn.classList.contains("liked")) {
-                                      // Si liké, réduire le nombre de likes et enlever la classe "liked"
-                                      likeCount.textContent = parseInt(likeCount.textContent) - 1;
-                                      likeBtn.classList.remove("liked");
-                                  } else {
-                                      // Sinon, augmenter le nombre de likes et ajouter la classe "liked"
-                                      likeCount.textContent = parseInt(likeCount.textContent) + 1;
-                                      likeBtn.classList.add("liked");
-                                  }
-                              }
-                              </script>
-                              
-                           </div>
+                            <div class="course__teacher-3 d-flex align-items-center mr-70 mb-30">
+                                <div class="course__teacher-thumb-3 mr-15">
+                                    <img src="{{ asset('uploads/' ~ evenement.imageEvent) }}" alt="{{ evenement.nomEvent }}">
+                                </div>
+                                <div class="course__teacher-info-3">
+                                    <h5>Créateur</h5>
+                                    <p><a href="#">{{ evenement.club.nomC }}</a></p>
+                                </div>
+                            </div>
                         </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </section>
-         <!-- event area end -->
 
-         <!-- event details area start -->
-         <section class="event__area pb-110">
-            <div class="container">
-               <div class="row">
-                  <div class="col-xxl-8 col-xl-8 col-lg-8">
-                     <div class="event_wrapper">
-                        <div class="event__thumb mb-35 w-img">
-               <img src="{{ asset('front_assets/img/events/IEEE_Event.jpg') }}" alt="">
-
-                        </div>
                         <div class="event__details mb-35">
-                           <h3>Description</h3>
-                           <p>The IEEE (Institute of Electrical and Electronics Engineers) Club is a student-driven organization dedicated to promoting innovation and advancing knowledge in the fields of electrical engineering, computer science, and technology. As part of the world’s largest professional association for the advancement of technology, the IEEE Club offers its members opportunities to engage in technical workshops, networking events, and hands-on projects. The club fosters a collaborative environment where students can enhance their skills, share knowledge, and contribute to groundbreaking research and development in the areas of robotics, AI, machine learning, electronics, and more. Members gain access to a global network of professionals and industry experts, and have the chance to participate in competitions, conferences, and other career-building activities.</p>
+                            <h3>Description</h3>
+                            <p>{{ evenement.descEvent }}</p>
                         </div>
-                       
-                        <div class="event__tag">
-                                                   </div>
-                     </div>
-                  </div>
-                  <div class="col-xxl-4 col-xl-4 col-lg-4">
-                     <div class="event__sidebar pl-70">
-                        <div class="event__sidebar-widget white-bg mb-20">
-                           <div class="event__sidebar-shape">
-                            <img class="event-sidebar-img-2" src="{{ asset('front_assets/img/events/event-shape-2.png') }}" alt="">
-<img class="event-sidebar-img-3" src="{{ asset('front_assets/img/events/event-shape-3.png') }}" alt="">
 
-                           </div>
-                           <div class="event__info">
-                              
-                              <div class="event__info-content mb-35">
-                                 <ul>
-                                 
-                                    
-                                    <div class="event__info-content mb-35">
-                                       <ul>
-                                          <!-- Time Icon -->
-                                          <li class="d-flex align-items-center">
-                                             <div class="event__info-icon">
-                                                <i class="fa-solid fa-clock event-icon-time"></i> <!-- Icone pour Time -->
-                                             </div>
-                                             <div class="event__info-item">
-                                                <h5><span>StartDate:</span>July 26, 2025 10:45 AM </h5>
-                                             </div>
-                                          </li>
-                                          <!-- End Icon -->
-                                          <li class="d-flex align-items-center">
-                                             <div class="event__info-icon">
-                                                <i class="fa-solid fa-calendar-check event-icon-end"></i> <!-- Icone pour End -->
-                                             </div>
-                                             <div class="event__info-item">
-                                                <h5><span>EndDate </span> July 28, 2025 12:30 am</h5>
-                                             </div>
-                                          </li>
-                                          
-                                          
-                                          
-                                          <!-- Venue Icon -->
-                                          <li class="d-flex align-items-center">
-                                             <div class="event__info-icon">
-                                                <i class="fa-solid fa-location-pin event-icon-venue"></i> <!-- Icone pour Venue -->
-                                             </div>
-                                             <div class="event__info-item">
-                                                <h5><span>Venue: </span> New York, TX 82760, US</h5>
-                                             </div>
-                                          </li>
-                                       </ul>
-                                    </div>
-                                    <div class="event__join-btn">
-                                       <a href="#" id="inscrire-btn" class="tp-btn text-center w-100">
-                                          Register <i class="far fa-arrow-right"></i>
-                                       </a>
-                                    </div>
-
-
-                                     <!-- Sidebar Admin -->
-                            <div class="event__admin-sidebar white-bg mt-20">
-                              <h4 class="admin-title">Admin Actions</h4>
-                              <div class="admin-buttons">
-                                  <a href="editevent.html" class="admin-btn edit-btn">
-                                      <i class="fas fa-edit"></i> Edit
-                                  </a>
-                                  <a href="participants.html?event_id=123" class="admin-btn participants-btn">
-                                      <i class="fas fa-users"></i> View Participants
-                                  </a>
-                                  <button class="admin-btn delete-btn">
-                                      <i class="fas fa-trash-alt"></i> Delete
-                                  </button>
-                              </div>
-                          </div>
-                          
-                          <style>
-                          /* Sidebar Admin */
-                          /* Sidebar Admin */
-.event__admin-sidebar {
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    background: #ffffff;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    max-width: 300px;
-    margin: 50px auto 0 auto; /* Augmenter la marge en haut */
-}
-
-                          
-                          .admin-title {
-                              font-size: 20px;
-                              font-weight: 600;
-                              margin-bottom: 15px;
-                              color: #333;
-                          }
-                          
-                          /* Boutons Admin */
-                          .admin-buttons {
-                              display: flex;
-                              flex-direction: column;
-                              gap: 12px;
-                          }
-                          
-                          .admin-btn {
-                              display: flex;
-                              align-items: center;
-                              justify-content: center;
-                              padding: 12px;
-                              border: none;
-                              border-radius: 6px;
-                              font-size: 16px;
-                              font-weight: 500;
-                              text-decoration: none;
-                              transition: all 0.3s ease-in-out;
-                              cursor: pointer;
-                              color: white;
-                              width: 100%;
-                          }
-                          
-                          .admin-btn i {
-                              margin-right: 8px;
-                          }
-                          
-                          /* Bouton Edit */
-                          .edit-btn {
-                              background: #007bff;
-                          }
-                          
-                          .edit-btn:hover {
-                              background: #0056b3;
-                          }
-                          
-                          /* Bouton View Participants */
-                          .participants-btn {
-                              background: #17a2b8;
-                          }
-                          
-                          .participants-btn:hover {
-                              background: #138496;
-                          }
-                          
-                          /* Bouton Delete */
-                          .delete-btn {
-                              background: #dc3545;
-                          }
-                          
-                          .delete-btn:hover {
-                              background: #c82333;
-                          }
-                          </style>
-                          
-                          <!-- FontAwesome pour les icônes -->
-                          <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-                          
-                          
-                           
-                          
-                           
-                         </div>
-                      </div>
-                     
-                   </div>
+                    </div>
                 </div>
-             </div>
-          </div>
-                                    
-                                    <!-- Styles CSS -->
-                                    <style>
-                                       /* Styling des icônes pour chaque section */
-                                       .event__info-icon i {
-                                          font-size: 22px;
-                                          margin-right: 10px;
-                                       }
-                                    
-                                       /* Icône pour End (fin de l'événement) */
-                                       .event-icon-end {
-                                          color: #e74c3c; /* Rouge pour la fin */
-                                          transition: transform 0.3s ease-in-out;
-                                       }
-                                       .event-icon-end:hover {
-                                          transform: scale(1.2); /* Effet de zoom au survol */
-                                       }
-                                    
-                                       /* Icône pour Time (heure de l'événement) */
-                                       .event-icon-time {
-                                          color: #f39c12; /* Jaune pour l'heure */
-                                          transition: transform 0.3s ease-in-out;
-                                       }
-                                       .event-icon-time:hover {
-                                          transform: scale(1.2); /* Effet de zoom au survol */
-                                       }
-                                    
-                                       /* Icône pour Venue (lieu de l'événement) */
-                                       .event-icon-venue {
-                                          color: #3498db; /* Bleu pour le lieu */
-                                          transition: transform 0.3s ease-in-out;
-                                       }
-                                       .event-icon-venue:hover {
-                                          transform: scale(1.2); /* Effet de zoom au survol */
-                                       }
-                                    
-                                       /* Style général pour les éléments info */
-                                       .event__info-item h5 {
-                                          font-size: 16px;
-                                          color: #333;
-                                          font-weight: 500;
-                                       }
-                                       .event__info-item span {
-                                          color: #555;
-                                          font-weight: 700;
-                                       }
-                                    </style>
-                                    
-                             
-                             <script>
-                             document.getElementById("inscrire-btn").addEventListener("click", function (event) {
-                                 event.preventDefault(); // Empêche le lien de rediriger
-                                 this.innerHTML = "Signed Up ✔️"; // Change le texte du bouton
-                                 this.style.pointerEvents = "none"; // Désactive le bouton après clic
-                             });
-                             </script>
-                             
-                           </div>
+
+                <div class="col-xxl-4 col-xl-4 col-lg-4">
+                    <div class="event__sidebar pl-70">
+                        <div class="event__sidebar-widget white-bg mb-20">
+                            <div class="event__sidebar-shape">
+                                <div class="event__info">
+                                    <div class="event__info-content mb-35">
+                                        <ul>
+                                          
+                                                <div class="event__info">
+    <div class="event__info-content mb-35">
+        <ul>
+            <!-- Time Icon -->
+            <li class="d-flex align-items-center">
+                <div class="event__info-icon">
+                    <i class="fa-solid fa-clock event-icon-time"></i> <!-- Icone pour Time -->
+                </div>
+                <div class="event__info-item">
+                    <h5><span>Début :</span> {{ evenement.startDate|date('d M Y H:i') }}</h5>
+                </div>
+            </li>
+            
+            <!-- End Icon -->
+            <li class="d-flex align-items-center">
+                <div class="event__info-icon">
+                    <i class="fa-solid fa-calendar-check event-icon-end"></i> <!-- Icone pour End -->
+                </div>
+                <div class="event__info-item">
+                    <h5><span>Fin :</span> {{ evenement.endDate|date('d M Y H:i') }}</h5>
+                </div>
+            </li>
+            
+            <!-- Venue Icon -->
+            <li class="d-flex align-items-center">
+                <div class="event__info-icon">
+                    <i class="fa-solid fa-location-pin event-icon-venue"></i> <!-- Icone pour Venue -->
+                </div>
+                <div class="event__info-item">
+                    <h5><span>Lieu :</span> {{ evenement.lieux }}</h5>
+                </div>
+            </li>
+
+            <!-- Category Icon -->
+            {% if evenement.categorie %}
+            <li class="d-flex align-items-center">
+                <div class="event__info-icon">
+                    <i class="fa-solid fa-tags event-icon-category"></i> <!-- Icone pour Category -->
+                </div>
+                <div class="event__info-item">
+                    <h5><span>Catégorie :</span> {{ evenement.categorie.nomCat }}</h5>
+                </div>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- Register Button -->
+    <div class="event__join-btn">
+        <a href="#" id="inscrire-btn" class="tp-btn text-center w-100">
+            Register <i class="far fa-arrow-right"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Styles CSS -->
+<style>
+    /* Styling des icônes pour chaque section */
+    .event__info-icon i {
+        font-size: 22px;
+        margin-right: 10px;
+    }
+
+    /* Icône pour End (fin de l'événement) */
+    .event-icon-end {
+        color: #e74c3c; /* Rouge pour la fin */
+        transition: transform 0.3s ease-in-out;
+    }
+    .event-icon-end:hover {
+        transform: scale(1.2); /* Effet de zoom au survol */
+    }
+
+    /* Icône pour Time (heure de l'événement) */
+    .event-icon-time {
+        color: #f39c12; /* Jaune pour l'heure */
+        transition: transform 0.3s ease-in-out;
+    }
+    .event-icon-time:hover {
+        transform: scale(1.2); /* Effet de zoom au survol */
+    }
+
+    /* Icône pour Venue (lieu de l'événement) */
+    .event-icon-venue {
+        color: #3498db; /* Bleu pour le lieu */
+        transition: transform 0.3s ease-in-out;
+    }
+    .event-icon-venue:hover {
+        transform: scale(1.2); /* Effet de zoom au survol */
+    }
+
+    /* Style général pour les éléments info */
+    .event__info-item h5 {
+        font-size: 16px;
+        color: #333;
+        font-weight: 500;
+    }
+    .event__info-item span {
+        color: #555;
+        font-weight: 700;
+    }
+</style>
+
+                           
+                                </div>
+                            </div>
                         </div>
-                       
-                     </div>
-                  </div>
-               </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Admin pour gestion -->
+                {% if is_granted('ROLE_ADMIN') %}
+                <div class="col-xxl-4 col-xl-4 col-lg-4">
+                    <div class="event__admin-sidebar white-bg mt-20">
+                        <h4 class="admin-title">Admin Actions</h4>
+                        <div class="admin-buttons">
+                            <a href="{{ path('event_edit', { 'id': evenement.id }) }}" class="admin-btn edit-btn">
+                                <i class="fas fa-edit"></i> Modifier
+                            </a>
+                            <a href="{{ path('event_participants', { 'id': evenement.id }) }}" class="admin-btn participants-btn">
+                                <i class="fas fa-users"></i> Voir Participants
+                            </a>
+                            <form action="{{ path('event_delete', { 'id': evenement.id }) }}" method="post" onsubmit="return confirm('Êtes-vous sûr ?');">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="admin-btn delete-btn">
+                                    <i class="fas fa-trash-alt"></i> Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
-         </section>
-         <!-- event details area end -->
+        </div>
+    </section>
+</main>
 
-
-      </main>
-
-
-
+<script>
+    // Modifier le texte du bouton d'inscription et désactiver le clic après l'inscription
+    document.getElementById("inscrire-btn").addEventListener("click", function (event) {
+        event.preventDefault();
+        this.innerHTML = "Inscrit ✔️";
+        this.style.pointerEvents = "none"; // Désactive le bouton une fois cliqué
+    });
+</script>
 
 {% endblock %}

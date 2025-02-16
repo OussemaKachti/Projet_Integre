@@ -77,6 +77,17 @@ class Club
         return $this;
     }
 
+    public function getNomClub(): ?string // Getter pour la propriété nomClub
+    {
+        return $this->nomC;
+    }
+
+    public function setNomClub(string $nomClub): self // Setter pour la propriété nomClub
+    {
+        $this->nomC = $nomClub;
+        return $this;
+    }
+
     public function getDescription(): ?string
     {
         return $this->description;
