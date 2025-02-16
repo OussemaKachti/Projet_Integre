@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250216003634 extends AbstractMigration
+final class Version20250216222912 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,12 +20,12 @@ final class Version20250216003634 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE evenement ADD end_date DATETIME DEFAULT NULL');
+        $this->addSql('ALTER TABLE evenement DROP image_event');
     }
 
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE evenement DROP end_date');
+        $this->addSql('ALTER TABLE evenement ADD image_event VARCHAR(255) DEFAULT NULL');
     }
 }

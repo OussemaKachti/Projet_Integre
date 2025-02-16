@@ -26,8 +26,10 @@ class Evenement
     #[ORM\Column(length: 255)]
     private ?string $type = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $imageEvent = null;
+   
+
+    #[ORM\Column(length: 255, nullable: true)]  // Ajout de la colonne imageDescription
+    private ?string $imageDescription = null;  // Déclaration de l'attribut imageDescription
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $startDate = null;
@@ -107,17 +109,7 @@ class Evenement
         return $this;
     }
 
-    public function getImageEvent(): ?string
-    {
-        return $this->imageEvent;
-    }
-
-    public function setImageEvent(string $imageEvent): static
-    {
-        $this->imageEvent = $imageEvent;
-
-        return $this;
-    }
+   
 
     public function getStartDate(): ?\DateTimeInterface
     {
@@ -169,5 +161,18 @@ class Evenement
     public function getLikes(): Collection
     {
         return $this->likes;
+    }
+
+    // Getter et Setter pour l'image de description
+    public function getImageDescription(): ?string
+    {
+        return $this->imageDescription;
+    }
+
+    public function setImageDescription(?string $imageDescription): self
+    {
+        $this->imageDescription = $imageDescription;
+
+        return $this;
     }
 }

@@ -10,6 +10,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[Route('/evenement')]
 class EvenementController extends AbstractController
@@ -18,7 +21,6 @@ class EvenementController extends AbstractController
     public function index(EvenementRepository $evenementRepository): Response
     {
         $evenements = $evenementRepository->findAll();
-
         return $this->render('evenement/event.html.twig', [
             'evenements' => $evenements,
         ]);
@@ -39,7 +41,9 @@ class EvenementController extends AbstractController
     }
 
     #[Route('/new', name: 'app_evenement_new', methods: ['GET', 'POST'])]
-public function new(Request $request, EntityManagerInterface $entityManager): Response
+   // src/Controller/EvenementController.php
+
+public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
 {
     $evenement = new Evenement();
     $form = $this->createForm(EvenementType::class, $evenement);
@@ -51,18 +55,40 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
             return $this->redirectToRoute('app_evenement_new');
         }
 
-        // Enregistrer l'événement avec la date de fin (endDate)
+      
+
+        // Gestion de l'upload de l'image pour la description
+        $imageDescriptionFile = $form->get('imageDescription')->getData();
+        if ($imageDescriptionFile) {
+            $originalFilename = pathinfo($imageDescriptionFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = $slugger->slug($originalFilename);
+            $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageDescriptionFile->guessExtension();
+
+            try {
+                $imageDescriptionFile->move(
+                    $this->getParameter('event_images_directory'), // Assurez-vous de spécifier le bon répertoire
+                    $newFilename
+                );
+                $evenement->setImageDescription($newFilename); // Enregistrez le nom de l'image dans la base de données
+            } catch (FileException $e) {
+                // Gérer l'erreur si l'upload échoue
+            }
+        }
+
+        // Sauvegarde en base de données
         $entityManager->persist($evenement);
         $entityManager->flush();
-        $this->addFlash('success', 'Événement créé avec succès !');
 
+        $this->addFlash('success', 'Événement créé avec succès !');
         return $this->redirectToRoute('event');
     }
 
     return $this->render('evenement/newevent.html.twig', [
         'form' => $form->createView(),
+        'evenement' => $evenement,
     ]);
 }
+
 
     #[Route('/{id}/edit', name: 'app_evenement_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Evenement $evenement, EntityManagerInterface $entityManager): Response

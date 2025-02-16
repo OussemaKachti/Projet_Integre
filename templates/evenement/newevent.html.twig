@@ -13,7 +13,7 @@
                     <div class="breadcrumb__content text-center p-relative z-index-1">
                         <h3 class="breadcrumb__title">Event</h3>
                         <div class="breadcrumb__list">
-                            <span><a href="index.html">Home</a></span>
+                           <span><a href="{{ asset('index.html') }}">Home</a></span>
                             <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
                             <span>Create Event</span>
                         </div>
@@ -38,79 +38,88 @@
 
             <div class="row">
                 <div class="col-xxl-12">
-                    
+
                     <!-- Afficher les messages flash -->
-                    {% if app.flashes('success') %}
-                        <div class="alert alert-success">
-                            {% for message in app.flashes('success') %}
+                    {% for label, messages in app.flashes %}
+                        <div class="alert alert-{{ label }}">
+                            {% for message in messages %}
                                 <p>{{ message }}</p>
                             {% endfor %}
                         </div>
-                    {% endif %}
+                    {% endfor %}
 
-                    {{ form_start(form) }}
+                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
                     <div class="event__form white-bg p-30 transition-3">
 
-                        <!-- Event Name -->
-                        <div class="form-group mb-3">
-                            {{ form_label(form.nomEvent) }}
-                            <div class="input-group">
-                                {{ form_widget(form.nomEvent, {'attr': {'class': 'form-control'}}) }}
+                        <div class="row">
+                            <!-- Event Name -->
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form_label(form.nomEvent) }}
+                                    {{ form_widget(form.nomEvent, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.nomEvent) }}
+                                </div>
                             </div>
-                            {{ form_errors(form.nomEvent) }}
+
+                            <!-- Event Description -->
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form_label(form.descEvent) }}
+                                    {{ form_widget(form.descEvent, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.descEvent) }}
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Event Description -->
-                        <div class="form-group mb-3">
-                            {{ form_label(form.descEvent) }}
-                            <div class="input-group">
-                                {{ form_widget(form.descEvent, {'attr': {'class': 'form-control'}}) }}
+                        <div class="row">
+                            <!-- Event Location -->
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form_label(form.lieux) }}
+                                    {{ form_widget(form.lieux, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.lieux) }}
+                                </div>
                             </div>
-                            {{ form_errors(form.descEvent) }}
+
+                            <!-- Event Type -->
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form_label(form.type) }}
+                                    {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.type) }}
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Event Location -->
-                        <div class="form-group mb-3">
-                            {{ form_label(form.lieux) }}
-                            <div class="input-group">
-                                {{ form_widget(form.lieux, {'attr': {'class': 'form-control'}}) }}
+                        <div class="row">
+                            <!-- Event Start Date -->
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form_label(form.startDate) }}
+                                    {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.startDate) }}
+                                </div>
                             </div>
-                            {{ form_errors(form.lieux) }}
+
+                            <!-- Event End Date -->
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form_label(form.endDate) }}
+                                    {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.endDate) }}
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Event Start Date -->
-                        <div class="form-group mb-3">
-                            {{ form_label(form.startDate) }}
-                            <div class="input-group">
-                                {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+                        <div class="row">
+                            <!-- Event Image (Image Description) -->
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    {{ form_label(form.imageDescription) }}
+                                    {{ form_widget(form.imageDescription, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.imageDescription) }}
+                                </div>
                             </div>
-                            {{ form_errors(form.startDate) }}
-
-                        </div>
-                            <div class="form-group mb-3">
-                            {{ form_label(form.endDate) }}
-                            <div class="input-group">
-                                {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
-                            </div>
-                            {{ form_errors(form.endDate) }}
-                        </div>
-
-                        <!-- Event Type -->
-                        <div class="form-group mb-3">
-                            {{ form_label(form.type) }}
-                            <div class="input-group">
-                                {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
-                            </div>
-                            {{ form_errors(form.type) }}
-                        </div>
-
-                        <!-- Event Image -->
-                        <div class="form-group mb-3">
-                            {{ form_label(form.imageEvent) }}
-                            <div class="input-group">
-                                {{ form_widget(form.imageEvent, {'attr': {'class': 'form-control'}}) }}
-                            </div>
-                            {{ form_errors(form.imageEvent) }}
                         </div>
 
                         <!-- Submit Button -->

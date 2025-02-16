@@ -13,11 +13,7 @@
                             <h5 class="breadcrumb__title-2">{{ evenement.nomEvent }}</h5>
                         </div>
 
-                        <div class="course__meta-2 d-sm-flex align-items-center mb-30">
-                            <div class="course__teacher-3 d-flex align-items-center mr-70 mb-30">
-                                <div class="course__teacher-thumb-3 mr-15">
-                                    <img src="{{ asset('uploads/' ~ evenement.imageEvent) }}" alt="{{ evenement.nomEvent }}">
-                                </div>
+                      
                                 <div class="course__teacher-info-3">
                                     <h5>Créateur</h5>
                                     <p><a href="#">{{ evenement.club.nomC }}</a></p>
@@ -29,118 +25,157 @@
                             <h3>Description</h3>
                             <p>{{ evenement.descEvent }}</p>
                         </div>
+{# Vérifiez si l'image de la description existe #}
+{% if evenement.imageDescription %}
+    <img src="{{ asset('uploads/events/' ~ evenement.imageDescription) }}" alt="Image de la description">
+{% else %}
+    <p>Aucune image pour la description.</p>
+{% endif %}
 
                     </div>
                 </div>
 
                 <div class="col-xxl-4 col-xl-4 col-lg-4">
-                    <div class="event__sidebar pl-70">
-                        <div class="event__sidebar-widget white-bg mb-20">
-                            <div class="event__sidebar-shape">
-                                <div class="event__info">
-                                    <div class="event__info-content mb-35">
-                                        <ul>
-                                          
-                                                <div class="event__info">
-    <div class="event__info-content mb-35">
-        <ul>
-            <!-- Time Icon -->
-            <li class="d-flex align-items-center">
-                <div class="event__info-icon">
-                    <i class="fa-solid fa-clock event-icon-time"></i> <!-- Icone pour Time -->
-                </div>
-                <div class="event__info-item">
-                    <h5><span>Début :</span> {{ evenement.startDate|date('d M Y H:i') }}</h5>
-                </div>
-            </li>
-            
-            <!-- End Icon -->
-            <li class="d-flex align-items-center">
-                <div class="event__info-icon">
-                    <i class="fa-solid fa-calendar-check event-icon-end"></i> <!-- Icone pour End -->
-                </div>
-                <div class="event__info-item">
-                    <h5><span>Fin :</span> {{ evenement.endDate|date('d M Y H:i') }}</h5>
-                </div>
-            </li>
-            
-            <!-- Venue Icon -->
-            <li class="d-flex align-items-center">
-                <div class="event__info-icon">
-                    <i class="fa-solid fa-location-pin event-icon-venue"></i> <!-- Icone pour Venue -->
-                </div>
-                <div class="event__info-item">
-                    <h5><span>Lieu :</span> {{ evenement.lieux }}</h5>
-                </div>
-            </li>
+    <div class="event__sidebar pl-70">
+        <div class="event__sidebar-widget white-bg mb-20">
+            <div class="event__sidebar-shape">
+                <div class="event__info">
+                    <div class="event__info-content mb-35">
+                        <ul>
+                            <!-- Time Icon -->
+                            <li class="d-flex align-items-center">
+                                <div class="event__info-icon">
+                                    <i class="fa-solid fa-clock event-icon-time"></i> <!-- Icone pour Time -->
+                                </div>
+                                <div class="event__info-item">
+                                    <h5><span>Début :</span> {{ evenement.startDate|date('d M Y H:i') }}</h5>
+                                </div>
+                            </li>
 
-            <!-- Category Icon -->
-            {% if evenement.categorie %}
-            <li class="d-flex align-items-center">
-                <div class="event__info-icon">
-                    <i class="fa-solid fa-tags event-icon-category"></i> <!-- Icone pour Category -->
-                </div>
-                <div class="event__info-item">
-                    <h5><span>Catégorie :</span> {{ evenement.categorie.nomCat }}</h5>
-                </div>
-            </li>
-            {% endif %}
-        </ul>
-    </div>
+                            <!-- End Icon -->
+                            <li class="d-flex align-items-center">
+                                <div class="event__info-icon">
+                                    <i class="fa-solid fa-calendar-check event-icon-end"></i> <!-- Icone pour End -->
+                                </div>
+                                <div class="event__info-item">
+                                    <h5><span>Fin :</span> {{ evenement.endDate|date('d M Y H:i') }}</h5>
+                                </div>
+                            </li>
 
-    <!-- Register Button -->
-    <div class="event__join-btn">
-        <a href="#" id="inscrire-btn" class="tp-btn text-center w-100">
-            Register <i class="far fa-arrow-right"></i>
-        </a>
+                            <!-- Venue Icon -->
+                            <li class="d-flex align-items-center">
+                                <div class="event__info-icon">
+                                    <i class="fa-solid fa-location-pin event-icon-venue"></i> <!-- Icone pour Venue -->
+                                </div>
+                                <div class="event__info-item">
+                                    <h5><span>Lieu :</span> {{ evenement.lieux }}</h5>
+                                </div>
+                            </li>
+
+                            <!-- Category Icon -->
+                            {% if evenement.categorie %}
+                            <li class="d-flex align-items-center">
+                                <div class="event__info-icon">
+                                    <i class="fa-solid fa-tags event-icon-category"></i> <!-- Icone pour Category -->
+                                </div>
+                                <div class="event__info-item">
+                                    <h5><span>Catégorie :</span> {{ evenement.categorie.nomCat }}</h5>
+                                </div>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <!-- Register Button -->
+                    <div class="event__join-btn">
+                        <a href="#" id="inscrire-btn" class="tp-btn text-center w-100">
+                            Register <i class="far fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
+
 <!-- Styles CSS -->
 <style>
-    /* Styling des icônes pour chaque section */
-    .event__info-icon i {
-        font-size: 22px;
-        margin-right: 10px;
-    }
+/* Pour la mise en page générale avec Flexbox */
+/* Pour la mise en page générale avec Flexbox */
+.event__area {
+    min-height: 100vh; /* Assure que la section prend toute la hauteur de la page */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Ajoute de l'espace entre les éléments */
+}
 
-    /* Icône pour End (fin de l'événement) */
-    .event-icon-end {
-        color: #e74c3c; /* Rouge pour la fin */
-        transition: transform 0.3s ease-in-out;
-    }
-    .event-icon-end:hover {
-        transform: scale(1.2); /* Effet de zoom au survol */
-    }
+.event__wrapper {
+    flex: 1; /* Laisse le contenu principal s'étirer */
+    max-width: calc(100% - 350px); /* Limite la largeur du contenu principal pour laisser de l'espace à la sidebar */
+}
 
-    /* Icône pour Time (heure de l'événement) */
-    .event-icon-time {
-        color: #f39c12; /* Jaune pour l'heure */
-        transition: transform 0.3s ease-in-out;
-    }
-    .event-icon-time:hover {
-        transform: scale(1.2); /* Effet de zoom au survol */
-    }
+/* Sidebar avec position sticky */
+.event__sidebar {
+    flex-basis: 300px; /* Largeur fixe pour la sidebar */
+    position: sticky;
+    top: 20px; /* Espace par rapport au haut de la page */
+    height: calc(100vh - 20px); /* Garde la sidebar toujours visible */
+   /* Permet à la sidebar de défiler si nécessaire */
+}
 
-    /* Icône pour Venue (lieu de l'événement) */
-    .event-icon-venue {
-        color: #3498db; /* Bleu pour le lieu */
-        transition: transform 0.3s ease-in-out;
-    }
-    .event-icon-venue:hover {
-        transform: scale(1.2); /* Effet de zoom au survol */
-    }
+/* Limiter la taille des images pour ne pas perturber la mise en page */
+.event__details img {
+    width: 80%; /* S'assure que l'image occupe toute la largeur du conteneur sans le dépasser */
+    height: auto; /* Garde les proportions de l'image */
+    max-height: 300px; /* Limite la hauteur de l'image pour éviter qu'elle devienne trop grande */
+  /* Remplissage proportionnel sans déformer l'image */
+}
 
-    /* Style général pour les éléments info */
-    .event__info-item h5 {
-        font-size: 16px;
-        color: #333;
-        font-weight: 500;
-    }
-    .event__info-item span {
-        color: #555;
-        font-weight: 700;
-    }
+/* Améliorer l'apparence des icônes */
+.event__info-icon i {
+    font-size: 22px;
+    margin-right: 10px;
+}
+
+/* Icône pour End (fin de l'événement) */
+.event-icon-end {
+    color: #e74c3c; /* Rouge pour la fin */
+    transition: transform 0.3s ease-in-out;
+}
+.event-icon-end:hover {
+    transform: scale(1.2); /* Effet de zoom au survol */
+}
+
+/* Icône pour Time (heure de l'événement) */
+.event-icon-time {
+    color: #f39c12; /* Jaune pour l'heure */
+    transition: transform 0.3s ease-in-out;
+}
+.event-icon-time:hover {
+    transform: scale(1.2); /* Effet de zoom au survol */
+}
+
+/* Icône pour Venue (lieu de l'événement) */
+.event-icon-venue {
+    color: #3498db; /* Bleu pour le lieu */
+    transition: transform 0.3s ease-in-out;
+}
+.event-icon-venue:hover {
+    transform: scale(1.2); /* Effet de zoom au survol */
+}
+
+/* Style général pour les éléments info */
+.event__info-item h5 {
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+}
+.event__info-item span {
+    color: #555;
+    font-weight: 700;
+}
+
 </style>
 
                            

@@ -9,6 +9,9 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Validator\Constraints\File;
+
 
 class EvenementType extends AbstractType
 {
@@ -18,7 +21,23 @@ class EvenementType extends AbstractType
             ->add('nomEvent')
             ->add('descEvent')
             ->add('type')
-            ->add('imageEvent')
+            // src/Form/EvenementType.php
+
+
+
+    // Ajoutez ce champ à votre formulaire
+    ->add('imageDescription', FileType::class, [
+        'label' => 'Image de la description (facultatif)',
+        'required' => false,
+        'mapped' => false, // Cela indique qu'on ne l'associe pas directement à un champ de l'entité
+        'attr' => ['accept' => 'image/*'],
+    ])
+    // Autres champs du formulaire...
+
+
+           
+   
+
             ->add('startDate', DateTimeType::class, [
                 'widget' => 'single_text',
                 'label' => 'Date de début',
