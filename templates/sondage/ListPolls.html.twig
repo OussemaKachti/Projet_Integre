@@ -42,8 +42,91 @@
                                     <span class="menu-icon" onclick="toggleMenu(event)">&#8230;</span>
                                     <div class="menu-list">
                                         <ul>
-                                            <li onclick="editPoll()">Edit Poll</li>
-                                            <li onclick="deletePoll({{ sondage.id }})">Delete Poll</li>
+   <ul>
+                                                <!-- Votre code HTML pour le modal -->
+<div id="modal2" class="modal2">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <form id="poll-form" method="POST" action="{{ path('api_poll_edit', {'id': sondage.id}) }}">
+            <input type="hidden" name="_method" value="PUT">
+            <div class="poll-creation-container">
+                <h2>Edit Poll</h2>
+                <input type="text" id="edit-question" class="input-box" name="question">
+                <h2>Options</h2>
+                <div id="options-container"></div>
+                <button type="button" class="add-option" onclick="addOption()">+ Add option</button>
+                <div class="admin-message">
+                    <p><strong>Note:</strong> Ensure the question and options follow club rules.</p>
+                </div>
+                <input type="hidden" id="poll-id" name="id">
+                <button type="submit" class="create-btn">Save Changes</button>      
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+        .modal2 {
+            display: none; /* Cacher le modal par défaut */
+            /* Autres styles du modal */
+        }
+
+        .modal2.show {
+            display: block; /* Afficher le modal lorsqu'il est activé */
+        }
+</style>
+
+<!-- JavaScript -->
+<script>
+        // Fonction pour ouvrir le modal
+        function openModal(id) {
+            // Faire une requête AJAX pour récupérer les données du sondage
+            fetch(`/sondage/api/poll/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const sondage = data.sondage;
+
+                        // Remplir le champ de la question
+                        document.getElementById('edit-question').value = sondage.question;
+
+                        // Remplir les options
+                        const optionsContainer = document.getElementById('options-container');
+                        optionsContainer.innerHTML = '';  // Réinitialiser les options
+                        sondage.choix.forEach((choix, index) => {
+                            const optionInput = document.createElement('input');
+                            optionInput.type = 'text';
+                            optionInput.classList.add('input-box');
+                            optionInput.placeholder = `Option ${index + 1}`;
+                            optionInput.value = choix.contenu;
+                            optionsContainer.appendChild(optionInput);
+                        });
+
+                        // Remplir l'ID du sondage dans un champ caché
+                        document.getElementById('poll-id').value = sondage.id;
+
+                        // Afficher le modal
+                        document.getElementById('modal2').classList.add('show');
+                    } else {
+                        alert('Erreur: Sondage non trouvé');
+                    }
+                })
+                .catch(error => console.error('Erreur:', error));
+        }
+
+
+        // Fonction pour fermer le modal
+        function closeModal() {
+            document.getElementById('modal2').classList.remove('show');
+        }
+</script>
+
+<!-- Bouton pour ouvrir le modal -->
+                                    <button class="edit-btn" onclick="openModal({{ sondage.id }})">Edit Poll</button>
+
+                                        </ul>                                           
+                                         <li onclick="deletePoll({{ sondage.id }})">Delete Poll</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -160,6 +243,7 @@
             </div>
 
             <!-- Sidebar Section -->
+             <!-- Sidebar Section -->
             <div class="col-xxl-4 col-xl-4 col-lg-4">
                 <div class="blog__sidebar pl-70">
                     <form id="poll-form" method="POST" action="{{ path('api_poll_new') }}">

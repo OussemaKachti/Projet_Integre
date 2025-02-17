@@ -1,6 +1,6 @@
 {% extends 'baseAdmin.html.twig' %}
 
-{% block title %}Commentaire index{% endblock %}
+{% block title %}Comments{% endblock %}
 
 {% block body %}
 <div class="main-panel" style="width: 100%; max-width: 1300px; margin: 0 auto 0 20px;">
@@ -26,7 +26,7 @@
         {% for commentaire in commentaires %}
             <tr>
                 <td>{{ commentaire.id }}</td>
-                <td>{{ commentaire.user }}</td>
+                <td>{{ commentaire.user.nom }} {{ commentaire.user.prenom }}</td>
                 <td>{{ commentaire.contenuComment }}</td>
                 <td>{{ commentaire.sondage.club.nom }}</td>
                 <td>{{ commentaire.dateComment|date('Y-m-d') }}</td>
@@ -116,3 +116,18 @@
 </div>
 
 {% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

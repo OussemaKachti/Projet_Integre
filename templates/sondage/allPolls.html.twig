@@ -1,0 +1,224 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{% endblock %}
+
+{% block body %}
+       <main>
+
+         <!-- breadcrumb area start -->
+         <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="{{asset('front_assets/img/breadcrumb/poll.jpg')}}">
+            <div class="container">
+               <div class="row">
+                  <div class="col-xxl-12">
+                     <div class="breadcrumb__content text-center p-relative z-index-1">
+                        <h3 class="breadcrumb__title">All Polls</h3>
+                        <div class="breadcrumb__list">
+                           <span><a href="index.html">Home</a></span>
+                           <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
+                           <span>Polls</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+         <!-- breadcrumb area end -->
+        
+        
+         <!-- Page Principaleeeeeeee -->
+
+         
+         <section class="blog__area pt-120 pb-120">
+            <div class="container">
+              <div class="row">
+                <div class="col-xxl-8 col-xl-8 col-lg-8">
+                  <!-- Liste des sondages -->
+                  <section class="cart-area pt-120 pb-120">
+                    <div class="container">
+                      <div class="row">
+                        <div class="col-12">
+                         
+        <div class="admin-container">
+         <h2>Poll Management</h2>
+         <table>
+           <thead>
+             <tr>
+               <th>Question</th>
+               <th>Options</th>
+               <th>Date Created</th>
+               <th>Actions</th>
+             </tr>
+           </thead>
+           <tbody id="poll-table-body">
+            <!-- Exemple d'une ligne de sondage -->
+            <tr>
+                <td>Quel est votre fruit préféré ?</td>
+                <td>Banane, Pomme, Orange</td>
+                <td>2025-02-11</td>
+                <td>
+                    <div class="action-buttons">
+                        <!-- Bouton Edit qui ouvre la modal -->
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editPollModal">
+                            Edit
+                        </button>
+        
+                        <button class="btn btn-danger" onclick="deletePoll(1)">Delete</button>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+        
+        <!-- Modal Edit Poll (UNE SEULE FOIS) -->
+        <div class="modal fade" id="editPollModal" tabindex="-1" aria-labelledby="editPollModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editPollModalLabel">Edit Poll</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="#" method="POST">
+                            <div class="form-group">
+                                <label for="pollQuestion">Question</label>
+                                <input type="text" class="form-control" id="pollQuestion" name="pollQuestion" placeholder="Enter the question" required>
+                            </div>
+        
+                            <div class="form-group mt-3">
+                                <label for="option1">Option 1</label>
+                                <input type="text" class="form-control" id="option1" name="options[]" placeholder="Enter first choice" required>
+                            </div>
+        
+                            <div class="form-group mt-3">
+                                <label for="option2">Option 2</label>
+                                <input type="text" class="form-control" id="option2" name="options[]" placeholder="Enter second choice" required>
+                            </div>
+        
+                            <button type="button" class="btn btn-secondary mt-3">+ Add option</button>
+        
+                            <div class="form-group mt-4">
+                                <button type="submit" class="tp-btn-5 tp-btn-7">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+         </table>
+       </div>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+                <!-- Section création du sondage à droite -->
+                <div class="col-xxl-4 col-xl-4 col-lg-4">
+                  <div class="blog__sidebar pl-70">
+                    <!-- Formulaire de création de sondage -->
+                    <div class="sidebar__widget mb-55">
+                      <div class="poll-creation-container">
+                        <h2>Create a Poll</h2>
+                        <form>
+                          <input type="text" class="input-box" placeholder="Type your question here">
+                          <h2>Options</h2>
+                          <div id="options-container">
+                            <input type="text" class="input-box" placeholder="Option 1">
+                            <input type="text" class="input-box" placeholder="Option 2">
+                          </div>
+                          <button class="add-option" type="button" onclick="addOption()">+ Add option</button>
+                          <div class="admin-message">
+                            <p><strong>Note:</strong> Ensure the question and options follow club rules.</p>
+                          </div>
+                          <button type="submit" class="create-btn">Create Poll</button>
+                        </form>
+                      </div>
+                    </div>
+          
+                  
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+         <!-- blog area end -->
+<style>
+   body {
+       font-family: Arial, sans-serif;
+       background-color: #f4f4f4;
+       margin: 0;
+       padding: 20px;
+   }
+
+   .admin-container {
+       width: 100%;
+       max-width: 1200px;
+       background: white;
+       padding: 20px;
+       border-radius: 8px;
+       box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+       margin: auto;
+   }
+
+   h2 {
+       text-align: center;
+       margin-bottom: 20px;
+   }
+
+   table {
+       width: 100%;
+       border-collapse: collapse;
+       margin-top: 10px;
+   }
+
+   th, td {
+       padding: 12px;
+       text-align: left;
+       border-bottom: 1px solid #ddd;
+   }
+
+   th {
+       background-color:rgb(6, 65, 128);
+       color: white;
+   }
+
+   tr:hover {
+       background-color: #f1f1f1;
+   }
+
+   .actions {
+       display: flex;
+       gap: 10px;
+   }
+
+   .btn {
+       padding: 5px 10px;
+       border: none;
+       cursor: pointer;
+       border-radius: 4px;
+   }
+
+   .btn-edit {
+       background-color: #28a745;
+       color: white;
+   }
+
+   .btn-delete {
+       background-color: #dc3545;
+       color: white;
+   }
+
+   /* Responsive */
+   @media (max-width: 768px) {
+       table {
+           font-size: 14px;
+       }
+
+       .btn {
+           padding: 4px 8px;
+           font-size: 12px;
+       }
+   }
+</style>
+      </main>
+{% endblock %}

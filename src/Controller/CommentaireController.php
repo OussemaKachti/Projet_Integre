@@ -24,14 +24,53 @@ use Symfony\Component\Security\Core\Security;
 #[Route('/commentaire')]
 class CommentaireController extends AbstractController
 {
-    #[Route('/', name: 'app_commentaire_index', methods: ['GET'])]
-    public function index(CommentaireRepository $commentaireRepository): Response
+
+
+
+                                                //Admin
+
+
+
+
+    
+    #[Route('/adminComments', name: 'app_commentaire_index', methods: ['GET'])]
+    public function afficherCommentaires(CommentaireRepository $commentaireRepository): Response
     {
+        $commentairesAvecClub = [];
+
+        // Récupérer tous les commentaires
+        $commentaires = $commentaireRepository->findAll();
+
+        foreach ($commentaires as $commentaire) {
+            $sondage = $commentaire->getSondage();
+            $club = $sondage->getClub(); // Assurez-vous que la relation existe
+            $clubName = $club ? $club->getNomC() : 'Non défini'; // Vérifiez que le club n'est pas null
+
+            $commentairesAvecClub[] = [
+                'id' => $commentaire->getId(),
+                'user' => $commentaire->getUser()->getNom() . ' ' . $commentaire->getUser()->getPrenom(),
+                'contenu' => $commentaire->getContenuComment(),
+                'club_name' => $clubName,
+                'created_at' => $commentaire->getDateComment()->format('Y-m-d')
+            ];
+        }
+
         return $this->render('commentaire/index.html.twig', [
-            'commentaires' => $commentaireRepository->findAll(),
+            'commentaires' => $commentairesAvecClub,
         ]);
     }
 
+
+
+
+
+
+                                                    //Admin
+    
+
+
+
+    
     #[Route('/comment/add/{id}', name: 'add_comment', methods: ['POST'])]
     public function addComment(int $id, Request $request, SondageRepository $sondageRepository, EntityManagerInterface $em): JsonResponse
     {

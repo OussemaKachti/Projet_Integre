@@ -59,4 +59,15 @@ private Sondage $sondage;
 
     return $this;  // Return $this for method chaining
 }
+
+public function getSondage(): ?Sondage
+{
+    return $this->sondage;
+}
+
+public function __toString(): string
+{
+    return $this->contenu; // Remplacez "contenu" par le champ approprié
+}
+
 }

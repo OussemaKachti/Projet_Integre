@@ -26,6 +26,10 @@ class Sondage
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "sondages")]
     #[ORM\JoinColumn(nullable: false)]
     private User $user;
+
+    #[ORM\ManyToOne(targetEntity: Club::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private Club $club; // Ajout de la relation avec le club
     
     
     #[ORM\OneToMany(targetEntity: ChoixSondage::class, mappedBy: "sondage", cascade: ["persist", "remove"])]
@@ -96,5 +100,16 @@ public function getChoix(): Collection
 {
     return $this->choix;
 }
+public function setClub(Club $club): self
+{
+    $this->club = $club;
+    return $this;
+}
+
+public function getClub(): Club
+{
+    return $this->club;
+}
+
 
 }
