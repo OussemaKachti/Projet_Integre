@@ -26,8 +26,9 @@ class Saison
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $dateFin = null;
 
-    #[ORM\OneToMany(targetEntity: Competition::class, mappedBy: "saison", cascade: ["persist", "remove"])]
+    #[ORM\OneToMany(mappedBy: "season", targetEntity: Competition::class, cascade: ["persist", "remove"], orphanRemoval: true)]
     private Collection $competitions;
+
 
     public function __construct()
     {
@@ -75,6 +76,27 @@ class Saison
     public function setDateFin(?\DateTimeInterface $dateFin): static
     {
         $this->dateFin = $dateFin;
+        return $this;
+    }
+
+
+
+    public function addCompetition(Competition $competition): static 
+    {
+        if (!$this->competitions->contains($competition)) {
+            $this->competitions->add($competition);
+            $competition->setSeason($this);
+        }
+        return $this;
+    }
+
+    public function removeCompetition(Competition $competition): static 
+    {
+        if ($this->competitions->removeElement($competition)) {
+            if ($competition->getSeason() === $this) {
+                $competition->setSeason(null);
+            }
+        }
         return $this;
     }
 }

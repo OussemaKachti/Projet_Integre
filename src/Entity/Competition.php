@@ -28,17 +28,16 @@ class Competition
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $endDate = null;
     
-    #[ORM\ManyToMany(targetEntity: Competition::class, mappedBy: "clubs")]
-    private Collection $competitions;
+    #[ORM\ManyToOne(targetEntity: Saison::class, inversedBy: "competitions")]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Saison $saison = null;
 
-    public function __construct()
-    {
-        $this->competitions = new ArrayCollection();
-    }
+    #[ORM\OneToMany(mappedBy: "competition", targetEntity: MissionProgress::class)]
+    private Collection $missionProgresses;
+    
+    public function __construct() {
+        $this->missionProgresses = new ArrayCollection();
 
-    public function getCompetitions(): Collection
-    {
-        return $this->competitions;
     }
 
     public function getId(): ?int
@@ -93,4 +92,35 @@ class Competition
 
         return $this;
     }
+    public function getSaison(): ?Saison 
+    { 
+        return $this->saison; 
+    }
+    public function setSaison(?Saison $saison): static 
+    {
+         $this->saison = $saison; return $this; 
+    }
+
+    public function getMissionProgresses(): Collection 
+    {
+        return $this->missionProgresses;
+    }
+    public function addMissionProgress(MissionProgress $progress): static 
+    {
+        if (!$this->missionProgresses->contains($progress)) {
+            $this->missionProgresses->add($progress);
+            $progress->setCompetition($this);
+        }
+        return $this;
+    }
+    public function removeMissionProgress(MissionProgress $progress): static 
+{
+    if ($this->missionProgresses->removeElement($progress)) {
+        if ($progress->getCompetition() === $this) { // Fix here
+            $progress->setCompetition(null);
+        }
+    }
+    return $this;
+}
+
 }

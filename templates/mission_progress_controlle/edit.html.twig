@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit MissionProgress{% endblock %}
+
+{% block body %}
+    <h1>Edit MissionProgress</h1>
+
+    {{ include('mission_progress_controlle/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_mission_progress_controlle_index') }}">back to list</a>
+
+    {{ include('mission_progress_controlle/_delete_form.html.twig') }}
+{% endblock %}
