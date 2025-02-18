@@ -22,6 +22,8 @@ use App\Entity\User;  // Assurez-vous d'importer votre entité User
 use App\Entity\ParticipationMembre;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Security\Core\Security;
 
 
 
@@ -85,34 +87,115 @@ class SondageController extends AbstractController
     }
     
 
-    #[Route('/{id}/delete', name: 'sondage_delete', methods: ['POST'])]
-    public function deletePoll(int $id, EntityManagerInterface $em, UserRepository $userRepository): JsonResponse
+    #[Route('/{id}/delete', name: 'app_sondage_delete', methods: ['POST'])]
+    public function deleteSondage($id, EntityManagerInterface $entityManager): JsonResponse
     {
-        // Dump des informations pour vérifier la requête
-        dump($id);  // Afficher l'ID du sondage reçu
-        $sondage = $em->getRepository(Sondage::class)->find($id);
+        try {
+            // Récupérer le sondage à supprimer avec ses relations
+            $sondage = $entityManager->getRepository(Sondage::class)->find($id);
     
-        if (!$sondage) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Sondage non trouvé'], 404);
+            // Vérifier si le sondage existe
+            if (!$sondage) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Sondage non trouvé.'
+                ], 404);
+            }
+    
+            // Stocker les informations avant suppression
+            $sondageId = $sondage->getId();
+            $sondageQuestion = $sondage->getQuestion();
+    
+            // Charger explicitement les collections
+            $sondage->getChoix()->initialize();
+            $sondage->getCommentaires()->initialize();
+            $sondage->getReponses()->initialize();
+    
+            // Supprimer le sondage
+            $entityManager->remove($sondage);
+            $entityManager->flush();
+    
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Sondage supprimé avec succès.',
+                'data' => [
+                    'id' => $sondageId,
+                    'question' => $sondageQuestion
+                ]
+            ], 200);
+    
+        } catch (\Exception $e) {
+            // Log l'erreur pour le débogage
+            error_log($e->getMessage());
+            error_log($e->getTraceAsString());
+    
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression du sondage: ' . $e->getMessage(),
+                'details' => $e->getTraceAsString()
+            ], 500);
         }
-    
-        dump($sondage);  // Afficher les informations du sondage récupéré
-    
-        // Supprimer les choix associés si nécessaire
-        foreach ($sondage->getChoix() as $choix) {
-            $em->remove($choix);
-        }
-    
-        // Supprimer le sondage lui-même
-        $em->remove($sondage);
-        $em->flush();
-    
-        return new JsonResponse(['status' => 'success', 'message' => 'Sondage supprimé avec succès'], 200);
     }
+
+
+
+
     
+    
+    /*
+    #[Route('/admin/polls', name: 'app_poll_index4')]
+public function filterByClub(Request $request, EntityManagerInterface $entityManager): Response
+{
+    // Récupérer tous les clubs pour le filtre
+    $clubs = $entityManager->getRepository(Club::class)->findAll();
+
+    // Récupérer le nom du club sélectionné depuis la requête
+    $clubFilter = $request->query->get('club'); // nom du club
+
+    // Construire la requête pour récupérer les sondages
+    $queryBuilder = $entityManager->getRepository(Sondage::class)->createQueryBuilder('s')
+        ->join('s.club', 'cl')  // Utilisation de 'join' pour relier Sondage à Club
+        ->addSelect('cl');       // Ajout de 'cl' pour récupérer les informations sur le club
+
+    // Appliquer le filtre si un club est sélectionné
+    if ($clubFilter && $clubFilter !== 'all') {
+        $queryBuilder->where('cl.nomC = :clubName')  // Utiliser 'nomC' pour la propriété correcte
+            ->setParameter('clubName', $clubFilter);
+    }
+
+    // Exécuter la requête
+    $sondages = $queryBuilder->getQuery()->getResult();
+
+    // Formater les sondages avec les informations nécessaires
+    $sondagesAvecClub = [];
+    foreach ($sondages as $sondage) {
+        $club = $sondage->getClub();
+        $clubName = $club ? $club->getNomC() : 'Non défini'; // Utiliser getNomC() pour obtenir le nom du club
+
+        // Ajouter le sondage au tableau avec les informations nécessaires
+        $sondagesAvecClub[] = [
+            'id' => $sondage->getId(),
+            'question' => $sondage->getQuestion(),
+            'club_name' => $clubName,
+            'created_at' => $sondage->getCreatedAt()->format('Y-m-d'),
+        ];
+    }
+
+    // Retourner la vue avec les sondages et la liste des clubs
+    return $this->render('sondage/adminPolls.html.twig', [
+        'sondages' => $sondagesAvecClub,
+        'clubs' => $clubs,  // Liste des clubs pour le filtre
+        'selectedClub' => $clubFilter ?? 'all', // Club actuellement sélectionné
+    ]);
+}
+*/
     
     
 
+
+
+
+    
 
 
 
@@ -249,7 +332,7 @@ public function create(Request $request, EntityManagerInterface $em): Response
     public function getPollsByClub(EntityManagerInterface $em, SondageRepository $sondageRepository, ClubRepository $clubRepository): Response
     {
         // 🔹 Récupérer l'utilisateur connecté (Mettre en dur pour test uniquement)
-        $user = $em->getRepository(User::class)->find(2); // ⚠️ À retirer en production et remplacer par `$this->getUser()`
+        $user = $em->getRepository(User::class)->find(1); // ⚠️ À retirer en production et remplacer par `$this->getUser()`
 
         if (!$user) {
             throw $this->createAccessDeniedException('You should connect to see all polls');
@@ -271,7 +354,7 @@ public function create(Request $request, EntityManagerInterface $em): Response
         $president = $club->getPresident();
 
         if (!$president) {
-            return $this->render('sondage/listePolls.html.twig', ['sondages' => []]);
+            return $this->render('sondage/listPolls.html.twig', ['sondages' => []]);
         }
 
         // 🔹 Récupérer uniquement les sondages créés par le président du club
@@ -284,7 +367,83 @@ public function create(Request $request, EntityManagerInterface $em): Response
             'sondages' => $sondages,
         ]);
     }
+
     
+    #[Route('/user-polls', name: 'api_user_polls', methods: ['GET'])]
+    public function getUserPolls(EntityManagerInterface $em, Security $security): JsonResponse
+    {
+        // Récupérer l'utilisateur connecté
+        $user = $em->getRepository(User::class)->find(1);
+    
+        // Vérifier si l'utilisateur est connecté
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur non connecté'], 401);
+        }
+    
+        // Récupérer les sondages créés par l'utilisateur
+        $sondages = $em->getRepository(Sondage::class)->findBy(['user' => $user]);
+    
+        // Vérifier si l'utilisateur a créé des sondages
+        if (empty($sondages)) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Aucun sondage trouvé pour cet utilisateur'], 404);
+        }
+    
+        // Transformer les sondages en tableau
+        $sondageData = array_map(function ($sondage) {
+            return [
+                'id' => $sondage->getId(),
+                'question' => $sondage->getQuestion(),
+                'date_creation' => $sondage->getCreatedAt()->format('Y-m-d H:i:s'),
+                'choix' => array_map(fn($choix) => ['id' => $choix->getId(), 'contenu' => $choix->getContenu()], $sondage->getChoix()->toArray())
+            ];
+        }, $sondages);
+    
+        // Retourner les sondages
+        return new JsonResponse([
+            'status' => 'success',
+            'sondages' => $sondageData
+        ]);
+    }
+
+
+
+    //tekhdemch
+    #[Route('/mes-sondages', name: 'app_sondage_user', methods: ['GET'])]
+public function getUserSondages(EntityManagerInterface $em, SondageRepository $sondageRepository): Response
+{
+    // Récupérer l'utilisateur connecté
+    //$user = $this->getUser();
+    $user = $em->getRepository(User::class)->find(1);
+
+    // Vérifier si l'utilisateur est bien connecté
+    if (!$user) {
+        return $this->render('sondage/allPolls.html.twig', [
+            'error' => 'Utilisateur non connecté.'
+        ]);
+    }
+
+    // Récupérer les sondages de cet utilisateur
+    $sondages = $sondageRepository->findSondagesByUser($user);
+
+    // Transformer les sondages en tableau pour Twig
+    $sondageData = array_map(function (Sondage $sondage) {
+        return [
+            'id' => $sondage->getId(),
+            'question' => $sondage->getQuestion(),
+            'date_creation' => $sondage->getCreatedAt()->format('Y-m-d H:i:s'),
+            'choix' => array_map(fn($choix) => [
+                'id' => $choix->getId(),
+                'contenu' => $choix->getContenu()
+            ], $sondage->getChoix()->toArray())
+        ];
+    }, $sondages);
+
+    // Passer les données à la vue
+    return $this->render('sondage/allPolls.html.twig', [
+        'sondageData' => $sondageData
+    ]);
+}
+
 
     
 
@@ -362,9 +521,123 @@ public function showPoll(int $id, EntityManagerInterface $em): JsonResponse
 
     
     
+  
+#[Route('/api/poll/{id}', name: 'api_poll_update', methods: ['PUT'])]
+public function updatePoll(Sondage $poll, Request $request, EntityManagerInterface $em): JsonResponse
+{
+    // Assurez-vous que l'utilisateur est bien celui qui a créé le sondage
+    if ($poll->getUser() !== $this->getUser()) {
+        return new JsonResponse(['status' => 'error', 'message' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
+    }
+
+    // Récupérer les nouvelles données envoyées par le formulaire
+    $data = json_decode($request->getContent(), true);
+    $poll->setQuestion($data['question']); // Mettre à jour la question
+
+    // Mettre à jour les choix
+    foreach ($poll->getChoix() as $choice) {
+        $em->remove($choice); // Supprimer les anciens choix
+    }
+
+    foreach ($data['choix'] as $choiceData) {
+        $choice = new ChoixSondage();
+        $choice->setContenu($choiceData['contenu']);
+        $poll->addChoix($choice);
+        $em->persist($choice); // Ajouter les nouveaux choix
+    }
+
+    $em->flush(); // Sauvegarder les changements
+
+    return new JsonResponse(['status' => 'success', 'message' => 'Poll updated successfully']);
+}
+
+  
+
+#[Route('/api/poll/{id}', name: 'api_poll_edit', methods: ['POST'])]
+public function editPoll($id, Request $request, EntityManagerInterface $em): JsonResponse
+{
+    // Décoder le JSON envoyé dans le corps de la requête
+    $data = json_decode($request->getContent(), true);
+
+    if (!$data || !isset($data['question']) || empty($data['choix'])) {
+        return new JsonResponse(['status' => 'error', 'message' => 'Données invalides'], 400);
+    }
+
+    // Récupérer le sondage existant par ID
+    $sondage = $em->getRepository(Sondage::class)->find($id);
+    if (!$sondage) {
+        return new JsonResponse(['status' => 'error', 'message' => 'Sondage non trouvé'], 404);
+    }
+
+    // Récupérer l'utilisateur connecté
+    $user = $em->getRepository(User::class)->find(1); // Utilisez l'ID dynamique de l'utilisateur connecté
+    if (!$user) {
+        return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur non trouvé'], 404);
+    }
+
+    // Vérifiez si l'utilisateur est président d'un club
+    $club = $em->getRepository(Club::class)->findOneBy(['president' => $user]);
+    if (!$club) {
+        return new JsonResponse(['status' => 'error', 'message' => 'L\'utilisateur n\'est pas président d\'un club'], 403);
+    }
+
+    // Mettre à jour la question du sondage
+    $sondage->setQuestion($data['question']);
+
+    // Récupérer les anciens choix
+    $existingChoices = $sondage->getChoix();
+
+    // Traiter les nouveaux choix (ajouts et modifications)
+    $newChoices = $data['choix'];
+
+    // Gérer la mise à jour des choix existants ou l'ajout de nouveaux choix
+    $existingChoicesIds = [];
+    foreach ($newChoices as $index => $choixData) {
+        if (!isset($choixData['contenu']) || empty($choixData['contenu'])) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Un choix est vide'], 400);
+        }
+
+        // Vérifier si ce choix existe déjà dans les choix existants
+        $existingChoice = isset($existingChoices[$index]) ? $existingChoices[$index] : null;
+
+        if ($existingChoice) {
+            // Si le choix existe déjà, mettre à jour son contenu
+            $existingChoice->setContenu($choixData['contenu']);
+            $em->persist($existingChoice); // Mettre à jour le choix existant
+        } else {
+            // Si le choix n'existe pas, on en crée un nouveau
+            $choix = new ChoixSondage();
+            $choix->setContenu($choixData['contenu']);
+            $choix->setSondage($sondage);
+            $em->persist($choix); // Ajouter le nouveau choix
+        }
+
+        $existingChoicesIds[] = $choixData['contenu'];
+    }
+
+    // Supprimer les choix qui ne sont plus dans la nouvelle liste
+    foreach ($existingChoices as $choix) {
+        if (!in_array($choix->getContenu(), $existingChoicesIds)) {
+            $em->remove($choix); // Supprimer les choix non présents dans les nouveaux choix
+        }
+    }
+
+    $em->flush();
+
+    // Récupérer le nom du club
+    $clubName = $club->getNomC();
+
+    return new JsonResponse([
+        'status' => 'success',
+        'message' => 'Sondage mis à jour avec succès',
+        'club_name' => $clubName
+    ], 200);
+}
+
+
     
-#[Route('/api/poll/{id}', name: 'api_poll_edit', methods: ['PUT'])]
-public function editPoll(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+#[Route('/poll/{id}', name: 'poll_edit', methods: ['PUT'])]
+public function editPoll2(int $id, Request $request, EntityManagerInterface $em): JsonResponse
 {
     $sondage = $em->getRepository(Sondage::class)->find($id);
 
@@ -373,47 +646,35 @@ public function editPoll(int $id, Request $request, EntityManagerInterface $em):
     }
 
     $data = json_decode($request->getContent(), true);
-    
-    if (!$data || !isset($data['question']) || empty($data['choix'])) {
-        return new JsonResponse(['status' => 'error', 'message' => 'Données invalides'], 400);
-    }
 
-    // Mettre à jour la question du sondage
+    // Mettre à jour la question
     $sondage->setQuestion($data['question']);
 
-    // Récupérer les choix existants et créer une liste pour comparer
-    $choixExistants = $sondage->getChoix();
-    $nouveauxChoix = [];
-
+    // Mettre à jour les choix
+    $existingChoix = $sondage->getChoix()->toArray();
     foreach ($data['choix'] as $choixData) {
-        if (!isset($choixData['id'])) {
-            // Nouveau choix ajouté par l'utilisateur
-            $choix = new ChoixSondage();
+        $choix = $em->getRepository(ChoixSondage::class)->find($choixData['id']);
+        
+        if ($choix) {
             $choix->setContenu($choixData['contenu']);
-            $choix->setSondage($sondage);
             $em->persist($choix);
-            $nouveauxChoix[] = $choix;
         } else {
-            // Vérifier si le choix existe déjà
-            $choix = $em->getRepository(ChoixSondage::class)->find($choixData['id']);
-            if ($choix && $choix->getSondage() === $sondage) {
-                $choix->setContenu($choixData['contenu']);
-                $nouveauxChoix[] = $choix;
+            // Ajouter un nouveau choix si l'ID est "new"
+            if ($choixData['id'] === 'new') {
+                $newChoix = new ChoixSondage();
+                $newChoix->setContenu($choixData['contenu']);
+                $sondage->addChoix($newChoix);
+                $em->persist($newChoix);
             }
         }
     }
 
-    // Supprimer les choix qui ne sont plus dans la nouvelle liste
-    foreach ($choixExistants as $choix) {
-        if (!in_array($choix, $nouveauxChoix, true)) {
-            $em->remove($choix);
-        }
-    }
-
+    // Enregistrer les changements
     $em->flush();
 
-    return new JsonResponse(['status' => 'success', 'message' => 'Sondage mis à jour avec succès'], 200);
+    return new JsonResponse(['status' => 'success', 'message' => 'Poll updated successfully']);
 }
+
 
 
    /* #[Route('/{id}/edit', name: 'app_sondage_edit', methods: ['GET', 'POST'])]
@@ -438,6 +699,7 @@ public function editPoll(int $id, Request $request, EntityManagerInterface $em):
     */
     
     
-
+    
+    
 
 }

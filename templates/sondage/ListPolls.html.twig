@@ -36,111 +36,33 @@
                             {% for sondage in sondages %}
                             <div class="poll-container" data-sondage-id="{{ sondage.id }}">
                                 <div class="user-info">
-                                    <img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="User">
-                                    <b>{{ sondage.user.nom }} {{ sondage.user.prenom }}</b> |
-                                    <span>{{ sondage.createdAt|date('d M Y') }}</span>
-                                    <span class="menu-icon" onclick="toggleMenu(event)">&#8230;</span>
-                                    <div class="menu-list">
-                                        <ul>
-   <ul>
-                                                <!-- Votre code HTML pour le modal -->
-<div id="modal2" class="modal2">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeModal()">&times;</span>
-        <form id="poll-form" method="POST" action="{{ path('api_poll_edit', {'id': sondage.id}) }}">
-            <input type="hidden" name="_method" value="PUT">
-            <div class="poll-creation-container">
-                <h2>Edit Poll</h2>
-                <input type="text" id="edit-question" class="input-box" name="question">
-                <h2>Options</h2>
-                <div id="options-container"></div>
-                <button type="button" class="add-option" onclick="addOption()">+ Add option</button>
-                <div class="admin-message">
-                    <p><strong>Note:</strong> Ensure the question and options follow club rules.</p>
-                </div>
-                <input type="hidden" id="poll-id" name="id">
-                <button type="submit" class="create-btn">Save Changes</button>      
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Styles -->
-<style>
-        .modal2 {
-            display: none; /* Cacher le modal par défaut */
-            /* Autres styles du modal */
-        }
-
-        .modal2.show {
-            display: block; /* Afficher le modal lorsqu'il est activé */
-        }
-</style>
-
-<!-- JavaScript -->
-<script>
-        // Fonction pour ouvrir le modal
-        function openModal(id) {
-            // Faire une requête AJAX pour récupérer les données du sondage
-            fetch(`/sondage/api/poll/${id}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        const sondage = data.sondage;
-
-                        // Remplir le champ de la question
-                        document.getElementById('edit-question').value = sondage.question;
-
-                        // Remplir les options
-                        const optionsContainer = document.getElementById('options-container');
-                        optionsContainer.innerHTML = '';  // Réinitialiser les options
-                        sondage.choix.forEach((choix, index) => {
-                            const optionInput = document.createElement('input');
-                            optionInput.type = 'text';
-                            optionInput.classList.add('input-box');
-                            optionInput.placeholder = `Option ${index + 1}`;
-                            optionInput.value = choix.contenu;
-                            optionsContainer.appendChild(optionInput);
-                        });
-
-                        // Remplir l'ID du sondage dans un champ caché
-                        document.getElementById('poll-id').value = sondage.id;
-
-                        // Afficher le modal
-                        document.getElementById('modal2').classList.add('show');
-                    } else {
-                        alert('Erreur: Sondage non trouvé');
-                    }
-                })
-                .catch(error => console.error('Erreur:', error));
-        }
-
-
-        // Fonction pour fermer le modal
-        function closeModal() {
-            document.getElementById('modal2').classList.remove('show');
-        }
-</script>
-
-<!-- Bouton pour ouvrir le modal -->
-                                    <button class="edit-btn" onclick="openModal({{ sondage.id }})">Edit Poll</button>
-
-                                        </ul>                                           
-                                         <li onclick="deletePoll({{ sondage.id }})">Delete Poll</li>
-                                        </ul>
+                                        <img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="User">
+                                        <b>{{ sondage.user.nom }} {{ sondage.user.prenom }}</b> |
+                                        <span>{{ sondage.createdAt|date('d M Y') }}</span>
                                     </div>
-                                </div>
-                                <div class="poll-title">{{ sondage.question }}</div>
-                                {% for choix in sondage.choix %}
-                                <input type="radio" name="poll" id="none" checked hidden>
-                                <div class="poll-option option-{{ loop.index }}">
-                                    <input type="radio" name="poll" id="option-{{ loop.index }}">
-                                    <label>{{ choix.contenu }}</label>
-                                    <div class="progress-bar">
-                                        <div class="progress"></div>
-                                    </div>
-                                </div>
-                                {% endfor %}
+                                    <div class="poll-title">{{ sondage.question }}</div>
+
+                                      <!-- Formulaire de vote -->
+                                    <form action="{{ path('submit_vote', {'sondageId': sondage.id}) }}" method="POST" class="poll-vote-form">
+                                        {% for choix in sondage.choix %}
+                                        <div class="poll-option option-{{ loop.index }}">
+                                            <input type="radio" name="choix" id="option-{{ loop.index }}" value="{{ choix.id }}" class="poll-option-radio">
+                                            <label for="option-{{ loop.index }}">{{ choix.contenu }}</label>
+                                            <div class="progress-bar">
+                                                <div class="progress"></div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                        <button type="submit" class="vote-btn">Submit Vote</button>
+                                    </form>
+                                   <form action="{{ path('app_reponse_supprimer_par_sondage', {'sondageId': sondage.id}) }}" method="POST" class="remove-vote-form">
+    <!-- Simuler la méthode DELETE -->
+    <input type="hidden" name="_method" value="DELETE">
+    <button type="submit" class="remove-vote-btn">Remove Vote</button>
+</form>
+
+
+                          
 
                                 <!-- Comments Section -->
                               <div class="latest-comment mb-3">
@@ -170,7 +92,7 @@
                                              <div class="comment-box" id="comment-{{ commentaire.id }}">
                                                 <div class="comment-info d-flex">
                                                       <div class="comment-avatar mr-20">
-                                                         <img src="{{ asset('assets/img/blog/comments/user.png') }}" alt="">
+                                                         <img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="">
                                                       </div>
                                                       <div class="avatar-name">
                                                          <h5>{{ commentaire.user.nom }} {{ commentaire.user.prenom }}</h5>
@@ -270,6 +192,37 @@
 </section>
 
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const voteForms = document.querySelectorAll('.poll-vote-form');
+
+    voteForms.forEach(form => {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault(); // Empêcher l'envoi normal du formulaire
+
+            // Récupérer l'ID du sondage et l'option sélectionnée
+            const sondageId = form.closest('.poll-container').getAttribute('data-sondage-id');
+            const choixId = form.querySelector('input[name="choix"]:checked').value;
+
+            // Envoyer le vote via AJAX
+            fetch(`/reponse/${sondageId}/voter`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'choix': choixId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message); // Affiche le message de succès
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+});
 
        
    document.addEventListener("DOMContentLoaded", function() {
@@ -299,7 +252,7 @@
                const sondageId = pollContainer.getAttribute('data-sondage-id');
                
                // Fetch comments for the specific poll
-               fetch(`/comment/list/${sondageId}`)
+               fetch(`/commentaire/comment/list/${sondageId}`)
                      .then(response => response.json())
                      .then(data => {
                         const commentList = document.getElementById(`comment-list-${sondageId}`);
@@ -313,7 +266,7 @@
                                     <div class="comments-box grey-bg-2">
                                        <div class="comments-info d-flex">
                                              <div class="comments-avatar mr-20">
-                                                <img src="assets/img/blog/comments/user.png" alt="">
+                                                <img src="front_assets/img/blog/comments/user.png" alt="">
                                              </div>
                                              <div class="avatar-name">
                                                 <h5>${comment.user}</h5>

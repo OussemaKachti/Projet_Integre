@@ -130,8 +130,13 @@
               </a>
               <div class="collapse" id="auth">
                 <ul class="nav flex-column sub-menu">
-                  <li class="nav-item"> <a class="nav-link" href="../../pages/tables/pollsAdmin.html"> Polls </a></li>
-                  <li class="nav-item"> <a class="nav-link" href="../../pages/tables/commentsAdmin.html"> Comments </a></li>
+                  <li class="nav-item"> 
+                     <a class="nav-link" href="{{ path('app_sondage_index2') }}"> Polls </a>
+                  </li>
+                  <li class="nav-item"> 
+                      <a class="nav-link" href="{{ path('app_commentaire_index') }}"> Comments </a>
+                  </li>
+
                 </ul>
               </div>
             </li>

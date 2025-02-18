@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Repository;
+use App\Entity\User;
 
 use App\Entity\Sondage;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -45,4 +46,15 @@ class SondageRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+
+public function findSondagesByUser(User $user): array
+{
+    return $this->createQueryBuilder('s')
+        ->where('s.user = :user')
+        ->setParameter('user', $user)
+        ->orderBy('s.createdAt', 'DESC') // Trier par date de création
+        ->getQuery()
+        ->getResult();
+}
 }

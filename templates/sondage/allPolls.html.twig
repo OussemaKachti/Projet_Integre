@@ -3,145 +3,97 @@
 {% block title %}{% endblock %}
 
 {% block body %}
-       <main>
-
-         <!-- breadcrumb area start -->
-         <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="{{asset('front_assets/img/breadcrumb/poll.jpg')}}">
-            <div class="container">
-               <div class="row">
-                  <div class="col-xxl-12">
-                     <div class="breadcrumb__content text-center p-relative z-index-1">
+<main>
+    <!-- breadcrumb area start -->
+    <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="{{asset('front_assets/img/breadcrumb/poll.jpg')}}">
+        <div class="container">
+            <div class="row w-100">
+                <div class="col-xxl-12">
+                    <div class="breadcrumb__content text-center p-relative z-index-1">
                         <h3 class="breadcrumb__title">All Polls</h3>
                         <div class="breadcrumb__list">
-                           <span><a href="index.html">Home</a></span>
-                           <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
-                           <span>Polls</span>
+                            <span><a href="index.html">Home</a></span>
+                            <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
+                            <span>Polls</span>
                         </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </section>
-         <!-- breadcrumb area end -->
-        
-        
-         <!-- Page Principaleeeeeeee -->
-
-         
-         <section class="blog__area pt-120 pb-120">
-            <div class="container">
-              <div class="row">
-                <div class="col-xxl-8 col-xl-8 col-lg-8">
-                  <!-- Liste des sondages -->
-                  <section class="cart-area pt-120 pb-120">
-                    <div class="container">
-                      <div class="row">
-                        <div class="col-12">
-                         
-        <div class="admin-container">
-         <h2>Poll Management</h2>
-         <table>
-           <thead>
-             <tr>
-               <th>Question</th>
-               <th>Options</th>
-               <th>Date Created</th>
-               <th>Actions</th>
-             </tr>
-           </thead>
-           <tbody id="poll-table-body">
-            <!-- Exemple d'une ligne de sondage -->
-            <tr>
-                <td>Quel est votre fruit préféré ?</td>
-                <td>Banane, Pomme, Orange</td>
-                <td>2025-02-11</td>
-                <td>
-                    <div class="action-buttons">
-                        <!-- Bouton Edit qui ouvre la modal -->
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editPollModal">
-                            Edit
-                        </button>
-        
-                        <button class="btn btn-danger" onclick="deletePoll(1)">Delete</button>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-        
-        <!-- Modal Edit Poll (UNE SEULE FOIS) -->
-        <div class="modal fade" id="editPollModal" tabindex="-1" aria-labelledby="editPollModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editPollModalLabel">Edit Poll</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form action="#" method="POST">
-                            <div class="form-group">
-                                <label for="pollQuestion">Question</label>
-                                <input type="text" class="form-control" id="pollQuestion" name="pollQuestion" placeholder="Enter the question" required>
-                            </div>
-        
-                            <div class="form-group mt-3">
-                                <label for="option1">Option 1</label>
-                                <input type="text" class="form-control" id="option1" name="options[]" placeholder="Enter first choice" required>
-                            </div>
-        
-                            <div class="form-group mt-3">
-                                <label for="option2">Option 2</label>
-                                <input type="text" class="form-control" id="option2" name="options[]" placeholder="Enter second choice" required>
-                            </div>
-        
-                            <button type="button" class="btn btn-secondary mt-3">+ Add option</button>
-        
-                            <div class="form-group mt-4">
-                                <button type="submit" class="tp-btn-5 tp-btn-7">Save Changes</button>
-                            </div>
-                        </form>
                     </div>
                 </div>
             </div>
         </div>
-        
-         </table>
-       </div>
+    </section>
+    <!-- breadcrumb area end -->
+
+    <!-- Page Principale -->
+    <section class="blog__area pt-120 pb-120">
+        <div class="container">
+            <div class="row" >
+                <div class="col-xxl-8 col-xl-8 col-lg-8">
+                    <!-- Liste des sondages -->
+                    <section class="cart-area pt-120 pb-120">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="admin-container">
+                                        <h2>Poll Management</h2>
+                                        <div class="mb-3">
+    <a href="{{ path('api_user_polls') }}" class="btn btn-secondary">Back</a>
+</div>
+
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Question</th>
+                                                    <th>Options</th>
+                                                    <th>Date Created</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="poll-table-body">
+                                                <!-- Les sondages seront injectés ici via JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                      </div>
-                    </div>
-                  </section>
+                    </section>
                 </div>
-                <!-- Section création du sondage à droite -->
-                <div class="col-xxl-4 col-xl-4 col-lg-4">
-                  <div class="blog__sidebar pl-70">
-                    <!-- Formulaire de création de sondage -->
-                    <div class="sidebar__widget mb-55">
-                      <div class="poll-creation-container">
-                        <h2>Create a Poll</h2>
-                        <form>
-                          <input type="text" class="input-box" placeholder="Type your question here">
-                          <h2>Options</h2>
-                          <div id="options-container">
-                            <input type="text" class="input-box" placeholder="Option 1">
-                            <input type="text" class="input-box" placeholder="Option 2">
-                          </div>
-                          <button class="add-option" type="button" onclick="addOption()">+ Add option</button>
-                          <div class="admin-message">
-                            <p><strong>Note:</strong> Ensure the question and options follow club rules.</p>
-                          </div>
-                          <button type="submit" class="create-btn">Create Poll</button>
-                        </form>
-                      </div>
-                    </div>
-          
-                  
-                  </div>
-                </div>
-              </div>
+
+               
             </div>
-          </section>
-          
-         <!-- blog area end -->
+        </div>
+    </section>
+    
+   <!-- Modal for Edit Poll -->
+<div id="editPollModal" class="modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Poll</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-poll-form" method="POST" action="#">
+                    <div class="form-group">
+                        <label for="poll-question">Question</label>
+                        <input type="text" id="poll-question" name="question" class="form-control" placeholder="Poll Question">
+                    </div>
+                    <div class="form-group">
+                        <label>Options</label>
+                        <div id="options-container">
+                            <!-- Options will be dynamically filled here -->
+                        </div>
+                        <br>
+                        <button class="btn btn-secondary" type="button" onclick="addOption()">+ Add option</button>
+                    </div>
+                    <br>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
    body {
        font-family: Arial, sans-serif;
@@ -208,6 +160,11 @@
        color: white;
    }
 
+   .container {
+    max-width: 100% !important;
+    width: 95%;
+}
+
    /* Responsive */
    @media (max-width: 768px) {
        table {
@@ -220,5 +177,130 @@
        }
    }
 </style>
-      </main>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fonction pour récupérer les sondages via l'API
+    fetch('/sondage/user-polls', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + '{{ app.request.cookies.get("YOUR_AUTH_COOKIE") }}' // Si tu utilises des tokens JWT ou un autre mécanisme d'authentification
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const tableBody = document.getElementById('poll-table-body');
+            data.sondages.forEach(sondage => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${sondage.question}</td>
+                    <td>${sondage.choix.map(choix => choix.contenu).join(', ')}</td>
+                    <td>${sondage.date_creation}</td>
+                     <td>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editPollModal" onclick="openEditModal(${sondage.id})">Edit</button>
+            <button class="btn btn-danger" onclick="deletePoll(${sondage.id})">Delete</button>
+        </div>
+    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } else {
+            console.error(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching polls:', error);
+    });
+
+    // Ouvrir le modal et charger les données du sondage
+    window.openEditModal = function(pollId) {
+        fetch(`/sondage/api/poll/${pollId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const poll = data.sondage;
+                    document.getElementById('poll-question').value = poll.question;
+                    const optionsContainer = document.getElementById('options-container');
+                    optionsContainer.innerHTML = ''; // Clear previous options
+                    poll.choix.forEach((choix, index) => {
+                        const optionInput = document.createElement('input');
+                        optionInput.type = 'text';
+                        optionInput.classList.add('form-control');
+                        optionInput.value = choix.contenu;
+                        optionInput.name = `choix[${index}]`; // Assigner un nom unique pour chaque choix
+                        optionsContainer.appendChild(optionInput);
+                    });
+                    // Mettre à jour l'action du formulaire pour inclure l'ID du sondage
+                    document.getElementById('edit-poll-form').action = `/sondage/api/poll/${pollId}`;
+                } else {
+                    alert('Error fetching poll data');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    };
+
+    // Ajouter une option supplémentaire
+    window.addOption = function() {
+        const optionInput = document.createElement('input');
+        optionInput.type = 'text';
+        optionInput.classList.add('form-control');
+        optionInput.placeholder = 'New Option';
+        optionInput.name = 'choix[]';  // Assigner un nom pour collecter un tableau de choix
+        document.getElementById('options-container').appendChild(optionInput);
+    };
+
+    // Soumettre le formulaire d'édition de sondage
+    document.getElementById('edit-poll-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        // Récupérer les données du formulaire
+        const question = document.getElementById('poll-question').value;
+        const options = [];
+        document.querySelectorAll('#options-container input').forEach(input => {
+            if (input.value.trim() !== "") {
+                options.push({ contenu: input.value.trim() });
+            }
+        });
+
+        // Préparer les données à envoyer
+        const pollData = {
+            question: question,
+            choix: options
+        };
+
+        // ID du sondage à modifier
+        const pollId = document.getElementById('edit-poll-form').action.split('/').pop();
+
+        // Envoyer la requête POST avec les données JSON
+        fetch(`/sondage/api/poll/${pollId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(pollData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Poll updated successfully!');
+                location.reload(); // Recharge la page ou ferme le modal
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+});
+
+
+</script>
+
 {% endblock %}

@@ -24,9 +24,9 @@ class Commentaire
     #[ORM\JoinColumn(nullable: false)]
     private User $user;
 
-    #[ORM\ManyToOne(targetEntity: Sondage::class, inversedBy: "commentaires")]
-    #[ORM\JoinColumn(nullable: false)]
-    private Sondage $sondage;
+    #[ORM\ManyToOne(targetEntity: Sondage::class, inversedBy: "commentaires", cascade: ["persist"])]
+#[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
+private Sondage $sondage;
 
     public function getUser(): User
     {

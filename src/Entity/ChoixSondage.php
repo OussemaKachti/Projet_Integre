@@ -20,8 +20,8 @@ class ChoixSondage
     private ?string $contenu = null;
 
     #[ORM\ManyToOne(targetEntity: Sondage::class, inversedBy: "choix", cascade: ["persist"])]
-#[ORM\JoinColumn(nullable: false)]
-private Sondage $sondage;
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
+    private Sondage $sondage;
 
     #[ORM\OneToMany(targetEntity: Reponse::class, mappedBy: "choixSondage", cascade: ["persist", "remove"])]
     private Collection $reponses;

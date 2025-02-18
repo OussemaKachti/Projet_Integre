@@ -16,6 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Repository\SondageRepository;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 
 
@@ -55,13 +56,84 @@ class CommentaireController extends AbstractController
             ];
         }
 
-        return $this->render('commentaire/index.html.twig', [
+        return $this->render('commentaire/adminComments.html.twig', [
             'commentaires' => $commentairesAvecClub,
         ]);
     }
 
 
+    #[Route('/adminComments', name: 'app_commentaire_index', methods: ['GET'])]
+    public function afficherCommentairesClub(CommentaireRepository $commentaireRepository, Request $request): Response
+    {
+        $clubFilter = $request->query->get('club'); // Récupération du filtre depuis l'URL
+    
+        if ($clubFilter && $clubFilter !== 'all') {
+            // Filtrer les commentaires en fonction du club sélectionné
+            $commentaires = $commentaireRepository->createQueryBuilder('c')
+                ->join('c.sondage', 's')
+                ->join('s.club', 'cl')
+                ->where('cl.nomC = :clubName')
+                ->setParameter('clubName', $clubFilter)
+                ->getQuery()
+                ->getResult();
+        } else {
+            // Sinon, récupérer tous les commentaires
+            $commentaires = $commentaireRepository->findAll();
+        }
+    
+        // Formater les commentaires
+        $commentairesAvecClub = [];
+        $clubs = []; // Liste pour stocker les noms des clubs disponibles
+    
+        foreach ($commentaires as $commentaire) {
+            $sondage = $commentaire->getSondage();
+            $club = $sondage->getClub(); // Assurez-vous que la relation existe
+            $clubName = $club ? $club->getNomC() : 'Non défini'; 
+    
+            if ($club) {
+                $clubs[$clubName] = $clubName; // Ajouter à la liste des clubs uniques
+            }
+    
+            $commentairesAvecClub[] = [
+                'id' => $commentaire->getId(),
+                'user' => $commentaire->getUser()->getNom() . ' ' . $commentaire->getUser()->getPrenom(),
+                'contenu' => $commentaire->getContenuComment(),
+                'club_name' => $clubName,
+                'created_at' => $commentaire->getDateComment()->format('Y-m-d')
+            ];
+        }
+    
+        return $this->render('commentaire/adminComments.html.twig', [
+            'commentaires' => $commentairesAvecClub,
+            'clubs' => $clubs, // Envoyer la liste des clubs pour le filtre
+            'selectedClub' => $clubFilter ?? 'all' // Club actuellement sélectionné
+        ]);
+    }
+    
 
+    #[Route('/{id}/delete', name: 'app_commentaire_delete', methods: ['POST'])]
+public function delete($id, EntityManagerInterface $entityManager): RedirectResponse
+{
+    // Récupérer le commentaire à supprimer par son ID
+    $commentaire = $entityManager->getRepository(Commentaire::class)->find($id);
+
+    // Vérifier si le commentaire existe
+    if (!$commentaire) {
+        $this->addFlash('error', 'Commentaire non trouvé.');
+        return $this->redirectToRoute('app_commentaire_index'); // Rediriger en cas d'erreur
+    }
+
+    // Suppression du commentaire
+    $entityManager->remove($commentaire);
+    $entityManager->flush(); // Appliquer les changements à la base de données
+
+    // Message de succès
+    $this->addFlash('success', 'Commentaire supprimé avec succès.');
+
+    // Rediriger vers la page d'index des commentaires après la suppression
+    return $this->redirectToRoute('app_commentaire_index');
+}
+    
 
 
 

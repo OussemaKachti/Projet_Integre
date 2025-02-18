@@ -32,14 +32,16 @@ class Sondage
     private Club $club; // Ajout de la relation avec le club
     
     
-    #[ORM\OneToMany(targetEntity: ChoixSondage::class, mappedBy: "sondage", cascade: ["persist", "remove"])]
-    private Collection $choix;
+    #[ORM\OneToMany(targetEntity: ChoixSondage::class, mappedBy: "sondage", cascade: ["remove"], orphanRemoval: true)]
+private Collection $choix;
+
+#[ORM\OneToMany(targetEntity: Commentaire::class, mappedBy: "sondage", cascade: ["remove"], orphanRemoval: true)]
+private Collection $commentaires;
 
     #[ORM\OneToMany(targetEntity: Reponse::class, mappedBy: "sondage", cascade: ["persist", "remove"])]
     private Collection $reponses;
 
-    #[ORM\OneToMany(targetEntity: Commentaire::class, mappedBy: "sondage", cascade: ["persist", "remove"])]
-    private Collection $commentaires;
+    
 
     public function __construct()
     {
@@ -48,6 +50,32 @@ class Sondage
         $this->reponses = new ArrayCollection();
         $this->commentaires = new ArrayCollection();    }
 
+
+
+        public function addChoix(ChoixSondage $choix): self
+        {
+            if (!$this->choix->contains($choix)) {
+                $this->choix[] = $choix;
+                $choix->setSondage($this); // Assure que le sondage est bien assigné au choix
+            }
+    
+            return $this;
+        }
+    
+        /* Suppression d'un choix
+        public function removeChoix(ChoixSondage $choix): self
+        {
+            if ($this->choix->contains($choix)) {
+                $this->choix->removeElement($choix);
+        
+                // Vérifie si le choix est bien associé à un sondage avant de déassocier
+                if ($choix->getSondage() !== null) {
+                    $choix->setSondage(null); // Déassocier le choix du sondage
+                }
+            }
+        
+            return $this;
+        }    */
     public function getCommentaires(): Collection
     {
         return $this->commentaires;
