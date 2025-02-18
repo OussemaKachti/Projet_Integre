@@ -12,6 +12,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Validator\Constraints\File;
 
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+
 
 class EvenementType extends AbstractType
 {
@@ -52,17 +55,23 @@ class EvenementType extends AbstractType
             // Ajouter le champ Club avec un label explicite
             ->add('club', EntityType::class, [
                 'class' => Club::class,
-                'choice_label' => 'nomC',  // Assurez-vous que 'nomC' est la propriété du nom du club dans votre entité Club
-                'label' => 'Sélectionner un club'  // Le label affiché à l'utilisateur
+                'choice_label' => 'nomC', 
+                'label' => 'Sélectionner un club',
+                'placeholder' => 'Choisir un club',
             ])
             
+            
+            
             // Ajoutez le champ Catégorie si nécessaire
+           
             ->add('categorie', EntityType::class, [
                 'class' => Categorie::class,
-                'choice_label' => 'nomCat', // Assurez-vous que 'nomCat' existe dans l'entité Categorie
-                'label' => 'Sélectionner une catégorie',  // Le label affiché à l'utilisateur
-                'required' => false,  // Le champ catégorie est facultatif
-            ]);
+                'choice_label' => 'nomCat', 
+                'label' => 'Sélectionner une catégorie',  
+                'placeholder' => 'Choisir une cat',
+            ])
+          
+;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

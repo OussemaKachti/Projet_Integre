@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Evenement;
 use App\Form\EvenementType;
+use App\Repository\CategorieRepository;
 use App\Repository\EvenementRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,6 +18,21 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 #[Route('/evenement')]
 class EvenementController extends AbstractController
 {
+
+    #[Route('/admin', name: 'admin_page')]
+public function adminPage(EvenementRepository $evenementRepository , CategorieRepository $categorieRepository): Response
+{
+    // Récupérer les événements ou d'autres données nécessaires
+    $evenements = $evenementRepository->findAll();
+    $categories =$categorieRepository->findAll();
+ 
+    return $this->render('evenement/admin.html.twig', [
+        'evenements' => $evenements,
+        'categories'=>$categories,
+        
+    ]);
+}
+
     #[Route('/', name: 'event', methods: ['GET'])]
     public function index(EvenementRepository $evenementRepository): Response
     {
@@ -107,15 +123,22 @@ public function new(Request $request, EntityManagerInterface $entityManager, Slu
         ]);
     }
 
-    #[Route('/{id}/delete', name: 'app_evenement_delete', methods: ['POST'])]
-    public function delete(Request $request, Evenement $evenement, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete' . $evenement->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($evenement);
-            $entityManager->flush();
-            $this->addFlash('success', 'Événement supprimé avec succès.');
-        }
+    #[Route('/admin/{id}/delete', name: 'app_evenement_delete', methods: ['POST'])]
 
-        return $this->redirectToRoute('event');
+public function delete(Request $request, EntityManagerInterface $entityManager, int $id): Response
+{
+    $evenement = $entityManager->getRepository(Evenement::class)->find($id);
+
+
+    if ($this->isCsrfTokenValid('delete' . $evenement->getId(), $request->request->get('_token'))) {
+        $entityManager->remove($evenement);
+        $entityManager->flush();
+        $this->addFlash('success', 'Événement supprimé avec succès.');
     }
-}
+
+    return $this->redirectToRoute('admin_page'); // Redirection vers la liste des événements
+}}
+
+
+   
+

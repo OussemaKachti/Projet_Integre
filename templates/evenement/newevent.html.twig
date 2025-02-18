@@ -13,7 +13,7 @@
                     <div class="breadcrumb__content text-center p-relative z-index-1">
                         <h3 class="breadcrumb__title">Event</h3>
                         <div class="breadcrumb__list">
-                           <span><a href="{{ asset('index.html') }}">Home</a></span>
+                            <span><a href="{{ asset('index.html') }}">Home</a></span>
                             <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
                             <span>Create Event</span>
                         </div>
@@ -111,17 +111,36 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <!-- Event Image (Image Description) -->
-                            <div class="col-md-12">
-                                <div class="form-group mb-3">
-                                    {{ form_label(form.imageDescription) }}
-                                    {{ form_widget(form.imageDescription, {'attr': {'class': 'form-control'}}) }}
-                                    {{ form_errors(form.imageDescription) }}
-                                </div>
+                        <!-- Event Image (Image Description) -->
+                        <div class="col-md-12">
+                            <div class="form-group mb-3">
+                                {{ form_label(form.imageDescription) }}
+                                {{ form_widget(form.imageDescription, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.imageDescription) }}
                             </div>
                         </div>
+                         
+                       <div class="form-group mb-3">
+    {{ form_label(form.club) }} <!-- Affiche le label du champ Club -->
+    {{ form_widget(form.club, {'attr': {'class': 'form-control'}}) }} <!-- Affiche le champ Club avec une classe CSS -->
+    {{ form_errors(form.club) }} <!-- Affiche les erreurs éventuelles du champ Club -->
+</div>
+{% block stylesheets %}
+    <style>
+        .form-group label {
+            display: block;  /* Force l'affichage en bloc du label */
+            margin-bottom: 5px;  /* Espace entre le label et la liste déroulante */
+        }
+    </style>
+{% endblock %}
 
+<div class="form-group mb-3">
+    {{ form_label(form.categorie) }} <!-- Affiche le label du champ Catégorie -->
+    {{ form_widget(form.categorie, {'attr': {'class': 'form-control'}}) }} <!-- Affiche le champ Catégorie avec une classe CSS -->
+    {{ form_errors(form.categorie) }} <!-- Affiche les erreurs éventuelles du champ Catégorie -->
+     <a href="{{ path('app_categorie_index') }}" class="btn btn-success">Ajouter une autre catégorie</a>
+</div>
+                     
                         <!-- Submit Button -->
                         <div class="form-group mb-3">
                             <button type="submit" class="tp-btn-5 tp-btn-7 w-100">Create Event</button>

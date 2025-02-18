@@ -14,33 +14,34 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/categorie')]
 class CategorieController extends AbstractController
 {
-    #[Route('/', name: 'app_categorie_index', methods: ['GET'])]
-    public function index(CategorieRepository $categorieRepository): Response
+    #[Route('/', name: 'app_categorie_index', methods: ['GET', 'POST'])]
+    public function index(Request $request, EntityManagerInterface $entityManager, CategorieRepository $categorieRepository): Response
     {
-        return $this->render('categorie/index.html.twig', [
-            'categories' => $categorieRepository->findAll(),
-        ]);
-    }
-
-    #[Route('/new', name: 'app_categorie_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
+        // Créer un nouvel objet Categorie pour le formulaire
         $categorie = new Categorie();
         $form = $this->createForm(CategorieType::class, $categorie);
         $form->handleRequest($request);
-
+    
+        // Si le formulaire est soumis et valide, on sauvegarde la catégorie
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($categorie);
             $entityManager->flush();
-
-            return $this->redirectToRoute('app_categorie_index', [], Response::HTTP_SEE_OTHER);
+    
+            // Rediriger vers la même page après la soumission pour afficher la nouvelle catégorie
+            return $this->redirectToRoute('app_categorie_index');
         }
-
-        return $this->render('categorie/new.html.twig', [
-            'categorie' => $categorie,
-            'form' => $form,
+    
+        // Récupérer toutes les catégories existantes
+        $categories = $categorieRepository->findAll();
+    
+        return $this->render('categorie/show.html.twig', [
+            'categories' => $categories,
+            'form' => $form->createView(),  // Vue du formulaire pour ajout de catégorie
         ]);
     }
+    
+
+ 
 
     #[Route('/{id}', name: 'app_categorie_show', methods: ['GET'])]
     public function show(Categorie $categorie): Response
@@ -68,14 +69,20 @@ class CategorieController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_categorie_delete', methods: ['POST'])]
-    public function delete(Request $request, Categorie $categorie, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$categorie->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($categorie);
-            $entityManager->flush();
-        }
+ 
 
-        return $this->redirectToRoute('app_categorie_index', [], Response::HTTP_SEE_OTHER);
+#[Route('/admin/{id}/delete', name: 'app_categorie_delete', methods: ['POST'])]
+
+public function delete(Request $request, EntityManagerInterface $entityManager, int $id): Response
+{
+    $categorie = $entityManager->getRepository(Categorie::class)->find($id);
+
+
+    if ($this->isCsrfTokenValid('delete' . $categorie->getId(), $request->request->get('_token'))) {
+        $entityManager->remove($categorie);
+        $entityManager->flush();
+        $this->addFlash('success', 'Categorie supprimé avec succès.');
     }
-}
+
+    return $this->redirectToRoute('admin_page'); // Redirection vers la liste des événements
+}}
