@@ -42,7 +42,7 @@ public function adminPage(EvenementRepository $evenementRepository , CategorieRe
         ]);
     }
 
-    #[Route('/event/{id}', name: 'eventdetails', methods: ['GET'])]
+    #[Route('/event/details/{id}', name: 'eventdetails', methods: ['GET'])]
     public function show(EvenementRepository $evenementRepository, $id): Response
     {
         $evenement = $evenementRepository->find($id);
@@ -55,6 +55,21 @@ public function adminPage(EvenementRepository $evenementRepository , CategorieRe
             'evenement' => $evenement,
         ]);
     }
+
+    #[Route('/pres/{id}', name: 'show2', methods: ['GET'])]
+    public function show2(EvenementRepository $evenementRepository, $id): Response
+    {
+        $evenement = $evenementRepository->find($id);
+
+        if (!$evenement) {
+            throw $this->createNotFoundException('Événement non trouvé');
+        }
+
+        return $this->render('evenement/president.html.twig', [
+            'evenement' => $evenement,
+        ]);
+    }
+
 
     #[Route('/new', name: 'app_evenement_new', methods: ['GET', 'POST'])]
    // src/Controller/EvenementController.php
@@ -106,22 +121,31 @@ public function new(Request $request, EntityManagerInterface $entityManager, Slu
 }
 
 
-    #[Route('/{id}/edit', name: 'app_evenement_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Evenement $evenement, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(EvenementType::class, $evenement);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-            return $this->redirectToRoute('event');
-        }
-
-        return $this->render('evenement/edit.html.twig', [
-            'evenement' => $evenement,
-            'form' => $form,
-        ]);
+#[Route('/{id}/edit', name: 'app_evenement_edit', methods: ['GET', 'POST'])]
+public function edit(Request $request, Evenement $evenement, EntityManagerInterface $entityManager): Response
+{
+    if (!$evenement) {
+        throw $this->createNotFoundException("Événement non trouvé.");
     }
+
+    $form = $this->createForm(EvenementType::class, $evenement);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $entityManager->flush();
+        
+        // Message flash pour informer l'utilisateur
+      
+
+        return $this->redirectToRoute('event', ['id' => $evenement->getId()]);
+    }
+
+    return $this->render('evenement/editevent.html.twig', [
+        'evenement' => $evenement,
+        'form' => $form->createView(),
+    ]);
+}
+
 
     #[Route('/admin/{id}/delete', name: 'app_evenement_delete', methods: ['POST'])]
 
@@ -137,7 +161,24 @@ public function delete(Request $request, EntityManagerInterface $entityManager, 
     }
 
     return $this->redirectToRoute('admin_page'); // Redirection vers la liste des événements
-}}
+}
+
+#[Route('/pres/{id}/delete', name: 'delete_pres', methods: ['POST'])]
+
+public function delete2(Request $request, EntityManagerInterface $entityManager, int $id): Response
+{
+    $evenement = $entityManager->getRepository(Evenement::class)->find($id);
+
+
+    if ($this->isCsrfTokenValid('delete' . $evenement->getId(), $request->request->get('_token'))) {
+        $entityManager->remove($evenement);
+        $entityManager->flush();
+        $this->addFlash('success', 'Événement supprimé avec succès.');
+    }
+
+    return $this->redirectToRoute('event'); // Redirection vers la liste des événements
+}
+}
 
 
    

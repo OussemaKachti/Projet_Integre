@@ -52,12 +52,19 @@ private ?string $tel = null;
     #[ORM\OneToMany(targetEntity: Like::class, mappedBy: "user", cascade: ["persist", "remove"])]
     private Collection $likes;
 
+    /**
+     * @var Collection<int, ParticipationEvent>
+     */
+    #[ORM\OneToMany(targetEntity: ParticipationEvent::class, mappedBy: 'user_id')]
+    private Collection $no;
+
     
     public function __construct()
     {
         $this->participations = new ArrayCollection();
         $this->commentaires = new ArrayCollection();
         $this->likes = new ArrayCollection();
+        $this->no = new ArrayCollection();
 
 
     }
@@ -151,5 +158,35 @@ public function setTel(string $tel): static
     public function getLikes(): Collection
     {
         return $this->likes;
+    }
+
+    /**
+     * @return Collection<int, ParticipationEvent>
+     */
+    public function getNo(): Collection
+    {
+        return $this->no;
+    }
+
+    public function addNo(ParticipationEvent $no): static
+    {
+        if (!$this->no->contains($no)) {
+            $this->no->add($no);
+            $no->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNo(ParticipationEvent $no): static
+    {
+        if ($this->no->removeElement($no)) {
+            // set the owning side to null (unless already changed)
+            if ($no->getUserId() === $this) {
+                $no->setUserId(null);
+            }
+        }
+
+        return $this;
     }
 }

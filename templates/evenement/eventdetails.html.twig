@@ -25,7 +25,7 @@
                             {% endif %}
                         </div>
 
-                      <div class="course__update mr-80 mb-30">
+                        <div class="course__update mr-80 mb-30">
                             {% if evenement.club %}
                                 <div class="course__category" style="display: inline-flex; align-items: center; background-color: #e0f7fa; padding: 8px 20px; border-radius: 25px;">
                                     <span style="color: #021715; font-weight: bold; font-size: 16px; margin-right: 10px;">Creator:</span>
@@ -35,9 +35,7 @@
                             {% endif %}
                         </div>
 
-
                         <div class="event__details mb-35">
-                            {# Vérifiez si l'image de la description existe #}
                             {% if evenement.imageDescription %}
                                 <div class="event__image-container">
                                     <img src="{{ asset('uploads/events/' ~ evenement.imageDescription) }}" alt="Image de la description" style="max-width: 750px; max-height: 550px; width: auto; height: auto; object-fit: cover;">
@@ -87,42 +85,67 @@
                                         </ul>
                                     </div>
 
-                                    <!-- Register Button -->
                                     <div class="event__join-btn">
-                                        <a href="#" id="inscrire-btn" class="tp-btn text-center w-100">
-                                            Register <i class="far fa-arrow-right"></i>
-                                        </a>
+                                       <a href="#" id="inscrire-btn" class="tp-btn text-center w-100">
+                                          Register <i class="far fa-arrow-right"></i>
+                                       </a>
+
+                                        <style>
+                                       /* Styling des icônes pour chaque section */
+                                       .event__info-icon i {
+                                          font-size: 22px;
+                                          margin-right: 10px;
+                                       }
+                                    
+                                       /* Icône pour End (fin de l'événement) */
+                                       .event-icon-end {
+                                          color: #e74c3c; /* Rouge pour la fin */
+                                          transition: transform 0.3s ease-in-out;
+                                       }
+                                       .event-icon-end:hover {
+                                          transform: scale(1.2); /* Effet de zoom au survol */
+                                       }
+                                    
+                                       /* Icône pour Time (heure de l'événement) */
+                                       .event-icon-time {
+                                          color: #f39c12; /* Jaune pour l'heure */
+                                          transition: transform 0.3s ease-in-out;
+                                       }
+                                       .event-icon-time:hover {
+                                          transform: scale(1.2); /* Effet de zoom au survol */
+                                       }
+                                    
+                                       /* Icône pour Venue (lieu de l'événement) */
+                                       .event-icon-venue {
+                                          color: #3498db; /* Bleu pour le lieu */
+                                          transition: transform 0.3s ease-in-out;
+                                       }
+                                       .event-icon-venue:hover {
+                                          transform: scale(1.2); /* Effet de zoom au survol */
+                                       }
+                                    
+                                       /* Style général pour les éléments info */
+                                       .event__info-item h5 {
+                                          font-size: 16px;
+                                          color: #333;
+                                          font-weight: 500;
+                                       }
+                                       .event__info-item span {
+                                          color: #555;
+                                          font-weight: 700;
+                                       }
+                                    </style>
+                                    
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+.
 
-                <!-- Sidebar Admin pour gestion -->
-                {% if is_granted('ROLE_ADMIN') %}
-                <div class="col-xxl-4 col-xl-4 col-lg-4">
-                    <div class="event__admin-sidebar white-bg mt-20">
-                        <h4 class="admin-title">Admin Actions</h4>
-                        <div class="admin-buttons">
-                            <a href="{{ path('event_edit', { 'id': evenement.id }) }}" class="admin-btn edit-btn">
-                                <i class="fas fa-edit"></i> Modifier
-                            </a>
-                            <a href="{{ path('event_participants', { 'id': evenement.id }) }}" class="admin-btn participants-btn">
-                                <i class="fas fa-users"></i> Voir Participants
-                            </a>
-                            <form action="{{ path('event_delete', { 'id': evenement.id }) }}" method="post" onsubmit="return confirm('Êtes-vous sûr ?');">
-                                <input type="hidden" name="_method" value="DELETE">
-                                <button type="submit" class="admin-btn delete-btn">
-                                    <i class="fas fa-trash-alt"></i> Supprimer
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
+           
+               
     </section>
 </main>
 
@@ -139,160 +162,41 @@
 
 {% block styles %}
 <style>
-/* Mise en page générale avec Flexbox */
-.event__area {
-    min-height: 100vh;
-    display: flex;
-    gap: 20px;
-}
 
-.event__wrapper {
-    flex: 1;
-    padding-right: 30px; /* Espacement entre le contenu et la sidebar */
-}
 
-.event__sidebar {
-    flex-basis: 300px;
-    position: sticky;
-    top: 20px;
-    height: calc(100vh - 20px);
-    overflow-y: auto;
-}
+    
+   
+    /* Nouveau style pour la catégorie avec un fond coloré */
+    .course__category {
+        display: inline-flex;
+        align-items: center;
+        background-color: #e0f7fa;
+        padding: 8px 20px;
+        border-radius: 25px;
+    }
 
-/* Nouveau style pour la catégorie avec un fond coloré */
-.course__category {
-    display: inline-flex;
-    align-items: center;
-    background-color: #e0f7fa;
-    padding: 8px 20px;
-    border-radius: 25px;
-}
+    .course__category span {
+        color: #021715;
+        font-weight: bold;
+        font-size: 16px;
+        margin-right: 10px;
+    }
 
-.course__category span {
-    color: #021715;
-    font-weight: bold;
-    font-size: 16px;
-    margin-right: 10px;
-}
+    .course__category i {
+        margin-right: 10px;
+        color: #00796b;
+        font-size: 18px;
+    }
 
-.course__category i {
-    margin-right: 10px;
-    color: #00796b;
-    font-size: 18px;
-}
+    .event__image-container {
+        width: 100%;
+        max-width: 100px;  /* Limite la largeur du conteneur */
+        height: auto;
+        margin: 20px 0;
+        margin: 20px 20px 20px 0;
+        overflow: hidden;
+    }
 
-.event__image-container {
-    width: 100%;
-    max-width: 100px;  /* Limite la largeur du conteneur */
-    height: auto;
-    margin: 20px 0;
-    margin: 20px 20px 20px 0;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f4f4f4;
-}
 
-.event__image-container img {
-    width: 100%;
-    height: auto;
-    max-height: 800px;  /* Limite la hauteur de l'image */
-    object-fit: cover;  /* L'image remplira le conteneur sans se déformer */
-}
-
-.space-between-image-description {
-    margin-top: 20px;  /* Ajuste la hauteur de l'espace entre l'image et le titre */
-}
-
-.event__info-icon i {
-    font-size: 22px;
-    margin-right: 10px;
-    color: #e74c3c; /* Exemple de couleur */
-}
-
-.event-icon-end {
-    color: #e74c3c; /* Rouge pour la fin */
-    transition: transform 0.3s ease-in-out;
-}
-.event-icon-end:hover {
-    transform: scale(1.2); /* Effet de zoom au survol */
-}
-
-.event-icon-time {
-    color: #f39c12; /* Jaune pour l'heure */
-    transition: transform 0.3s ease-in-out;
-}
-.event-icon-time:hover {
-    transform: scale(1.2); /* Effet de zoom au survol */
-}
-
-.event-icon-venue {
-    color: #3498db; /* Bleu pour le lieu */
-    transition: transform 0.3s ease-in-out;
-}
-.event-icon-venue:hover {
-    transform: scale(1.2); /* Effet de zoom au survol */
-}
-
-.event-icon-end:hover, .event-icon-time:hover, .event-icon-venue:hover {
-    transform: scale(1.2);
-}
-
-/* Style des informations de l'événement */
-.event__info-item h5 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #444;
-}
-
-.event__info-item span {
-    color: #555;
-    font-weight: 700;
-}
-
-/* Styles de la sidebar */
-.event__sidebar-widget {
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-}
-
-/* Modification du style du bouton d'inscription */
-.tp-btn {
-    background-color: #00796b;
-    color: #fff;
-    border-radius: 25px;
-    padding: 10px 30px;
-}
-
-.tp-btn:hover {
-    background-color: #004d40;
-}
-
-/* Modification de la sidebar admin */
-.admin-btn {
-    display: inline-flex;
-    align-items: center;
-    padding: 10px 20px;
-    margin: 5px 0;
-    color: #fff;
-    background-color: #2d87f0;
-    border-radius: 5px;
-    text-decoration: none;
-}
-
-.admin-btn:hover {
-    background-color: #0073e6;
-}
-
-.edit-btn {
-    background-color: #f39c12;
-}
-
-.delete-btn {
-    background-color: #e74c3c;
-}
 </style>
 {% endblock %}

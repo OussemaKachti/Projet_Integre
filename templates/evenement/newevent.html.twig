@@ -83,11 +83,7 @@
 
                             <!-- Event Type -->
                             <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    {{ form_label(form.type) }}
-                                    {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
-                                    {{ form_errors(form.type) }}
-                                </div>
+                                {{ form_row(form.type) }}
                             </div>
                         </div>
 
@@ -119,29 +115,20 @@
                                 {{ form_errors(form.imageDescription) }}
                             </div>
                         </div>
-                         
-                       <div class="form-group mb-3">
-    {{ form_label(form.club) }} <!-- Affiche le label du champ Club -->
-    {{ form_widget(form.club, {'attr': {'class': 'form-control'}}) }} <!-- Affiche le champ Club avec une classe CSS -->
-    {{ form_errors(form.club) }} <!-- Affiche les erreurs éventuelles du champ Club -->
-</div>
-{% block stylesheets %}
-    <style>
-        .form-group label {
-            display: block;  /* Force l'affichage en bloc du label */
-            margin-bottom: 5px;  /* Espace entre le label et la liste déroulante */
-        }
-    </style>
-{% endblock %}
 
-<div class="form-group mb-3">
-    {{ form_label(form.categorie) }} <!-- Affiche le label du champ Catégorie -->
-    {{ form_widget(form.categorie, {'attr': {'class': 'form-control'}}) }} <!-- Affiche le champ Catégorie avec une classe CSS -->
-    {{ form_errors(form.categorie) }} <!-- Affiche les erreurs éventuelles du champ Catégorie -->
-     <a href="{{ path('app_categorie_index') }}" class="btn btn-success">Ajouter une autre catégorie</a>
-</div>
-                     
-                        <!-- Submit Button -->
+                        <div class="form-group mb-3">
+                            {{ form_label(form.club) }}
+                            {{ form_widget(form.club, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.club) }}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            {{ form_label(form.categorie) }}
+                            {{ form_widget(form.categorie, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.categorie) }}
+                            <a href="{{ path('app_categorie_index') }}" class="btn btn-success">Ajouter une autre catégorie</a>
+                        </div>
+
                         <div class="form-group mb-3">
                             <button type="submit" class="tp-btn-5 tp-btn-7 w-100">Create Event</button>
                         </div>
@@ -155,4 +142,28 @@
     <!-- Event Creation Area End -->
 
 </main>
+
+{% block stylesheets %}
+    <style>
+        /* Espacement horizontal entre les options de type */
+        .form-group .form-check {
+            display: inline-block; /* Affichage horizontal des boutons radio */
+            margin-right: 20px; /* Espacement entre les options */
+        }
+
+        .form-group .form-check input[type="radio"] {
+            margin-right: 5px; /* Espacement entre le bouton radio et le texte */
+        }
+
+        .form-group label {
+            display: block; /* Afficher les labels au-dessus des champs */
+            margin-bottom: 5px; /* Espace entre le label et le champ */
+        }
+
+        .form-control {
+            width: 100%; /* Assurer que les champs prennent toute la largeur */
+        }
+    </style>
+{% endblock %}
+
 {% endblock %}
