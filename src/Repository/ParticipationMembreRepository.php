@@ -21,6 +21,18 @@ class ParticipationMembreRepository extends ServiceEntityRepository
         parent::__construct($registry, ParticipationMembre::class);
     }
 
+    public function findParticipationDetails(int $participationId): ?array
+{
+    return $this->createQueryBuilder('p')
+        ->select('p.id', 'p.dateRequest', 'p.statut', 'p.description', 'u.id AS userId', 'u.nom', 'u.prenom', 'u.email', 'c.id AS clubId', 'c.nomC')
+        ->join('p.user', 'u')
+        ->join('p.club', 'c')
+        ->where('p.id = :participationId')
+        ->setParameter('participationId', $participationId)
+        ->getQuery()
+        ->getOneOrNullResult();
+}
+
 //    /**
 //     * @return ParticipationMembre[] Returns an array of ParticipationMembre objects
 //     */

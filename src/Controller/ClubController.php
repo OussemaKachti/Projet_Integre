@@ -10,11 +10,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Enum\StatutClubEnum;
 
 #[Route('/club')]
 class ClubController extends AbstractController
 {
-    #[Route('/', name: 'app_club_index', methods: ['GET'])]
+    #[Route('/carte', name: 'app_club_index', methods: ['GET'])]
     public function index(ClubRepository $clubRepository): Response
     {
         return $this->render('club/index.html.twig', [
@@ -22,14 +23,88 @@ class ClubController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_club_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/', name: 'clubdetail', methods: ['GET'])]
+    public function clubdetail(ClubRepository $clubRepository): Response
+    {
+        return $this->render('club/clubDetails.html.twig', [
+            'clubs' => $clubRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/myclub', name: 'myclub', methods: ['GET'])]
+    public function index23(ClubRepository $clubRepository): Response
+    {
+        return $this->render('club/myClub.html.twig', [
+            'clubs' => $clubRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/listeclub', name: 'listeclub', methods: ['GET'])]
+    public function listeclub(ClubRepository $clubRepository): Response
+    {
+        return $this->render('club/listeClub.html.twig', [
+            'clubs' => $clubRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/listemember', name: 'listemember', methods: ['GET'])]
+    public function listemember(ClubRepository $clubRepository): Response
+    {
+        return $this->render('club/listeMembre.html.twig', [
+            'clubs' => $clubRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/joinclub', name: 'joinclub', methods: ['GET'])]
+    public function joinclub(ClubRepository $clubRepository): Response
+    {
+        return $this->render('club/joinClub.html.twig', [
+            'clubs' => $clubRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/createclub', name: 'createclub', methods: ['GET'])]
+    public function createclub(ClubRepository $clubRepository): Response
+    {
+        return $this->render('club/createClub.html.twig', [
+            'clubs' => $clubRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/adminclub', name: 'adminclub', methods: ['GET'])]
+    public function adminclub(ClubRepository $clubRepository): Response
+    {
+        return $this->render('club/adminClub.html.twig', [
+            'clubs' => $clubRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/adminmember', name: 'adminmember', methods: ['GET'])]
+    public function adminmember(ClubRepository $clubRepository): Response
+    {
+        return $this->render('club/adminMember.html.twig', [
+            'clubs' => $clubRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/index2', name: 'app_club_index2', methods: ['GET'])]
+    public function index2(ClubRepository $clubRepository): Response
+    {
+        return $this->render('club/index2.html.twig', [
+            'clubs' => $clubRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/newClub', name: 'app_club_new', methods: ['GET', 'POST'])]
+    public function newClub(Request $request, EntityManagerInterface $entityManager): Response
     {
         $club = new Club();
         $form = $this->createForm(ClubType::class, $club);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $club->setStatus(StatutClubEnum::EN_ATTENTE);
+            $club->setPoints(0);
             $entityManager->persist($club);
             $entityManager->flush();
 
@@ -43,10 +118,20 @@ class ClubController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_club_show', methods: ['GET'])]
-    public function show(Club $club): Response
+    public function show($id, EntityManagerInterface $entityManager): Response
+
     {
-        return $this->render('club/show.html.twig', [
+        $club = $entityManager->getRepository(Club::class)->find($id);
+        return $this->render('club/myClub.html.twig', [
             'club' => $club,
+        ]);
+    }
+
+    #[Route('/myClub', name: 'myClub', methods: ['GET'])]
+    public function myClub()
+    {
+        return $this->render('club/myClub.html.twig', [
+            
         ]);
     }
 
@@ -76,6 +161,8 @@ class ClubController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_club_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_club_index2', [], Response::HTTP_SEE_OTHER);
     }
 }
+
+

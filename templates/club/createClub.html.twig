@@ -1,8 +1,9 @@
 {% extends 'base.html.twig' %}
 
+
+{% block title %}Club{% endblock %}
+
 {% block body %}
-
-
 
 
 
@@ -128,33 +129,4 @@
 
          
 
-
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2>Liste des Clubs</h2>
-            <a href="{{ path('app_club_new') }}" class="btn btn-primary">Créer un nouveau club</a>
-        </div>
-
-        <div class="row">
-            {% for club in clubs %}
-                <div class="col-md-4">
-                    <div class="card shadow-sm mb-4">
-                        <img src="{{ asset('uploads/clubs/' ~ club.image) }}" class="card-img-top" alt="{{ club.nomC }}" style="height: 200px; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ club.nomC }}</h5>
-                            <p class="card-text text-muted">{{ club.description|slice(0, 100) ~ '...' }}</p>
-                           
-                            <div class="d-flex justify-content-between">
-                                <a href="{{ path('app_club_show', {'id': club.id}) }}" class="btn btn-info btn-sm">Voir plus</a>
-                                
-                                <a href="#" class="btn btn-success btn-sm">Participer</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% else %}
-                <p class="text-center">Aucun club trouvé.</p>
-            {% endfor %}
-        </div>
-    </div>
 {% endblock %}

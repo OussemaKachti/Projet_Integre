@@ -15,16 +15,8 @@ class ParticipationMembreType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('dateRequest')
-            ->add('statut')
-            ->add('user', EntityType::class, [
-                'class' => User::class,
-'choice_label' => 'id',
-            ])
-            ->add('club', EntityType::class, [
-                'class' => Club::class,
-'choice_label' => 'id',
-            ])
+            ->add('description')
+            
         ;
     }
 

@@ -55,6 +55,7 @@
       </div>
       <!-- back to top end -->
       
+      
       <!-- header area start -->
       <header>
          <div class="header__area">
@@ -105,9 +106,9 @@
                   <div class="row align-items-center">
                      <div class="col-xxl-2 col-xl-2 col-lg-2 col-md-6 col-6">
                         <div class="logo">
-                           <a href="index.html">
-                              <img src="logo.png" alt="logo">
-                           </a>
+                           <a href="#">
+                            <img src="{{ front_asset('logo1.png') }}" alt="logo">
+                          </a>
                         </div>
                      </div>
                      <div class="col-xxl-7 col-xl-7 col-lg-8 d-none d-lg-block">
@@ -115,35 +116,35 @@
                            <nav id="mobile-menu">
                               <ul>
                                  <li class="has-dropdown">
-                                    <a href="homepage.html">Home</a>
+                                    <a href="#">Home</a>
                                     
                                  </li>
                                  
                                  <li class="has-dropdown">
-                                    <a href="listeClub.html">Clubs</a>
+                                    <a href="#">Clubs</a>
                                     <ul class="submenu">
                                        <li><a href="listeClub.html">Our clubs</a></li>
                                        <li><a href="myclub.html">My club</a></li>
                                     </ul>
                                  </li>
                                  <li class="has-dropdown">
-                                    <a href="event.html">Events</a>
+                                    <a href="#">Events</a>
                                     <ul class="submenu">
-                                       <li><a href="event.html">Our Events</a></li>
-                                       <li><a href="eventclub.html">Clubs Events</a></li>
+                                       <li><a href="#">Our Events</a></li>
+                                       <li><a href="#">Clubs Events</a></li>
                                        
                                     </ul>
                                  </li>
                                  <li class="has-dropdown">
-                                    <a href="products.html">Products</a>
+                                    <a href="#">Products</a>
                                     <ul class="submenu">
-                                       <li><a href="blog.html">Our Products</a></li>
-                                       <li><a href="myCart.html">My cart</a></li>
-                                       <li><a href="recu.html">Checkout</a></li>
+                                       <li><a href="#">Our Products</a></li>
+                                       <li><a href="#">My cart</a></li>
+                                       <li><a href="#">Checkout</a></li>
                                     </ul>
                                  </li>
                                  <li>
-                                    <a href="contact.html">Contact</a>
+                                    <a href="#">Contact</a>
                                  </li>
                               </ul>
                            </nav>
@@ -179,363 +180,7 @@
       </header>
       <!-- header area end -->
       
-      <!-- offcanvas area start -->
-      <div class="offcanvas__area">
-         <div class="modal fade" id="offcanvasmodal" tabindex="-1" aria-labelledby="offcanvasmodal" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                   <div class="offcanvas__wrapper">
-                      <div class="offcanvas__content">
-                         <div class="offcanvas__top mb-40 d-flex justify-content-between align-items-center">
-                            <div class="offcanvas__logo logo">
-                               <a href="index.html">
-                               <img src="{{ asset('front_assets/img/logo/logo.png') }}" alt="logo">
-                               </a>
-                            </div>
-                            <div class="offcanvas__close">
-                               <button class="offcanvas__close-btn" data-bs-toggle="modal" data-bs-target="#offcanvasmodal">
-                                  <i class="fal fa-times"></i>
-                               </button>
-                            </div>
-                         </div>
-                         <div class="offcanvas__search mb-25">
-                            <form action="#">
-                               <input type="text" placeholder="What are you searching for?">
-                               <button type="submit" ><i class="far fa-search"></i></button>
-                            </form>
-                         </div>
-                         <div class="mobile-menu fix"></div>
-                         <div class="offcanvas__text d-none d-lg-block">
-                            <p>But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and will give you a complete account of the system and expound the actual teachings of the great explore</p>
-                         </div>
-                         <div class="offcanvas__map d-none d-lg-block mb-15">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d29176.030811137334!2d90.3883827!3d23.924917699999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sbd!4v1605272373598!5m2!1sen!2sbd"></iframe>
-                         </div>
-                         <div class="offcanvas__contact mt-30 mb-20">
-                            <h4>Contact Info</h4>
-                            <ul>
-                               <li class="d-flex align-items-center">
-                                  <div class="offcanvas__contact-icon mr-15">
-                                     <i class="fal fa-map-marker-alt"></i>
-                                  </div>
-                                  <div class="offcanvas__contact-text">
-                                     <a target="_blank" href="https://www.google.com/maps/place/Dhaka/@23.7806207,90.3492859,12z/data=!3m1!4b1!4m5!3m4!1s0x3755b8b087026b81:0x8fa563bbdd5904c2!8m2!3d23.8104753!4d90.4119873">12/A, Mirnada City Tower, NYC</a>
-                                  </div>
-                               </li>
-                               <li class="d-flex align-items-center">
-                                  <div class="offcanvas__contact-icon mr-15">
-                                     <i class="far fa-phone"></i>
-                                  </div>
-                                  <div class="offcanvas__contact-text">
-                                     <a href="mailto:support@gmail.com">088889797697</a>
-                                  </div>
-                               </li>
-                               <li class="d-flex align-items-center">
-                                  <div class="offcanvas__contact-icon mr-15">
-                                     <i class="fal fa-envelope"></i>
-                                  </div>
-                                  <div class="offcanvas__contact-text">
-                                     <a href="tel:+012-345-6789">support@mail.com</a>
-                                  </div>
-                               </li>
-                            </ul>
-                         </div>
-                         <div class="offcanvas__social">
-                            <ul>
-                               <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
-                               <li><a href="#"><i class="fab fa-twitter"></i></a></li>
-                               <li><a href="#"><i class="fab fa-youtube"></i></a></li>
-                               <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
-                            </ul>
-                         </div>
-                      </div>
-                   </div>
-                </div>
-            </div>
-        </div>
-      </div>
-      <!-- offcanvas area end -->      
-      <div class="body-overlay"></div>
-      <!-- offcanvas area end -->
-
-      <main>
-
-         <!-- breadcrumb area start -->
-         <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="{{ asset('front_assets/img/breadcrumb/poll.jpg') }}">
-            <div class="container">
-               <div class="row">
-                  <div class="col-xxl-12">
-                     <div class="breadcrumb__content text-center p-relative z-index-1">
-                        <h3 class="breadcrumb__title">Our Polls</h3>
-                        <div class="breadcrumb__list">
-                           <span><a href="index.html">Home</a></span>
-                           <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
-                           <span>Polls</span>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </section>
-         <!-- breadcrumb area end -->
-        
-        
-         <!-- blog area start -->
-         <section class="blog__area pt-120 pb-120">
-            <div class="container">
-               <div class="row">
-                  <div class="col-xxl-8 col-xl-8 col-lg-8">
-                     <div class="postbox__wrapper postbox__details pr-20">
-                        <div class="postbox__item transition-3 mb-70">
-
-
-
-
-
-
-                              
-                           <!-- lehna tebda liste taa polls -->
-                           
-                           <div class="postbox__content">
-                               
-  <!-- awel poll -->
-
-  <div class="poll-container">
-   <div class="user-info">
-      <img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="">
-      <b>John Doe</b> | <div id="dateDisplay" style="display: inline;"></div>
-
-<script>
-    // Fonction pour formater la date
-    function formatDate(dateString) {
-        const months = [
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-        ];
-
-        const date = new Date(dateString);  // Convertir la chaîne de date en objet Date
-
-        const day = date.getDate();  // Jour du mois
-        const month = months[date.getMonth()];  // Mois (indexé de 0 à 11)
-        const year = date.getFullYear();  // Année
-
-        return `${day} ${month} ${year}`;
-    }
-
-    // Passer la date sous forme de chaîne
-    const formattedDate = formatDate("2025-01-17");
-
-    // Afficher la date formatée dans l'élément avec l'ID 'dateDisplay'
-    document.getElementById('dateDisplay').textContent = formattedDate;
-</script>
-      
-
-      
-      <span class="menu-icon" onclick="toggleMenu(event)">&#8230;</span>
-      <div class="menu-list" id="menuList">
-         <ul>
-            <li onclick="editPoll()">Edit Poll</li>
-            <li onclick="deletePoll()">Delete Poll</li>
-         </ul>
-      </div>
-   </div>     
-   <div class="poll-title">What Design tool do you use the most?</div>
-      <input type="radio" name="poll" id="none" checked hidden>
-      <div class="poll-option option-1">
-          <input type="radio" name="poll" id="photoshop">
-          <label for="photoshop">Photoshop</label>
-          <span>55%</span>
-          <div class="progress-bar"><div class="progress"></div></div>
-      </div>
-
-      <div class="poll-option option-2">
-          <input type="radio" name="poll" id="sketch">
-          <label for="sketch">Sketch</label>
-          <span>20%</span>
-          <div class="progress-bar"><div class="progress"></div></div>
-      </div>
-
-      <div class="poll-option option-3">
-          <input type="radio" name="poll" id="adobe-xd">
-          <label for="adobe-xd">Adobe XD</label>
-          <span>20%</span>
-          <div class="progress-bar"><div class="progress"></div></div>
-      </div>
-
-      <div class="poll-option option-4">
-          <input type="radio" name="poll" id="figma">
-          <label for="figma">Figma</label>
-          <span>55%</span>
-          <div class="progress-bar"><div class="progress"></div></div>
-      </div>
-  </div>
-
-    <!-- partie comments -->
-
-  <div class="latest-comments mb-65">
-   <h3>2 Comments</h3>
-   <ul>
-      <li>
-         <div class="comments-box grey-bg-2">
-           <div class="comments-info d-flex">
-             <div class="comments-avatar mr-20">
-               <img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="">
-             </div>
-             <div class="avatar-name">
-               <h5>Oussema Kachti</h5>
-               <span class="post-meta">July 14, 2022</span>
-             </div>
-             <div class="comments-replay">
-               <a href="#">delete</a>
-             </div>
-           </div>
-           <div class="comments-text ml-65">
-             <p>Ce sondage est très pertinent et permet de mieux comprendre l'avis des membres du club. C'est une excellente initiative pour impliquer tout le monde dans les décisions. Hâte de voir les résultats !</p>
-           </div>
-         </div>
-       </li>
-       
-
-       <li>
-         <div class="comments-box grey-bg-2">
-           <div class="comments-info d-flex">
-             <div class="comments-avatar mr-20">
-               <img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="">
-             </div>
-             <div class="avatar-name">
-               <h5>Foulen Fouleni</h5>
-               <span class="post-meta">July 14, 2022</span>
-             </div>
-             <div class="comments-replay">
-               <a href="#">delete</a>
-             </div>
-           </div>
-           <div class="comments-text ml-65">
-             <p>Can we do it Saturday night please?</p>
-           </div>
-         </div>
-       </li>
-   
-   </ul>
-</div>
-
-
-
-<div class="postbox__comment">
-   <h3>Write a comment</h3>
-   <form action="#">
-      <div class="row">
-         
-         <div class="col-xxl-12">
-            <div class="postbox__comment-input">
-               <textarea placeholder="Enter your comment ..."></textarea>
-            </div>
-         </div>
-         
-         <div class="col-xxl-12">
-            <div class="postbox__comment-btn">
-               <button type="submit" class="tp-btn">Post Comment</button>
-            </div>
-         </div>
-      </div>
-   </form>
-</div>
-
-
-
-
-                          
-
-
-
-</div>
-
-
-                        </div>
-                    
-                        
-                     </div>
-                  </div>
-                  <div class="col-xxl-4 col-xl-4 col-lg-4">
-                     <div class="blog__sidebar pl-70">
-                       
-                        
-                        <!-- Poll Creation Form Section -->
-                      
-                        <div class="sidebar__widget mb-55">
-                          
-                              
-                          <div class="poll-creation-container">
-                              <h2>Create a Poll</h2>
-                          
-                              <input type="text" class="input-box" placeholder="Type your question here">
-                          
-                              <h2>Options</h2>
-                              <div id="options-container">
-                                  <input type="text" class="input-box" placeholder="Option 1">
-                                  <input type="text" class="input-box" placeholder="Option 2">
-                              </div>
-                          
-                              <button class="add-option" onclick="addOption()">+ Add option</button>
-                          
-                              <!-- Admin Message -->
-                              <div class="admin-message">
-                                  <p><strong>Note:</strong> Ensure the question and options follow club rules.</p>
-                              </div>
-                          
-                              <button class="create-btn">Create Poll</button>
-                          </div>
-                         
-                        </div>
-
-
-                        <!-- add poll  -->
-
-
-                         <!-- Consulter les sondages / View Polls Button -->
-                         <button style="--clr: #7808d0" class="button" onclick="window.location.href='allPolls.html';">
-                           <span class="button__icon-wrapper">
-                             <svg
-                               width="10"
-                               class="button__icon-svg"
-                               xmlns="http://www.w3.org/2000/svg"
-                               fill="none"
-                               viewBox="0 0 14 15"
-                             >
-                               <path
-                                 fill="currentColor"
-                                 d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z"
-                               ></path>
-                             </svg>
-                         
-                             <svg
-                               class="button__icon-svg button__icon-svg--copy"
-                               xmlns="http://www.w3.org/2000/svg"
-                               width="10"
-                               fill="none"
-                               viewBox="0 0 14 15"
-                             >
-                               <path
-                                 fill="currentColor"
-                                 d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z"
-                               ></path>
-                             </svg>
-                           </span>
-                           View all polls
-                         </button>
-                         
-                         
-                         
-                         
-                         
-
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </section>
-         <!-- blog area end -->
-
-      </main>
+      {%block_body%}
 
          <!-- footer area start -->
          <footer>
@@ -547,8 +192,9 @@
                            <div class="footer__widget footer-col-1 mb-50">
                               <div class="footer__logo">
                                  <div class="logo">
-                                    <a href="homepage.html">
-                                       <img src="logo1.png" alt="">
+                                    <a href="#">
+                                       <img src="{{ asset('front_assets/img/logo/logo.png') }}" alt="logo">
+
                                     </a>
                                  </div>
                               </div>
@@ -574,17 +220,17 @@
                               <div class="footer__widget-content">
                                  <ul>
                                     <li>
-                                       <a href="listeClub.html">Clubs</a>
+                                       <a href="#">Clubs</a>
                                     </li>
                                     <li>
-                                       <a href="event.html">Events</a>
+                                       <a href="#">Events</a>
                                     </li>
                                    
                                     <li>
-                                       <a href="products.html">Products</a>
+                                       <a href="#">Products</a>
                                     </li>
                                     <li>
-                                       <a href="compition.html">Competitions</a>
+                                       <a href="#">Competitions</a>
                                     </li>
                                  </ul>
                               </div>

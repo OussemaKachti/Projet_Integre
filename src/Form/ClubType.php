@@ -6,18 +6,17 @@ use App\Entity\Club;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use App\Entity\User;
 class ClubType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('nomC')
-            ->add('description')
-            ->add('status')
-            ->add('image')
-            ->add('points')
-        ;
+        ->add('nomC')
+        ->add('description')  
+        ->add('image');
+     
     }
 
     public function configureOptions(OptionsResolver $resolver): void

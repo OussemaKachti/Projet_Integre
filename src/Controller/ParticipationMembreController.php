@@ -29,7 +29,9 @@ class ParticipationMembreController extends AbstractController
         $form = $this->createForm(ParticipationMembreType::class, $participationMembre);
         $form->handleRequest($request);
 
+        
         if ($form->isSubmitted() && $form->isValid()) {
+            
             $entityManager->persist($participationMembre);
             $entityManager->flush();
 
@@ -49,6 +51,20 @@ class ParticipationMembreController extends AbstractController
             'participation_membre' => $participationMembre,
         ]);
     }
+
+    #[Route('/detailleParticipation/{id}', name: 'detaille_participation', methods: ['GET'])]
+    public function showDetailleParticipation(int $id,ParticipationMembreRepository $participationMembreRepository): Response
+    {
+        
+        return $this->render('participation_membre/show.html.twig', [
+            'participation_membre' => $participationMembreRepository->findParticipationDetails($id)
+
+        ]);
+    }
+
+
+
+   
 
     #[Route('/{id}/edit', name: 'app_participation_membre_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, ParticipationMembre $participationMembre, EntityManagerInterface $entityManager): Response
