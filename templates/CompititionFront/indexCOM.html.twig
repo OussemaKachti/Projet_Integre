@@ -1,6 +1,6 @@
 {# templates/competition/index.html.twig #}
 {% extends 'base.html.twig' %}
-{% block title %}Competition - Missions and Seasons{% endblock %}
+
 
 {% block body %}
     <!-- Seasons Section -->
@@ -19,13 +19,17 @@
                 {% for saison in saisons %}
                     <div class="col-xxl-2 col-xl-3 col-lg-4 col-md-6 mb-4 px-3">
                         <div class="season-card white-bg transition-3 text-center p-3 h-100">
-                            <div class="season-icon mb-2 {{ season.iconClass }}">
-                                <i class="{{ season.icon }} fa-2x"></i>
+
+                            
+
+                             <div class="season-icon mb-2">
+                                <img src="{{ asset('images/seasons/default.png') }}" alt="Season Image" class="img-fluid" style="max-width: 50px;">
                             </div>
+
                             <h3 class="season-title mb-2" style="font-size: 1.2rem;">{{ saison.nomSaison }}</h3>
                             <p class="season-description mb-2" style="font-size: 0.9rem;">{{ saison.descSaison }}</p>
                             <div class="season-duration">
-                                <span class="badge bg-primary" style="font-size: 0.8rem;">{{ saison.dateFin }}</span>
+                                <span class="badge bg-primary" style="font-size: 0.8rem;">{{ saison.dateFin|date('d M Y') }}</span>
                             </div>
                         </div>
                     </div>
@@ -48,8 +52,8 @@
                         <div class="mission__item white-bg mb-10 transition-3 p-relative d-lg-flex align-items-center justify-content-between">
                             <div class="mission__left d-sm-flex align-items-center">
                                 <div class="mission__content">
-                                    <h3 class="mission__title">{{ mission.name }}</h3>
-                                    <p class="mission__description">{{ mission.description }}</p>
+                                    <h3 class="mission__title">{{ mission.nomComp }}</h3>
+                                    <p class="mission__description">{{ mission.descComp }}</p>
                                 </div>
                             </div>
                             <div class="mission__right d-sm-flex align-items-center">

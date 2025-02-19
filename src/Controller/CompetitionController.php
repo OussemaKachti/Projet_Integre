@@ -18,7 +18,7 @@ class CompetitionController extends AbstractController
     public function index(CompetitionRepository $competitionRepository): Response
     {
         return $this->render('competition/index.html.twig', [
-            'competitions' => $competitionRepository->findAll(),
+            'missions' => $competitionRepository->findAll(),
         ]);
     }
 

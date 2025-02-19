@@ -35,6 +35,9 @@ class Competition
     #[ORM\OneToMany(mappedBy: "competition", targetEntity: MissionProgress::class)]
     private Collection $missionProgresses;
     
+    #[ORM\Column(type: Types::INTEGER)]
+    private ?int $points = null;
+    
     public function __construct() {
         $this->missionProgresses = new ArrayCollection();
 
@@ -120,6 +123,18 @@ class Competition
             $progress->setCompetition(null);
         }
     }
+    return $this;
+}
+
+
+public function getPoints(): ?int
+{
+    return $this->points;
+}
+
+public function setPoints(int $points): static
+{
+    $this->points = $points;
     return $this;
 }
 
