@@ -105,7 +105,6 @@ class ClubController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $club->setStatus(StatutClubEnum::EN_ATTENTE);
             $club->setPoints(0);
-            dd($club);
             $entityManager->persist($club);
             $entityManager->flush();
 
@@ -154,32 +153,65 @@ class ClubController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_club_delete', methods: ['POST'])]
-    public function delete(Request $request, Club $club, EntityManagerInterface $entityManager): Response
+    //#[Route('/{id}', name: 'app_club_delete', methods: ['POST'])]
+   // public function delete(int $id, Request $request, EntityManagerInterface $entityManager): Response
+    /////////
+
+        //if ($this->isCsrfTokenValid('delete'.$club->getId(), $request->request->get('_token'))) {
+            //$entityManager->remove($club);
+            //$entityManager->flush();
+            //$this->addFlash('success', 'Club supprimé avec succès.');
+        //}
+
+        //return $this->redirectToRoute('app_club_index2');
+    //}
+
+
+        //if ($this->isCsrfTokenValid('delete'.$club->getId(), $request->request->get('_token'))) {
+            //$entityManager->remove($club);
+            //$entityManager->flush();
+            //$this->addFlash('success', 'Club supprimé avec succès.');
+        //}
+
+        //return $this->redirectToRoute('app_club_index2');
+    //}
+
+    #[Route('/clubdelete/{id}', name: 'app_club_delete')]
+    public function supprimerPoste(int $id, EntityManagerInterface $entityManager, ClubRepository $clubRepository): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$club->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($club);
-            $entityManager->flush();
+       // $club = $entityManager->getRepository(Club::class)->find($id);
+$club = $clubRepository->find($id);
+        if (!$club) {
+            // Post does not exist, redirect back
+           // $this->addFlash('error', 'Le poste n\'existe pas.');
+            return $this->redirectToRoute('app_club_index2');
         }
 
-        return $this->redirectToRoute('app_club_index2', [], Response::HTTP_SEE_OTHER);
+        // Remove the post from the database
+        $entityManager->remove($club);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Le poste a été supprimé avec succès.');
+        return $this->redirectToRoute('app_club_index2');
     }
 
-    #[Route('/club/{id}/delete', name: 'delete_club', methods: ['POST'])]
-    public function deleteClub(Club $club, EntityManagerInterface $entityManager, Request $request): Response
+    #[Route('/accepteclub/{id}', name: 'club_accepte')]
+    public function acceptePoste(int $id,EntityManagerInterface $entityManager, ClubRepository $clubRepository): Response
     {
-        // Check if the request method is POST
-        if ($request->isMethod('POST')) {
-            // Delete the club
-            $entityManager->remove($club);
-            $entityManager->flush();
+        $club = $entityManager->getRepository(Club::class)->find($id);
 
-            // Redirect to the homepage or another page
-            return $this->redirectToRoute('homepage');
+        if (!$club) {
+            // Post does not exist, redirect back
+            //$this->addFlash('error', 'Le poste n\'existe pas.');
+            return $this->redirectToRoute('app_club_index2');
         }
 
-        // If not a POST request, redirect back to the club details page
-        return $this->redirectToRoute('clubdetails', ['id' => $club->getId()]);
+        // accepte the post from the database
+        $club->setStatus(StatutClubEnum::ACCEPTE);
+        $entityManager->flush();
+
+        //$this->addFlash('success', 'Le poste a été accepte avec succès.');
+        return $this->redirectToRoute('app_club_index2');
     }
 
 }
