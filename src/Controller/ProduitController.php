@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Entity\Club;
 use App\Repository\ClubRepository;
-
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 #[Route('/produit')]
 class ProduitController extends AbstractController
 {
@@ -151,6 +151,84 @@ class ProduitController extends AbstractController
         }
 
         return $this->redirectToRoute('app_produit_index', [], Response::HTTP_SEE_OTHER);
+    }
+    #[Route('/cart', name: 'cart_index')]
+    public function cartt(SessionInterface $session): Response
+    {
+        $cart = $session->get('cart', []);
+
+        return $this->render('produit/commande.html.twig', [
+            'cart' => $cart,
+        ]);
+    }
+
+    #[Route('/add/{id}', name: 'cart_add')]
+    public function add(Produit $produit, SessionInterface $session): Response
+    {
+        $cart = $session->get('cart', []);
+        $id = $produit->getId();
+
+        if (!isset($cart[$id])) {
+            $cart[$id] = [
+                'produit' => $produit,
+                'quantity' => 1,
+            ];
+        } else {
+            $cart[$id]['quantity']++;
+        }
+
+        $session->set('cart', $cart);
+
+        return $this->redirectToRoute('cart_index');
+    }
+
+    #[Route('/remove/{id}', name: 'cart_remove')]
+    public function remove(Produit $produit, SessionInterface $session): Response
+    {
+        $cart = $session->get('cart', []);
+        $id = $produit->getId();
+
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
+        }
+
+        $session->set('cart', $cart);
+
+        return $this->redirectToRoute('cart_index');
+    }
+
+    #[Route('/increase/{id}', name: 'cart_increase')]
+    public function increase(Produit $produit, SessionInterface $session): Response
+    {
+        $cart = $session->get('cart', []);
+        $id = $produit->getId();
+
+        if (isset($cart[$id])) {
+            $cart[$id]['quantity']++;
+        }
+
+        $session->set('cart', $cart);
+
+        return $this->redirectToRoute('cart_index');
+    }
+
+    #[Route('/decrease/{id}', name: 'cart_decrease')]
+    public function decrease(Produit $produit, SessionInterface $session): Response
+    {
+        $cart = $session->get('cart', []);
+        $id = $produit->getId();
+
+        if (isset($cart[$id])) {
+            if ($cart[$id]['quantity'] > 1) {
+                $cart[$id]['quantity']--;
+            } else {
+                unset($cart[$id]);
+            }
+        }
+
+        $session->set('cart', $cart);
+
+        return $this->redirectToRoute('cart_index');
     }
 
 }
