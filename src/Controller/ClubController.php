@@ -105,8 +105,8 @@ class ClubController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $club->setStatus(StatutClubEnum::EN_ATTENTE);
             $club->setPoints(0);
-            $entityManager->persist($club);
-            $entityManager->flush();
+            $entityManager->persist($club);  // save
+            $entityManager->flush(); // save in the database
 
             return $this->redirectToRoute('app_club_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -117,7 +117,7 @@ class ClubController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_club_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_club_show', methods: ['GET'])] // show the club
     public function show($id, EntityManagerInterface $entityManager): Response
 
     {

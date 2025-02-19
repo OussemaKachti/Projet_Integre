@@ -40,11 +40,11 @@ class ParticipationMembreController extends AbstractController
 
         
         if ($form->isSubmitted() && $form->isValid()) {
-            
+            $participationMembre->setStatut("enAttente");
             $entityManager->persist($participationMembre);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_participation_membre_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('clubdetail', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('participation_membre/new.html.twig', [
