@@ -103,4 +103,43 @@ class ParticipationMembreController extends AbstractController
 
         return $this->redirectToRoute('app_participation_membre_index', [], Response::HTTP_SEE_OTHER);
     }
+    
+
+    #[Route('/delete/{id}', name: 'app_participation_membre_delete')]
+    public function supprimerPoste(int $id, EntityManagerInterface $entityManager, ParticipationMembreRepository $participationMembreRepository): Response
+    {
+       // $club = $entityManager->getRepository(Club::class)->find($id);
+         $participationMembre = $participationMembreRepository->find($id);
+        if (!$participationMembre) {
+            // Post does not exist, redirect back
+           // $this->addFlash('error', 'Le poste n\'existe pas.');
+            return $this->redirectToRoute('app_participation_membre_index');
+        }
+
+        // Remove the post from the database
+        $entityManager->remove($participationMembre);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Le poste a été supprimé avec succès.');
+        return $this->redirectToRoute('app_participation_membre_index');
+    }
+
+    #[Route('/accepte/{id}', name: 'accepte')]
+    public function acceptePoste(int $id,EntityManagerInterface $entityManager, ParticipationMembreRepository $participationMembreRepository): Response
+    {
+        $participationMembre = $entityManager->getRepository(ParticipationMembre::class)->find($id);
+
+        if (!$participationMembre) {
+            // Post does not exist, redirect back
+            //$this->addFlash('error', 'Le poste n\'existe pas.');
+            return $this->redirectToRoute('app_participation_membre_index');
+        }
+
+        // accepte the post from the database
+        $participationMembre->setStatut("accepte");
+        $entityManager->flush();
+
+        //$this->addFlash('success', 'Le poste a été accepte avec succès.');
+        return $this->redirectToRoute('app_participation_membre_index');
+    }
 }
