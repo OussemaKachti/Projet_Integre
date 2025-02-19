@@ -40,10 +40,29 @@ class SondageController extends AbstractController
         $this->entityManager = $entityManager;
     }
     #[Route('/ListPolls', name: 'app_sondage_index', methods: ['GET'])]
-    public function index(SondageRepository $sondageRepository): Response
+    public function index(SondageRepository $sondageRepository,EntityManagerInterface $entityManager): Response
     {
+        $sondages = $sondageRepository->findAll();
+        $user = $entityManager->getRepository(User::class)->find(1); // Utilisateur fictif pour le test
+    
+        $reponses = [];
+    
+        if ($user) {
+            foreach ($sondages as $sondage) {
+                $reponse = $entityManager->getRepository(Reponse::class)->findOneBy([
+                    'sondage' => $sondage,
+                    'user' => $user
+                ]);
+    
+                if ($reponse) {
+                    $reponses[$sondage->getId()] = $reponse->getChoixSondage()->getContenu();
+                }
+            }
+        }
+    
         return $this->render('sondage/ListPolls.html.twig', [
-            'sondages' => $sondageRepository->findAll(),
+            'sondages' => $sondages,
+            'reponses' => $reponses // On passe les réponses à Twig
         ]);
     }
 
@@ -202,7 +221,48 @@ public function filterByClub(Request $request, EntityManagerInterface $entityMan
                                             // FIN ADMINN
 
 
-
+                                            #[Route('/{sondageId}/reponse', name: 'get_user_response_for_sondage', methods: ['GET'])]
+                                            public function getUserResponseForSondage(int $sondageId, EntityManagerInterface $entityManager)
+                                            {
+                                                // Créer un utilisateur fictif pour le test
+                                                $user = $entityManager->getRepository(User::class)->find(1); // Par exemple, récupérer un utilisateur avec l'ID 1
+                                        
+                                                // Vérifier si l'utilisateur existe
+                                                if (!$user) {
+                                                    return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur non trouvé.'], 404);
+                                                }
+                                        
+                                                // Récupérer le sondage
+                                                $sondage = $entityManager->getRepository(Sondage::class)->find($sondageId);
+                                        
+                                                // Vérifier si le sondage existe
+                                                if (!$sondage) {
+                                                    throw $this->createNotFoundException('Sondage non trouvé.');
+                                                }
+                                        
+                                                // Récupérer la réponse de l'utilisateur pour ce sondage
+                                                $reponse = $entityManager->getRepository(Reponse::class)->findOneBy([
+                                                    'sondage' => $sondage,
+                                                    'user' => $user
+                                                ]);
+                                        
+                                                // Si une réponse est trouvée, renvoyer l'objet réponse
+                                                if ($reponse) {
+                                                    return new JsonResponse([
+                                                        'status' => 'success',
+                                                        'reponse' => [
+                                                            'id' => $reponse->getId(),
+                                                            'choix' => [
+                                                                'id' => $reponse->getChoixSondage()->getId(),
+                                                                'contenu' => $reponse->getChoixSondage()->getContenu()
+                                                            ]
+                                                        ]
+                                                    ]);
+                                                }
+                                        
+                                                // Si aucune réponse n'est trouvée
+                                                return new JsonResponse(['status' => 'error', 'message' => 'Aucune réponse trouvée pour cet utilisateur.'], 404);
+                                            }
 
 
 
@@ -272,59 +332,101 @@ public function create(Request $request, EntityManagerInterface $em): Response
         ]);
     }*/    
     #[Route('/api/poll/new', name: 'api_poll_new', methods: ['POST'])]
-    public function createPoll(Request $request, EntityManagerInterface $em): JsonResponse
-    {
-        // Décoder le JSON envoyé dans le corps de la requête
-        $data = json_decode($request->getContent(), true);
+public function createPoll(Request $request, EntityManagerInterface $em): JsonResponse
+{
+    // Décoder le JSON
+    $data = json_decode($request->getContent(), true);
     
-        if (!$data || !isset($data['question']) || empty($data['choix'])) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Données invalides'], 400);
+    if (!$data || !isset($data['question']) || empty($data['choix'])) {
+        return new JsonResponse(['status' => 'error', 'message' => 'Données invalides'], 400);
+    }
+
+    // Récupérer l'utilisateur
+    $user = $em->getRepository(User::class)->find(1);
+    if (!$user) {
+        return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur avec ID 1 non trouvé'], 404);
+    }
+
+    // Récupérer le club où l'utilisateur est président
+    $club = $em->getRepository(Club::class)->findOneBy(['president' => $user->getId()]);
+    if (!$club) {
+        return new JsonResponse(['status' => 'error', 'message' => 'Aucun club trouvé pour cet utilisateur en tant que président'], 403);
+    }
+
+    // Créer le sondage
+    $sondage = new Sondage();
+    $sondage->setQuestion($data['question']);
+    $sondage->setCreatedAt(new \DateTime());
+    $sondage->setUser($user);
+    $sondage->setClub($club);
+
+    // Ajouter les choix
+    foreach ($data['choix'] as $choixData) {
+        if (!isset($choixData['contenu']) || empty($choixData['contenu'])) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Un choix est vide'], 400);
         }
-    
-        // Créer un nouvel objet Sondage
-        $sondage = new Sondage();
-        $sondage->setQuestion($data['question']);
-        $sondage->setCreatedAt(new \DateTime());
-    
-        // Récupérer l'utilisateur connecté (prenez l'ID de l'utilisateur actuel)
-        $user = $em->getRepository(User::class)->find(1); // Utilisez l'ID dynamique de l'utilisateur connecté
-        if (!$user) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur non trouvé'], 404);
-        }
-    
-        // Vérifiez si l'utilisateur est président d'un club
-        $club = $em->getRepository(Club::class)->findOneBy(['president' => $user]);
-        if (!$club) {
-            return new JsonResponse(['status' => 'error', 'message' => 'L\'utilisateur n\'est pas président d\'un club'], 403);
-        }
-    
-        // Associez le club au sondage
-        $sondage->setClub($club);  // Assurez-vous que la méthode `setClub` existe dans l'entité Sondage
-    
-        // Ajouter les choix
-        foreach ($data['choix'] as $choixData) {
-            if (!isset($choixData['contenu']) || empty($choixData['contenu'])) {
-                return new JsonResponse(['status' => 'error', 'message' => 'Un choix est vide'], 400);
-            }
-            $choix = new ChoixSondage();
-            $choix->setContenu($choixData['contenu']);
-            $choix->setSondage($sondage);
-            $em->persist($choix);
-        }
-    
+        $choix = new ChoixSondage();
+        $choix->setContenu($choixData['contenu']);
+        $choix->setSondage($sondage);
+        $em->persist($choix);
+    }
+
+    try {
         $em->persist($sondage);
         $em->flush();
-    
-        // Récupérer le nom du club
-        $clubName = $club->getNomC();
-    
         return new JsonResponse([
             'status' => 'success', 
             'message' => 'Sondage créé avec succès',
-            'club_name' => $clubName  // Vous pouvez envoyer le nom du club avec la réponse
+            'club_name' => $club->getNomC()
         ], 201);
+    } catch (\Exception $e) {
+        return new JsonResponse([
+            'status' => 'error', 
+            'message' => 'Erreur lors de la création du sondage',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
     
+
+
+#[Route('/delete1/{id}', name: 'app_sondage_delete', methods: ['POST', 'DELETE'])]
+public function deleteSondage1(int $id, EntityManagerInterface $entityManager): JsonResponse
+{
+    try {
+        $sondage = $entityManager->getRepository(Sondage::class)->find($id);
+
+        if (!$sondage) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Sondage non trouvé'
+            ], 404);
+        }
+
+        // Vérifier si l'utilisateur actuel est le créateur du sondage
+        $user = $entityManager->getRepository(User::class)->find(1); // À remplacer par l'utilisateur connecté
+        if ($sondage->getUser() !== $user) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Vous n\'êtes pas autorisé à supprimer ce sondage'
+            ], 403);
+        }
+
+        $entityManager->remove($sondage);
+        $entityManager->flush();
+
+        return new JsonResponse([
+            'status' => 'success',
+            'message' => 'Sondage supprimé avec succès'
+        ]);
+
+    } catch (\Exception $e) {
+        return new JsonResponse([
+            'status' => 'error',
+            'message' => 'Erreur lors de la suppression du sondage : ' . $e->getMessage()
+        ], 500);
+    }
+}
 
     
 
@@ -369,15 +471,16 @@ public function create(Request $request, EntityManagerInterface $em): Response
     }
 
     
-    #[Route('/user-polls', name: 'api_user_polls', methods: ['GET'])]
-    public function getUserPolls(EntityManagerInterface $em, Security $security): JsonResponse
+    #[Route('/AllPolls', name: 'api_user_polls', methods: ['GET'])]
+    public function getUserPolls(EntityManagerInterface $em): Response
     {
         // Récupérer l'utilisateur connecté
         $user = $em->getRepository(User::class)->find(1);
+
     
         // Vérifier si l'utilisateur est connecté
         if (!$user) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur non connecté'], 401);
+            return $this->redirectToRoute('login'); // Rediriger si l'utilisateur n'est pas connecté
         }
     
         // Récupérer les sondages créés par l'utilisateur
@@ -385,23 +488,12 @@ public function create(Request $request, EntityManagerInterface $em): Response
     
         // Vérifier si l'utilisateur a créé des sondages
         if (empty($sondages)) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Aucun sondage trouvé pour cet utilisateur'], 404);
+            $this->addFlash('error', 'Aucun sondage trouvé pour cet utilisateur');
         }
     
-        // Transformer les sondages en tableau
-        $sondageData = array_map(function ($sondage) {
-            return [
-                'id' => $sondage->getId(),
-                'question' => $sondage->getQuestion(),
-                'date_creation' => $sondage->getCreatedAt()->format('Y-m-d H:i:s'),
-                'choix' => array_map(fn($choix) => ['id' => $choix->getId(), 'contenu' => $choix->getContenu()], $sondage->getChoix()->toArray())
-            ];
-        }, $sondages);
-    
-        // Retourner les sondages
-        return new JsonResponse([
-            'status' => 'success',
-            'sondages' => $sondageData
+        // Renvoyer la vue avec les sondages
+        return $this->render('sondage/AllPolls.html.twig', [
+            'sondages' => $sondages,
         ]);
     }
 
@@ -460,36 +552,49 @@ public function getUserSondages(EntityManagerInterface $em, SondageRepository $s
 
 
 
-    #[Route('/delete/{id}', name: 'delete_survey', methods: ['DELETE'])]
+    #[Route('/delete/{id}', name: 'delete_survey', methods: ['POST'])]
 public function deleteSurvey(int $id, Request $request, EntityManagerInterface $em): Response
 {
-    // Vérifier si le sondage existe
-    $sondage = $em->getRepository(Sondage::class)->find($id);
-    
-    // Si le sondage n'est pas trouvé, renvoyer une erreur 404
-    if (!$sondage) {
-        return new JsonResponse(['error' => 'Sondage not found'], Response::HTTP_NOT_FOUND);
+    try {
+        // Vérifier si le sondage existe
+        $sondage = $em->getRepository(Sondage::class)->find($id);
+        
+        // Si le sondage n'est pas trouvé, renvoyer une erreur 404
+        if (!$sondage) {
+            return new JsonResponse(['error' => 'Sondage not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Utiliser l'utilisateur avec l'ID 1 pour tester
+        $user = $em->getRepository(User::class)->find(1);  // Utilisateur statique pour tester
+        
+        // Vérifier si l'utilisateur existe
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Vérifier que l'utilisateur est bien le propriétaire du sondage
+        if ($sondage->getUser()->getId() !== $user->getId()) {
+            return new JsonResponse(['error' => 'You are not authorized to delete this survey'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Supprimer manuellement les réponses liées à ce sondage
+        $reponses = $em->getRepository(Reponse::class)->findBy(['sondage' => $sondage]);
+        foreach ($reponses as $reponse) {
+            $em->remove($reponse);
+        }
+        
+        // Supprimer le sondage
+        $em->remove($sondage);
+        $em->flush();
+
+        // Retourner une réponse simple après la suppression
+        return new JsonResponse(['message' => 'Survey successfully deleted'], Response::HTTP_OK);
+    } catch (\Exception $e) {
+        return new JsonResponse([
+            'error' => 'An error occurred: ' . $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-
-    // Utiliser l'utilisateur avec l'ID 1 pour tester
-    $user = $em->getRepository(User::class)->find(1);  // Utilisateur statique pour tester
-    
-    // Vérifier si l'utilisateur existe
-    if (!$user) {
-        return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
-    }
-
-    // Vérifier que l'utilisateur est bien le propriétaire du sondage
-    if ($sondage->getUser()->getId() !== $user->getId()) {
-        return new JsonResponse(['error' => 'You are not authorized to delete this survey'], Response::HTTP_FORBIDDEN);
-    }
-
-    // Supprimer le sondage
-    $em->remove($sondage);
-    $em->flush();
-
-    // Retourner une réponse simple après la suppression
-    return new JsonResponse(['message' => 'Survey successfully deleted'], Response::HTTP_OK);
 }
 
     

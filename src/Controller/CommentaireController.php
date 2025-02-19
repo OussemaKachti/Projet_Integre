@@ -186,29 +186,42 @@ public function delete($id, EntityManagerInterface $entityManager): RedirectResp
     }
 
     #[Route('/comment/list/{id}', name: 'list_comments', methods: ['GET'])]
-public function listComments(int $id, EntityManagerInterface $em): Response
-{
-    // Simuler un utilisateur (remplace par getUser() une fois l'authentification implémentée)
-    $user = $em->getRepository(User::class)->find(1); // Assure-toi que cet utilisateur existe
-
-    // Récupérer le sondage depuis la base de données
-    $sondages = $em->getRepository(Sondage::class)->find($id);
-
-    if (!$sondages) {
-        throw $this->createNotFoundException('Sondage non trouvé');
-    }
-
-    // Récupérer les commentaires associés au sondage
-    $commentaires = $sondages->getCommentaires();
-
-    // Vérifier que la variable est bien transmise
-    return $this->render('sondage/ListPolls.html.twig', [
-        'sondages' => $sondages,
-        'commentaires' => $commentaires,
-        'current_user' => $user, // Passe l'utilisateur simulé à la vue
-    ]);
+    public function listComments(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        // Simuler un utilisateur (remplace par getUser() une fois l'authentification implémentée)
+        $user = $em->getRepository(User::class)->find(1); // Assure-toi que cet utilisateur existe
     
-}
+        // Récupérer le sondage depuis la base de données
+        $sondage = $em->getRepository(Sondage::class)->find($id);
+    
+        if (!$sondage) {
+            throw $this->createNotFoundException('Sondage non trouvé');
+        }
+    
+        // Récupérer les commentaires associés au sondage
+        $commentaires = $sondage->getCommentaires();
+    
+        // Créer un tableau avec les données à envoyer en réponse JSON
+        $commentsData = [];
+        foreach ($commentaires as $commentaire) {
+            $commentsData[] = [
+                'id' => $commentaire->getId(),
+                'user' => $commentaire->getUser()->getNom() . ' ' . $commentaire->getUser()->getPrenom(),
+                'date' => $commentaire->getDateComment()->format('d M Y'),
+                'content' => $commentaire->getContenuComment(),
+            ];
+        }
+    
+        // Retourner une réponse JSON avec les commentaires et les autres informations
+        return new JsonResponse([
+            'comments' => $commentsData,
+            'user' => [
+                'id' => $user->getId(),
+                'name' => $user->getNom() . ' ' . $user->getPrenom(),
+            ]
+        ]);
+    }
+    
 
 
 

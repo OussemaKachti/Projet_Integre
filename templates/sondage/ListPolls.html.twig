@@ -4,6 +4,7 @@
 
 {% block body %}
    <main>
+{% dump(reponses) %}
 
     <!-- Breadcrumb Area Start -->
     <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="{{ asset('front_assets/img/breadcrumb/poll.jpg') }}">
@@ -55,11 +56,7 @@
                                         {% endfor %}
                                         <button type="submit" class="vote-btn">Submit Vote</button>
                                     </form>
-                                   <form action="{{ path('app_reponse_supprimer_par_sondage', {'sondageId': sondage.id}) }}" method="POST" class="remove-vote-form">
-    <!-- Simuler la méthode DELETE -->
-    <input type="hidden" name="_method" value="DELETE">
-    <button type="submit" class="remove-vote-btn">Remove Vote</button>
-</form>
+          <!-- Button to Delete Vote -->
 
 
                           
@@ -67,9 +64,29 @@
                                 <!-- Comments Section -->
                               <div class="latest-comment mb-3">
                                   <!-- Rendre le h3 cliquable avec un style pointer -->
-                                  <h3 class="openModal" style="cursor: pointer;" data-sondage-id="{{ sondage.id }}">
-                                       {{ sondage.commentaires|length }} Comments
-                                  </h3>
+                                 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                    <!-- Nombre de commentaires -->
+                                    <h3 class="openModal" style="cursor: pointer;" data-sondage-id="{{ sondage.id }}">
+                                        {{ sondage.commentaires|length }} Comments
+                                    </h3>
+
+                                    <!-- Affichage du choix de l'utilisateur -->
+                                    <p class="user-response" style="margin: 0; padding-right: 10px;">
+                                        <strong>Votre choix :</strong> 
+                                        {% if reponses[sondage.id] is defined %}
+                                            {{ reponses[sondage.id] }}
+                                        {% else %}
+                                            No vote
+                                        {% endif %}
+                                    </p>
+
+                                    <!-- Formulaire pour supprimer le vote -->
+                                    <form action="{{ path('delRep', {'sondageId': sondage.id}) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your vote?');">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <button type="submit" class="vote-btn">Delete Vote</button>
+                                    </form>
+                                </div>
+
                                   <style>
                                     .openModal {
                                        font-size: 14px !important;  /* Taille de police plus petite avec priorité */
@@ -94,6 +111,7 @@
                                                       <div class="comment-avatar mr-20">
                                                          <img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="">
                                                       </div>
+                                                      <br>
                                                       <div class="avatar-name">
                                                          <h5>{{ commentaire.user.nom }} {{ commentaire.user.prenom }}</h5>
                                                          <span class="post-meta">{{ commentaire.dateComment|date('d M Y') }}</span>
@@ -101,27 +119,55 @@
                                                 </div>
                                                 <div class="comment-text">
                                                       <p>{{ commentaire.contenuComment }}</p>
-                                                </div>
+                                                </div>          
+<style>
+                                    .comment-text {
+                                                        background-color: #f8f9fa; /* Couleur de fond légère */
+                                                        padding: 10px;
+                                                        border-radius: 8px;
+                                                        border: 1px solid #ddd;
+                                                        font-size: 16px; /* Augmenter la taille de la police */
+                                                        font-weight: 600; /* Appliquer du gras (semi-bold) */
+                                                        color: #333;
+                                                        line-height: 1.5;
+                                                        max-width: 420px; /* Limite la largeur pour une meilleure lisibilité */
+                                                        word-wrap: break-word; /* Gère les longs mots */
+                                                    }
 
+                                                    textarea {
+                                                                width:50%; /* Assurer qu'il prend toute la largeur disponible */
+                                                                height:28px; /* Taille plus petite pour le champ de texte */
+                                                                font-size: 14px; /* Réduire la taille du texte à l'intérieur */
+                                                                padding: 8px;
+                                                                border-radius: 5px;
+                                                                border: 1px solid #ddd;
+                                                                resize: none; /* Empêche le redimensionnement de la zone de texte */
+                                                             }
+
+
+</style>
                                                 
-                                                      <div class="comment-actions">
-                                                         <!-- Edit Button -->
-                                                       <form action="{{ path('edit_comment', {'id': commentaire.id}) }}" method="POST">
-                                                            <input type="hidden" name="_method" value="PUT"> <!-- Cela simule une requête PUT -->
-                                                            <textarea name="content" placeholder="Edit your comment">{{ commentaire.contenuComment }}</textarea>
-                                                            <button type="submit">Update Comment</button>
-                                                       </form>
+                                                      <div class="comment-actions" style="display: flex; align-items: center; gap: 10px;">
+                                                            <!-- Edit Button -->
+                                                                {% if app.user and app.user.id == commentaire.user.id %}
+                                                            <form action="{{ path('edit_comment', {'id': commentaire.id}) }}" method="POST">
+                                                                <input type="hidden" name="_method" value="PUT"> <!-- Cela simule une requête PUT -->
+                                                                <textarea name="content" placeholder="Edit your comment">{{ commentaire.contenuComment }}</textarea>
+                                                                <button type="submit"class="btn btn-success">Update Comment</button>
+                                                            </form>
+                                                            <br>
+                                                                {% endif %}
 
+                                                            <!-- Delete Button -->
+                                                                {% if app.user and (app.user.id == commentaire.user.id or app.user.role == 'presidentClub' and commentaire.sondage.club.president.id == app.user.id) %}
+                                                            <form action="{{ path('delete_comment', {'id': commentaire.id}) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this comment?');">
+                                                                <input type="hidden" name="_method" value="DELETE">
+                                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                                            </form>
+                                                                {% endif %}
 
-                                                         
-                                                         <!-- Delete Button -->
-                                                         <form action="{{ path('delete_comment', {'id': commentaire.id}) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this comment?');">
-                                                               <input type="hidden" name="_method" value="DELETE">
-                                                               <button type="submit" class="btn btn-danger">Delete</button>
-                                                         </form>                                                  
+                                                     </div>
 
-                                                      </div>
-                                                         <p>Aucun utilisateur connecté</p>
                                              </div>
                                           {% else %}
                                              <p>No comments yet.</p>
@@ -164,172 +210,391 @@
                 </div>
             </div>
 
-            <!-- Sidebar Section -->
              <!-- Sidebar Section -->
-            <div class="col-xxl-4 col-xl-4 col-lg-4">
-                <div class="blog__sidebar pl-70">
-                    <form id="poll-form" method="POST" action="{{ path('api_poll_new') }}">
-                        <div class="poll-creation-container">
-                            <h2>Create a Poll</h2>
-                            <input type="text" class="input-box" placeholder="Type your question here" name="question">
-                            <h2>Options</h2>
-                            <div id="options-container">
-                                <input type="text" class="input-box" placeholder="Option 1" name="choix[0][contenu]">
-                                <input type="text" class="input-box" placeholder="Option 2" name="choix[1][contenu]">
-                            </div>
-                            <button type="button" class="add-option" onclick="addOption()">+ Add option</button>
-                            <div class="admin-message">
-                                <p><strong>Note:</strong> Ensure the question and options follow club rules.</p>
-                            </div>
-                            <button type="submit" class="create-btn">Create Poll</button>
-                        </div>
-                    </form>
-                    <button class="button" onclick="window.location.href='allPolls.html';">View all polls</button>
+           <div class="col-xxl-4 col-xl-4 col-lg-4">
+    <div class="blog__sidebar pl-70">
+{# 
+    {% if app.user and app.user.role == 'presidentClub' %}
+#}            <form id="poll-form" method="POST" action="{{ path('api_poll_new') }}">
+                <div class="poll-creation-container">
+                    <h2>Create a Poll</h2>
+                    <input type="text" class="input-box" placeholder="Type your question here" name="question">
+                    <h2>Options</h2>
+                    <div id="options-container">
+                        <input type="text" class="input-box" placeholder="Option 1" name="choix[0][contenu]">
+                        <input type="text" class="input-box" placeholder="Option 2" name="choix[1][contenu]">
+                    </div>
+                    <button type="button" class="add-option" onclick="addOption()">+ Add option</button>
+                    <div class="admin-message">
+                        <p><strong>Note:</strong> Ensure the question and options follow club rules.</p>
+                    </div>
+                    <button type="submit" class="create-btn">Create Poll</button>
                 </div>
-            </div>
+            </form>
+{# 
+    {% endif %}
+#}        
+            <button style="--clr: #7808d0" class="button" onclick="window.location.href='{{ path('api_user_polls') }}';">
+                        <span class="button__icon-wrapper">
+                             <svg
+                               width="10"
+                               class="button__icon-svg"
+                               xmlns="http://www.w3.org/2000/svg"
+                               fill="none"
+                               viewBox="0 0 14 15"
+                             >
+                               <path
+                                 fill="currentColor"
+                                 d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z"
+                               ></path>
+                             </svg>
+                         
+                             <svg
+                               class="button__icon-svg button__icon-svg--copy"
+                               xmlns="http://www.w3.org/2000/svg"
+                               width="10"
+                               fill="none"
+                               viewBox="0 0 14 15"
+                             >
+                               <path
+                                 fill="currentColor"
+                                 d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z"
+                               ></path>
+                             </svg>
+                        </span>
+                           View all polls
+            </button>
+    </div>
+</div>
+
         </div>
     </div>
 </section>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const voteForms = document.querySelectorAll('.poll-vote-form');
+// Cibler le formulaire de vote
+    document.querySelectorAll('.poll-vote-form').forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Empêcher le comportement par défaut du formulaire
 
-    voteForms.forEach(form => {
-        form.addEventListener('submit', function (event) {
-            event.preventDefault(); // Empêcher l'envoi normal du formulaire
-
-            // Récupérer l'ID du sondage et l'option sélectionnée
-            const sondageId = form.closest('.poll-container').getAttribute('data-sondage-id');
-            const choixId = form.querySelector('input[name="choix"]:checked').value;
-
-            // Envoyer le vote via AJAX
-            fetch(`/reponse/${sondageId}/voter`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    'choix': choixId
-                })
+            // Soumettre le formulaire via AJAX
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message); // Affiche le message de succès
+                if (data.status === 'success') {
+                    // Si la réponse est succès, rafraîchir la page
+                    location.reload(); // Cela actualisera la page
+                } else {
+                    alert(data.message); // Afficher le message d'erreur si nécessaire
+                }
             })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+            .catch(error => console.error('Error:', error));
         });
     });
-});
 
-       
-   document.addEventListener("DOMContentLoaded", function() {
-    // Cibler tous les h3 avec la classe .openModal
-    const openModalButtons = document.querySelectorAll('.openModal');
-
-    openModalButtons.forEach(button => {
-        button.addEventListener('click', function(event) {
-            const sondageId = this.getAttribute("data-sondage-id");
-
-            // Vérifier si l'ID du sondage existe
-            if (sondageId) {
-                // Trouver le modal correspondant à cet ID
-                const modal = new bootstrap.Modal(document.getElementById('commentsModal' + sondageId));
-                modal.show();
-            }
-        });
-    });
-});
-
-
-               document.addEventListener("DOMContentLoaded", function () {
-            // Select all poll containers
-            const pollContainers = document.querySelectorAll('.poll-container');
-
-            pollContainers.forEach(pollContainer => {
-               const sondageId = pollContainer.getAttribute('data-sondage-id');
-               
-               // Fetch comments for the specific poll
-               fetch(`/commentaire/comment/list/${sondageId}`)
-                     .then(response => response.json())
-                     .then(data => {
-                        const commentList = document.getElementById(`comment-list-${sondageId}`);
-                        commentList.innerHTML = ''; // Clear any existing comments
-
-                        // If there are comments, append them to the list
-                        if (data.length > 0) {
-                           data.forEach(comment => {
-                                 const li = document.createElement('li');
-                                 li.innerHTML = `
-                                    <div class="comments-box grey-bg-2">
-                                       <div class="comments-info d-flex">
-                                             <div class="comments-avatar mr-20">
-                                                <img src="front_assets/img/blog/comments/user.png" alt="">
-                                             </div>
-                                             <div class="avatar-name">
-                                                <h5>${comment.user}</h5>
-                                                <span class="post-meta">${comment.date}</span>
-                                             </div>
-                                             <div class="comments-replay">
-                                                <a href="#">delete</a>
-                                             </div>
-                                       </div>
-                                       <div class="comments-text ml-65">
-                                             <p>${comment.content}</p>
-                                       </div>
-                                    </div>
-                                 `;
-                                 commentList.appendChild(li);
-                           });
+            document.querySelectorAll('form[id^="delete-vote-form"]').forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(form);
+                    
+                    fetch(form.action, {
+                        method: 'POST', 
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // On enlève la réponse de l'interface sans recharger la page
+                            form.closest('.poll-container').remove();
                         } else {
-                           // If no comments, display a message
-                           commentList.innerHTML = '<li>No comments yet.</li>';
+                            alert('Erreur lors de la suppression de votre vote.');
                         }
-                     })
-                     .catch(error => console.error('Error fetching comments:', error));
+                    })
+                    .catch(err => {
+                        console.error('Erreur:', err);
+                    });
+                });
             });
-               });
-               function addComment(event) {
-                  // Get the poll ID from the 'data-sondage-id' attribute
-                  let sondageId = event.target.getAttribute('data-sondage-id');
-                  
-                  // Get the comment text
-                  let commentText = event.target.querySelector('.comment-textarea').value;
 
-                  // Check if the comment field is empty
-                  if (!commentText.trim()) {
-                     alert("The comment cannot be empty.");
-                     return;
-                  }
+            // Script pour la création de sondage
+            document.addEventListener("DOMContentLoaded", function() {
+                const pollForm = document.getElementById('poll-form');
+                
+                // Fonction pour ajouter une nouvelle option
+                window.addOption = function() {
+                    const container = document.getElementById('options-container');
+                    const optionCount = container.children.length;
+                    const newInput = document.createElement('input');
+                    newInput.type = 'text';
+                    newInput.className = 'input-box';
+                    newInput.placeholder = `Option ${optionCount + 1}`;
+                    newInput.name = `choix[${optionCount}][contenu]`;
+                    newInput.required = true;
+                    container.appendChild(newInput);
+                };
 
-                  // Send the comment to the backend via fetch
-                  fetch(`/commentaire/comment/add/${sondageId}`, {
-                     method: 'POST',
-                     headers: {
-                           'Content-Type': 'application/json'
-                     },
-                     body: JSON.stringify({
-                           contenuComment: commentText
-                     })
-                  })
-                  .then(response => response.json())
-                  .then(data => {
-                     if (data.error) {
-                           alert(data.error);
-                     } else {
-                           alert(data.message);  // Show success message
-                           // Manually clear the comment text field after successful submission
-                           event.target.querySelector('.comment-textarea').value = '';
-                           // Optionally: Add the comment to the list of comments displayed on the page
-                           loadComments(sondageId);  // Reload the comments for the specific poll
-                     }
-                  })
-                  .catch(error => {
-                     console.error('Error adding comment:', error);
-                  });
-               }
+                // Gestion de la soumission du formulaire de création de sondage
+                if (pollForm) {
+                    pollForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+
+                        // Validation basique
+                        const question = document.querySelector('input[name="question"]').value;
+                        if (!question.trim()) {
+                            alert('Please enter a question');
+                            return;
+                        }
+
+                        // Récupérer toutes les options
+                        const choixInputs = document.querySelectorAll('#options-container input');
+                        const choix = Array.from(choixInputs).map(input => ({
+                            contenu: input.value.trim()
+                        })).filter(option => option.contenu !== '');
+
+                        if (choix.length < 2) {
+                            alert('Please enter at least 2 options');
+                            return;
+                        }
+
+                        // Créer l'objet de données
+                        const data = {
+                            question: question,
+                            choix: choix
+                        };
+
+                        // Envoyer la requête
+                        fetch('/sondage/api/poll/new', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(data)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                // Afficher le message de succès
+                                alert(data.message);
+                                
+                                // Réinitialiser le formulaire
+                                pollForm.reset();
+                                const optionsContainer = document.getElementById('options-container');
+                                optionsContainer.innerHTML = `
+                                    <input type="text" class="input-box" placeholder="Option 1" name="choix[0][contenu]" required>
+                                    <input type="text" class="input-box" placeholder="Option 2" name="choix[1][contenu]" required>
+                                `;
+
+                                // Recharger la page après un court délai
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
+                            } else {
+                                alert('Error: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred while creating the poll');
+                        });
+                    });
+                }
+            });
+
+
+                // Écoutez le submit du formulaire de vote
+                document.querySelectorAll('.poll-vote-form').forEach(function (form) {
+                    form.addEventListener('submit', function (e) {
+                        e.preventDefault();  // Empêche le formulaire de se soumettre de manière classique
+
+                        const formData = new FormData(form);  // Récupère les données du formulaire
+                        const sondageId = form.closest('.poll-container').getAttribute('data-sondage-id');
+                        const choixId = formData.get('choix');  // Récupère l'ID du choix sélectionné
+
+                        // Vérifier qu'un choix est sélectionné
+                        if (!choixId) {
+                            alert('You should select an option!!');
+                            return;
+                        }
+
+                        // Faire la requête AJAX
+                        fetch('{{ path("app_reponse_ajouter", {id: "SONDAGE_ID"}) }}'.replace('SONDAGE_ID', sondageId), {
+                            method: 'POST',
+                            body: new URLSearchParams({
+                                'choixSondage': choixId,
+                            }),
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Traitement de la réponse du serveur
+                            if (data.status === 'success') {
+                                alert(data.message);
+                                // Vous pouvez mettre à jour la page ou afficher un message de confirmation ici.
+                            } else {
+                                alert(data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erreur:', error);
+                            alert('Une erreur est survenue.');
+                        });
+                    });
+                });
+
+
+                
+            document.addEventListener("DOMContentLoaded", function() {
+                // Cibler tous les h3 avec la classe .openModal
+                const openModalButtons = document.querySelectorAll('.openModal');
+
+                openModalButtons.forEach(button => {
+                    button.addEventListener('click', function(event) {
+                        const sondageId = this.getAttribute("data-sondage-id");
+
+                        // Vérifier si l'ID du sondage existe
+                        if (sondageId) {
+                            // Trouver le modal correspondant à cet ID
+                            const modal = new bootstrap.Modal(document.getElementById('commentsModal' + sondageId));
+                            modal.show();
+                        }
+                    });
+                });
+            });
+
+
+                        document.addEventListener("DOMContentLoaded", function () {
+                        // Select all poll containers
+                        const pollContainers = document.querySelectorAll('.poll-container');
+
+                        pollContainers.forEach(pollContainer => {
+                        const sondageId = pollContainer.getAttribute('data-sondage-id');
+                        
+                        // Fetch comments for the specific poll
+                        fetch(`/commentaire/comment/list/${sondageId}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    const commentList = document.getElementById(`comment-list-${sondageId}`);
+                                    commentList.innerHTML = ''; // Clear any existing comments
+
+                                    // If there are comments, append them to the list
+                                    if (data.length > 0) {
+                                    data.forEach(comment => {
+                                            const li = document.createElement('li');
+                                            li.innerHTML = `
+                                                <div class="comments-box grey-bg-2">
+                                                <div class="comments-info d-flex">
+                                                        <div class="comments-avatar mr-20">
+                                                            <img src="front_assets/img/blog/comments/user.png" alt="">
+                                                        </div>
+                                                        <div class="avatar-name">
+                                                            <h5>${comment.user}</h5>
+                                                            <span class="post-meta">${comment.date}</span>
+                                                        </div>
+                                                        <div class="comments-replay">
+                                                            <a href="#">delete</a>
+                                                        </div>
+                                                </div>
+                                                <div class="comments-text ml-65">
+                                                        <p>${comment.content}</p>
+                                                </div>
+                                                </div>
+                                            `;
+                                            commentList.appendChild(li);
+                                    });
+                                    } else {
+                                    // If no comments, display a message
+                                    commentList.innerHTML = '<li>No comments yet.</li>';
+                                    }
+                                })
+                                .catch(error => console.error('Error fetching comments:', error));
+                        });
+                        });
+                        document.addEventListener("DOMContentLoaded", function () {
+                // Sélectionner tous les formulaires de commentaires
+                document.querySelectorAll("form[id^='comment-form-']").forEach(form => {
+                    form.addEventListener("submit", function (event) {
+                        event.preventDefault(); // Empêcher le rechargement de la page
+
+                        let sondageId = this.getAttribute("data-sondage-id");
+                        let commentText = this.querySelector(".comment-textarea").value.trim();
+
+                        if (!commentText) {
+                            alert("Comment can't be empty.");
+                            return;
+                        }
+
+                        // Envoyer la requête au serveur
+                        fetch(`/commentaire/comment/add/${sondageId}`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ contenuComment: commentText })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                alert(data.error);
+                            } else {
+                                alert(data.message);
+                                this.querySelector(".comment-textarea").value = ""; // Vider le champ
+
+                                // Recharger la liste des commentaires après l'ajout
+                                loadComments(sondageId);
+                            }
+                        })
+                        .catch(error => console.error("Erreur lors de l'ajout du commentaire:", error));
+                    });
+                });
+            });
+
+
+            // Fonction pour rafraîchir les commentaires après ajout
+            function loadComments(sondageId) {
+                fetch(`/commentaire/comment/list/${sondageId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const commentList = document.querySelector(`#commentsModal${sondageId} .comments-list`);
+                    
+                    if (!commentList) {
+                        console.error(`La liste de commentaires n'a pas été trouvée pour le sondage ${sondageId}`);
+                        return;
+                    }
+
+                    commentList.innerHTML = ""; // Vider la liste actuelle
+
+                    if (data.length > 0) {
+                        data.forEach(comment => {
+                            const commentBox = document.createElement("div");
+                            commentBox.classList.add("comment-box");
+                            commentBox.innerHTML = `
+                                <div class="comment-info d-flex">
+                                    <div class="comment-avatar mr-20">
+                                        <img src="front_assets/img/blog/comments/user.png" alt="">
+                                    </div>
+                                    <div class="avatar-name">
+                                        <h5>${comment.user}</h5>
+                                        <span class="post-meta">${comment.date}</span>
+                                    </div>
+                                </div>
+                                <div class="comment-text">
+                                    <p>${comment.content}</p>
+                                </div>
+                            `;
+                            commentList.appendChild(commentBox);
+                        });
+                    } else {
+                        commentList.innerHTML = "<p>Aucun commentaire pour l'instant.</p>";
+                    }
+                })
+                .catch(error => console.error("Erreur lors du chargement des commentaires:", error));
+            }
+
+
 
 </script>
 <!-- jQuery et Bootstrap JS -->

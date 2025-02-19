@@ -36,7 +36,7 @@
                                 <div class="admin-container">
                                     <h2>Poll Management</h2>
                                     <div class="mb-3">
-                                        <a href="{{ path('app_sondage_index') }}" class="btn btn-secondary">Back</a>
+                                        <a href="{{ path('api_user_polls') }}" class="btn btn-secondary">Back</a>
                                     </div>
 
                                     <table>
@@ -48,23 +48,9 @@
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
-                                         <tbody>
-                                                {% for sondage in sondages %}
-                                                    <tr>
-                                                        <td>{{ sondage.question }}</td>
-                                                        <td>{{ sondage.choix|map(choice => choice.contenu)|join(', ') }}</td>
-                                                        <td>{{ sondage.createdAt|date('Y-m-d H:i:s') }}</td>
-                                                        <td>
-                                                            <div class="d-flex gap-2">
-                                                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editPollModal" onclick="openEditModal({{ sondage.id }})">Edit</button>
-                                                                <button class="btn btn-danger" onclick="deletePoll({{ sondage.id }})">Delete</button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                {% else %}
-                                                    <tr><td colspan="4">No polls found.</td></tr>
-                                                {% endfor %}
-                                            </tbody>
+                                        <tbody id="poll-table-body">
+                                            <!-- Les sondages seront injectés ici via JS -->
+                                        </tbody>
                                     </table>
                                 </div>
                             </div>

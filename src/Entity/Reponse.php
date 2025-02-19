@@ -20,8 +20,23 @@ class Reponse
     private User $user;
 
     #[ORM\ManyToOne(targetEntity: ChoixSondage::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ChoixSondage $choixSondage;
+
+    #[ORM\ManyToOne(targetEntity: Sondage::class, inversedBy: "reponses")]
+#[ORM\JoinColumn(nullable: false)]
+private Sondage $sondage;
+
+public function getSondage(): ?Sondage
+{
+    return $this->sondage;
+}
+
+public function setSondage(?Sondage $sondage): self
+{
+    $this->sondage = $sondage;
+    return $this;
+}
 
     public function getUser(): User
     {

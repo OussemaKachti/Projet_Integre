@@ -5,6 +5,7 @@ use App\Entity\ChoixSondage;
 use App\Entity\Sondage;
 use App\Entity\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 use App\Entity\Reponse;
 use App\Form\ReponseType;
@@ -18,7 +19,81 @@ use Symfony\Component\Routing\Annotation\Route;
 class ReponseController extends AbstractController
 {
 
-// src/Controller/PollController.php
+    #[Route('/supprimer/{id}', name: 'app_reponse_supprimer', methods: ['POST'])]
+public function supprimer(int $id, EntityManagerInterface $entityManager): JsonResponse
+{
+    // Récupérer la réponse à supprimer
+    $reponse = $entityManager->getRepository(Reponse::class)->find($id);
+    
+    if (!$reponse) {
+        return new JsonResponse(['status' => 'error', 'message' => 'Réponse non trouvée.'], 404);
+    }
+    
+    // Récupérer l'utilisateur connecté
+    //$user = $security->getUser();
+    $user = $entityManager->getRepository(User::class)->find(1);
+    // Vérifier si l'utilisateur de la session est celui qui a créé la réponse
+    if ($user !== $reponse->getUser()) {
+        return new JsonResponse(['status' => 'error', 'message' => 'Vous n\'êtes pas autorisé à supprimer cette réponse.'], 403);
+    }
+    
+    // Suppression de la réponse
+    $entityManager->remove($reponse);
+    $entityManager->flush();
+    
+    return new JsonResponse(['status' => 'success', 'message' => 'Réponse supprimée avec succès.'], 200);
+}
+#[Route('/sup/{sondageId}', name: 'delRep', methods: ['POST', 'DELETE'])]
+public function supprimerVoteParSondage(int $sondageId, EntityManagerInterface $entityManager): RedirectResponse
+{
+    // Récupérer l'utilisateur connecté
+    $utilisateur = $entityManager->getRepository(User::class)->find(1);
+    
+    // Vérifier si l'utilisateur existe
+    if (!$utilisateur) {
+        // Retourner un message d'erreur sous forme de redirection si l'utilisateur n'est pas trouvé
+        $this->addFlash('error', 'Utilisateur non trouvé.');
+        return $this->redirectToRoute('app_sondages');
+    }
+    
+    // Récupérer le sondage avec ses choix
+    $sondage = $entityManager->getRepository(Sondage::class)->find($sondageId);
+    
+    // Vérifier si le sondage existe
+    if (!$sondage) {
+        // Retourner un message d'erreur sous forme de redirection si le sondage n'est pas trouvé
+        $this->addFlash('error', 'Sondage non trouvé.');
+        return $this->redirectToRoute('app_sondages');
+    }
+    
+    // Vérifier si une réponse existe pour cet utilisateur et ce sondage
+    foreach ($sondage->getChoix() as $choix) {
+        $reponse = $entityManager->getRepository(Reponse::class)
+                                 ->findOneBy([
+                                     'choixSondage' => $choix,
+                                     'user' => $utilisateur
+                                 ]);
+    
+        // Si une réponse est trouvée, la supprimer
+        if ($reponse) {
+            $entityManager->remove($reponse);
+            $entityManager->flush();
+            
+            // Ajout d'un message flash de succès avant de rediriger
+            $this->addFlash('success', 'Vote supprimé avec succès.');
+            return $this->redirectToRoute('app_sondage_index');
+        }
+    }
+    
+    // Si aucune réponse n'est trouvée, ajouter un message d'erreur
+    $this->addFlash('error', 'Aucun vote trouvé pour cet utilisateur dans ce sondage.');
+    return $this->redirectToRoute('app_sondage_index');
+}
+
+
+
+
+//mouch hedhii!!!
 
 #[Route('/{sondageId}/voter', name: 'submit_vote', methods: ['POST'])]
 public function submitVote(int $sondageId, Request $request, EntityManagerInterface $entityManager): JsonResponse
@@ -68,15 +143,15 @@ public function submitVote(int $sondageId, Request $request, EntityManagerInterf
     $entityManager->persist($reponse);
     $entityManager->flush();
 
-    return new JsonResponse(['status' => 'success', 'message' => 'Votre vote a été enregistré.']);
+    return new JsonResponse(['status' => 'success', 'message' => 'Response added']);
 }
 
 
 
 
 
-    #[Route('/ajouter/{id}', name: 'app_reponse_ajouter', methods: ['POST'])]
-public function ajouter( int $id, Request $request, EntityManagerInterface $entityManager ): JsonResponse 
+#[Route('/ajouter/{id}', name: 'app_reponse_ajouter', methods: ['POST'])]
+public function ajouter(int $id, Request $request, EntityManagerInterface $entityManager): JsonResponse 
 {
     // Récupérer l'utilisateur (en attendant une authentification, on fixe l'ID à 1)
     $user = $entityManager->getRepository(User::class)->find(1);
@@ -85,61 +160,54 @@ public function ajouter( int $id, Request $request, EntityManagerInterface $enti
         return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur non trouvé.'], 404);
     }
 
+    // Récupérer le sondage à partir de l'ID de la route
+    $sondage = $entityManager->getRepository(Sondage::class)->find($id);
+    
+    if (!$sondage) {
+        return new JsonResponse(['status' => 'error', 'message' => 'Sondage non trouvé.'], 404);
+    }
+
     // Récupérer l'option choisie
     $choixId = $request->request->get('choixSondage');
     if (!$choixId) {
         return new JsonResponse(['status' => 'error', 'message' => 'L\'ID du choix est manquant.'], 400);
     }
 
-    // Debug : afficher l'ID du choix
-    dump($choixId); // ou var_dump($choixId);
-
+    // Récupérer le choix du sondage
     $choixSondage = $entityManager->getRepository(ChoixSondage::class)->find($choixId);
 
-    if (!$choixSondage) {
-        return new JsonResponse(['status' => 'error', 'message' => 'Choix invalide.'], 404);
+    if (!$choixSondage || $choixSondage->getSondage()->getId() !== $id) {
+        return new JsonResponse(['status' => 'error', 'message' => 'Choix invalide pour ce sondage.'], 404);
     }
 
     // Vérifier si l'utilisateur a déjà voté pour ce sondage
-    $sondage = $choixSondage->getSondage();
     $existingVote = $entityManager->getRepository(Reponse::class)->findOneBy([
         'user' => $user,
-        'choixSondage' => $choixSondage
+        'sondage' => $sondage
     ]);
 
+    // Si un vote existe déjà, on le supprime et on crée un nouveau vote
     if ($existingVote) {
-        return new JsonResponse(['status' => 'warning', 'message' => 'Vous avez déjà voté pour ce sondage.'], 409);
+        $entityManager->remove($existingVote);  // Suppression de l'ancien vote
+        $entityManager->flush();  // Sauvegarde de la suppression
     }
 
-    // Enregistrer la réponse
+    // Enregistrer la nouvelle réponse
     $reponse = new Reponse();
     $reponse->setUser($user);
     $reponse->setChoixSondage($choixSondage);
     $reponse->setDateReponse(new \DateTime());
+    $reponse->setSondage($sondage); // Associer la réponse au sondage
 
-    $entityManager->persist($reponse);
+    $entityManager->persist($reponse);  // Sauvegarde du nouveau vote
     $entityManager->flush();
 
-    return new JsonResponse(['status' => 'success', 'message' => 'Votre vote a été enregistré.'], 200);
+    return new JsonResponse(['status' => 'success', 'message' => ' Response added.'], 200);
 }
 
 
-#[Route('/supprimer/{id}', name: 'app_reponse_supprimer', methods: ['DELETE'])]
-public function supprimer(int $id, EntityManagerInterface $entityManager): JsonResponse
-{
-    // Récupérer la réponse à supprimer
-    $reponse = $entityManager->getRepository(Reponse::class)->find($id);
-    
-    if (!$reponse) {
-        return new JsonResponse(['status' => 'error', 'message' => 'Réponse non trouvée.'], 404);
-    }
-    
-    // Suppression de la réponse
-    $entityManager->remove($reponse);
-    $entityManager->flush();
-    
-    return new JsonResponse(['status' => 'success', 'message' => 'Réponse supprimée avec succès.'], 200);
-}
+
+
 
 #[Route('/{sondageId}', name: 'app_consulter_reponses', methods: ['GET'])]
 public function consulterReponses(int $sondageId, EntityManagerInterface $entityManager): JsonResponse
@@ -184,44 +252,7 @@ public function consulterReponses(int $sondageId, EntityManagerInterface $entity
 
 
 
-#[Route('/supprimer/vote/{sondageId}', name: 'app_reponse_supprimer_par_sondage', methods: ['DELETE'])]
-public function supprimerVoteParSondage(int $sondageId, EntityManagerInterface $entityManager): JsonResponse
-{
-    // Récupérer l'utilisateur connecté
-    $utilisateur = $entityManager->getRepository(User::class)->find(1);
 
-    // Vérifier si l'utilisateur existe
-    if (!$utilisateur) {
-        return new JsonResponse(['status' => 'error', 'message' => 'Utilisateur non trouvé.'], 404);
-    }
-
-    // Récupérer le sondage avec ses choix
-    $sondage = $entityManager->getRepository(Sondage::class)->find($sondageId);
-
-    // Vérifier si le sondage existe
-    if (!$sondage) {
-        return new JsonResponse(['status' => 'error', 'message' => 'Sondage non trouvé.'], 404);
-    }
-
-    // Vérifier si une réponse existe pour cet utilisateur et ce sondage
-    foreach ($sondage->getChoix() as $choix) {
-        $reponse = $entityManager->getRepository(Reponse::class)
-                                 ->findOneBy([
-                                     'choixSondage' => $choix,
-                                     'utilisateur' => $utilisateur
-                                 ]);
-
-        // Si une réponse est trouvée, la supprimer
-        if ($reponse) {
-            $entityManager->remove($reponse);
-            $entityManager->flush();
-            return new JsonResponse(['status' => 'success', 'message' => 'Vote supprimé avec succès.'], 200);
-        }
-    }
-
-    // Si aucune réponse n'est trouvée
-    return new JsonResponse(['status' => 'error', 'message' => 'Aucun vote trouvé pour cet utilisateur dans ce sondage.'], 404);
-}
     
     #[Route('/', name: 'app_reponse_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response

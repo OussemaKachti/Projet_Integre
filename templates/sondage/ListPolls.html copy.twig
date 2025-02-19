@@ -55,6 +55,12 @@
                                         {% endfor %}
                                         <button type="submit" class="vote-btn">Submit Vote</button>
                                     </form>
+                               <form action="{{ path('app_reponse_supprimer', {'id': sondage.id}) }}" method="POST" class="remove-vote-form">
+                                    <!-- Utiliser un champ caché pour simuler la méthode DELETE -->
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="remove-vote-btn">Remove Vote</button>
+                                </form>
+
                           
 
                                 <!-- Comments Section -->
@@ -177,7 +183,7 @@
                             <button type="submit" class="create-btn">Create Poll</button>
                         </div>
                     </form>
-                    <button class="button" onclick="window.location.href='allPolls.html';">View all polls</button>
+<button class="button" onclick="window.location.href='{{ path('api_user_polls') }}';">View all polls</button>
                 </div>
             </div>
         </div>
@@ -185,37 +191,230 @@
 </section>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const voteForms = document.querySelectorAll('.poll-vote-form');
 
-    voteForms.forEach(form => {
-        form.addEventListener('submit', function (event) {
-            event.preventDefault(); // Empêcher l'envoi normal du formulaire
 
-            // Récupérer l'ID du sondage et l'option sélectionnée
-            const sondageId = form.closest('.poll-container').getAttribute('data-sondage-id');
-            const choixId = form.querySelector('input[name="choix"]:checked').value;
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle vote removal
+    document.querySelectorAll('.remove-vote-form').forEach(form => {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const sondageId = form.closest('.poll-container').dataset.sondageId;
+            
+            if (confirm('Are you sure you want to remove your vote?')) {
+                // Create FormData from the form
+                const formData = new FormData(form);
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Update UI - reset the form and the progress bars
+                        const container = form.closest('.poll-container');
+                        const voteForm = container.querySelector('.poll-vote-form');
+                        
+                        // Reset radio buttons
+                        voteForm.querySelectorAll('input[type="radio"]').forEach(radio => {
+                            radio.checked = false;
+                        });
+                        
+                        // Reset progress bars
+                        container.querySelectorAll('.progress').forEach(progress => {
+                            progress.style.width = '0%';
+                        });
+                        
+                        // Optional: Add success message
+                        showMessage(container, 'Vote removed successfully!', 'success');
+                    } else {
+                        // Show error message
+                        showMessage(form.closest('.poll-container'), 'Error: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing vote:', error);
+                    showMessage(form.closest('.poll-container'), 'An error occurred while removing your vote: ' + error.message, 'error');
+                });
+            }
+        });
+    });
+    
+    // Helper function to show messages
+    function showMessage(container, message, type) {
+        // Check if message element already exists
+        let messageEl = container.querySelector('.message');
+        if (!messageEl) {
+            messageEl = document.createElement('div');
+            messageEl.className = 'message';
+            container.insertBefore(messageEl, container.querySelector('.remove-vote-form'));
+        }
+        
+        // Set message content and styling
+        messageEl.textContent = message;
+        messageEl.className = 'message ' + type;
+        
+        // Auto-hide after a few seconds
+        setTimeout(() => {
+            messageEl.style.display = 'none';
+        }, 3000);
+    }
+    
+    // Optional: Add CSS for messages
+    const style = document.createElement('style');
+    style.textContent = `
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    `;
+    document.head.appendChild(style);
+});
 
-            // Envoyer le vote via AJAX
-            fetch(`/reponse/${sondageId}/voter`, {
+// Script pour la création de sondage
+document.addEventListener("DOMContentLoaded", function() {
+    const pollForm = document.getElementById('poll-form');
+    
+    // Fonction pour ajouter une nouvelle option
+    window.addOption = function() {
+        const container = document.getElementById('options-container');
+        const optionCount = container.children.length;
+        const newInput = document.createElement('input');
+        newInput.type = 'text';
+        newInput.className = 'input-box';
+        newInput.placeholder = `Option ${optionCount + 1}`;
+        newInput.name = `choix[${optionCount}][contenu]`;
+        newInput.required = true;
+        container.appendChild(newInput);
+    };
+
+    // Gestion de la soumission du formulaire de création de sondage
+    if (pollForm) {
+        pollForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Validation basique
+            const question = document.querySelector('input[name="question"]').value;
+            if (!question.trim()) {
+                alert('Please enter a question');
+                return;
+            }
+
+            // Récupérer toutes les options
+            const choixInputs = document.querySelectorAll('#options-container input');
+            const choix = Array.from(choixInputs).map(input => ({
+                contenu: input.value.trim()
+            })).filter(option => option.contenu !== '');
+
+            if (choix.length < 2) {
+                alert('Please enter at least 2 options');
+                return;
+            }
+
+            // Créer l'objet de données
+            const data = {
+                question: question,
+                choix: choix
+            };
+
+            // Envoyer la requête
+            fetch('/sondage/api/poll/new', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
                 },
-                body: new URLSearchParams({
-                    'choix': choixId
-                })
+                body: JSON.stringify(data)
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message); // Affiche le message de succès
+                if (data.status === 'success') {
+                    // Afficher le message de succès
+                    alert(data.message);
+                    
+                    // Réinitialiser le formulaire
+                    pollForm.reset();
+                    const optionsContainer = document.getElementById('options-container');
+                    optionsContainer.innerHTML = `
+                        <input type="text" class="input-box" placeholder="Option 1" name="choix[0][contenu]" required>
+                        <input type="text" class="input-box" placeholder="Option 2" name="choix[1][contenu]" required>
+                    `;
+
+                    // Recharger la page après un court délai
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    alert('Error: ' + data.message);
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
+                alert('An error occurred while creating the poll');
+            });
+        });
+    }
+});
+
+
+    // Écoutez le submit du formulaire de vote
+    document.querySelectorAll('.poll-vote-form').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();  // Empêche le formulaire de se soumettre de manière classique
+
+            const formData = new FormData(form);  // Récupère les données du formulaire
+            const sondageId = form.closest('.poll-container').getAttribute('data-sondage-id');
+            const choixId = formData.get('choix');  // Récupère l'ID du choix sélectionné
+
+            // Vérifier qu'un choix est sélectionné
+            if (!choixId) {
+                alert('You should select an option!!');
+                return;
+            }
+
+            // Faire la requête AJAX
+            fetch('{{ path("app_reponse_ajouter", {id: "SONDAGE_ID"}) }}'.replace('SONDAGE_ID', sondageId), {
+                method: 'POST',
+                body: new URLSearchParams({
+                    'choixSondage': choixId,
+                }),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Traitement de la réponse du serveur
+                if (data.status === 'success') {
+                    alert(data.message);
+                    // Vous pouvez mettre à jour la page ou afficher un message de confirmation ici.
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue.');
             });
         });
     });
-});
+
 
        
    document.addEventListener("DOMContentLoaded", function() {
@@ -284,45 +483,86 @@ document.addEventListener("DOMContentLoaded", function () {
                      .catch(error => console.error('Error fetching comments:', error));
             });
                });
-               function addComment(event) {
-                  // Get the poll ID from the 'data-sondage-id' attribute
-                  let sondageId = event.target.getAttribute('data-sondage-id');
-                  
-                  // Get the comment text
-                  let commentText = event.target.querySelector('.comment-textarea').value;
+              document.addEventListener("DOMContentLoaded", function () {
+    // Sélectionner tous les formulaires de commentaires
+    document.querySelectorAll("form[id^='comment-form-']").forEach(form => {
+        form.addEventListener("submit", function (event) {
+            event.preventDefault(); // Empêcher le rechargement de la page
 
-                  // Check if the comment field is empty
-                  if (!commentText.trim()) {
-                     alert("The comment cannot be empty.");
-                     return;
-                  }
+            let sondageId = this.getAttribute("data-sondage-id");
+            let commentText = this.querySelector(".comment-textarea").value.trim();
 
-                  // Send the comment to the backend via fetch
-                  fetch(`/commentaire/comment/add/${sondageId}`, {
-                     method: 'POST',
-                     headers: {
-                           'Content-Type': 'application/json'
-                     },
-                     body: JSON.stringify({
-                           contenuComment: commentText
-                     })
-                  })
-                  .then(response => response.json())
-                  .then(data => {
-                     if (data.error) {
-                           alert(data.error);
-                     } else {
-                           alert(data.message);  // Show success message
-                           // Manually clear the comment text field after successful submission
-                           event.target.querySelector('.comment-textarea').value = '';
-                           // Optionally: Add the comment to the list of comments displayed on the page
-                           loadComments(sondageId);  // Reload the comments for the specific poll
-                     }
-                  })
-                  .catch(error => {
-                     console.error('Error adding comment:', error);
-                  });
-               }
+            if (!commentText) {
+                alert("Comment can't be empty.");
+                return;
+            }
+
+            // Envoyer la requête au serveur
+            fetch(`/commentaire/comment/add/${sondageId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contenuComment: commentText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert(data.message);
+                    this.querySelector(".comment-textarea").value = ""; // Vider le champ
+
+                    // Recharger la liste des commentaires après l'ajout
+                    loadComments(sondageId);
+                }
+            })
+            .catch(error => console.error("Erreur lors de l'ajout du commentaire:", error));
+        });
+    });
+});
+
+
+// Fonction pour rafraîchir les commentaires après ajout
+function loadComments(sondageId) {
+    fetch(`/commentaire/comment/list/${sondageId}`)
+    .then(response => response.json())
+    .then(data => {
+        const commentList = document.querySelector(`#commentsModal${sondageId} .comments-list`);
+        
+        if (!commentList) {
+            console.error(`La liste de commentaires n'a pas été trouvée pour le sondage ${sondageId}`);
+            return;
+        }
+
+        commentList.innerHTML = ""; // Vider la liste actuelle
+
+        if (data.length > 0) {
+            data.forEach(comment => {
+                const commentBox = document.createElement("div");
+                commentBox.classList.add("comment-box");
+                commentBox.innerHTML = `
+                    <div class="comment-info d-flex">
+                        <div class="comment-avatar mr-20">
+                            <img src="front_assets/img/blog/comments/user.png" alt="">
+                        </div>
+                        <div class="avatar-name">
+                            <h5>${comment.user}</h5>
+                            <span class="post-meta">${comment.date}</span>
+                        </div>
+                    </div>
+                    <div class="comment-text">
+                        <p>${comment.content}</p>
+                    </div>
+                `;
+                commentList.appendChild(commentBox);
+            });
+        } else {
+            commentList.innerHTML = "<p>Aucun commentaire pour l'instant.</p>";
+        }
+    })
+    .catch(error => console.error("Erreur lors du chargement des commentaires:", error));
+}
+
+
 
 </script>
 <!-- jQuery et Bootstrap JS -->
