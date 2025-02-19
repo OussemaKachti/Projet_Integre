@@ -1,160 +1,223 @@
+
 {% extends 'base.html.twig' %}
 
 {% block body %}
-
-
-
-
-
-      <main>
-
-         <!-- breadcrumb area start -->
-<section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="{{ asset('front_assets/img/clubsA.jpg') }}">            <div class="container">
-               <div class="row">
-                  <div class="col-xxl-12">
-                     <div class="breadcrumb__content text-center p-relative z-index-1">
-                        <h3 class="breadcrumb__title">Create club</h3>
+<main>
+    <!-- breadcrumb area start -->
+    <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="{{ asset('front_assets/img/clubsA.jpg') }}">
+        <div class="container">
+            <div class="row">
+                <div class="col-xxl-12">
+                    <div class="breadcrumb__content text-center p-relative z-index-1">
+                        <h3 class="breadcrumb__title">Our Clubs</h3>
                         <div class="breadcrumb__list">
-                           <span><a href="index.html">Home</a></span>
-                           <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
-                           <span>Join us</span>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </section>
-         <!-- breadcrumb area end -->
-
-            <!-- coupon-area start -->
-            <section class="coupon-area pt-120 pb-30">
-               <div class="container">
-               <div class="row">
-               <div class="col-md-6">
-                   <div class="coupon-accordion">
-                           <!-- ACCORDION START -->
-                           
-                           <div id="checkout-login" class="coupon-content">
-                           <div class="coupon-info">
-                               <p class="coupon-text">Quisque gravida turpis sit amet nulla posuere lacinia. Cras sed est
-                                       sit amet ipsum luctus.</p>
-                               <form action="#">
-                                       <p class="form-row-first">
-                                       <label>Username or email <span class="required">*</span></label>
-                                       <input type="text">
-                                       </p>
-                                       <p class="form-row-last">
-                                       <label>Password <span class="required">*</span></label>
-                                       <input type="text">
-                                       </p>
-                                       <p class="form-row">
-                                       <button class="tp-btn" type="submit">Login</button>
-                                       <label>
-                                           <input type="checkbox">
-                                           Remember me
-                                       </label>
-                                       </p>
-                                       <p class="lost-password">
-                                       <a href="#">Lost your password?</a>
-                                       </p>
-                               </form>
-                           </div>
-                           </div>
-                           <!-- ACCORDION END -->
-                   </div>
-               </div>
-               <div class="col-md-6">
-                   <div class="coupon-accordion">
-                           <!-- ACCORDION START -->
-                           
-                           <!-- ACCORDION END -->
-                   </div>
-               </div>
-               </div>
-           </div>
-           </section>
-           <!-- coupon-area end -->
-
-           <section class="checkout-area pb-85">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-6">
-                        <div class="checkbox-form text-center">
-                            <h3>Details</h3>
-                            <form action="#">
-                                <div class="checkout-form-list">
-                                    <label>Club Name</label>
-                                    <input type="text" id="clubName" placeholder="">
-                                </div>
-                                <div class="checkout-form-list">
-                                    <label>Club description:</label>
-                                    <textarea id="mission" cols="30" rows="5" placeholder="Kindly avoid using any offensive or inappropriate language when filling out this form"></textarea>
-                                </div>
-                                <div class="checkout-form-list">
-                                    <label for="image-upload">Upload image (required):</label>
-                                    <input type="file" id="image-upload" accept="image/*" required>
-                                </div>
-                                <div class="order-button-payment mt-20">
-                                    <button type="submit" class="tp-btn" id="submitBtn" style="display: flex; align-items: center; justify-content: center; width: 100%;">Submit</button>
-                                </div>
-                            </form>
+                            <span><a href="#">Home</a></span>
+                            <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
+                            <span>Clubs</span>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
-        
-        
-        
-                           
-   
-                                   
-                                       
-                                       
-                                       
-                                   </div>
-                               </div>
-                           </div>
-                       </div>
-                   </form>
-                  
-               </div>
-           </section>
-      
-           <!-- checkout-area end -->
-
-
-      </main>
-
-         
-
-
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2>Liste des Clubs</h2>
-            <a href="{{ path('app_club_new') }}" class="btn btn-primary">Créer un nouveau club</a>
         </div>
+    </section>
+    <!-- breadcrumb area end -->
 
-        <div class="row">
-            {% for club in clubs %}
-                <div class="col-md-4">
-                    <div class="card shadow-sm mb-4">
-                        <img src="{{ asset('uploads/clubs/' ~ club.image) }}" class="card-img-top" alt="{{ club.nomC }}" style="height: 200px; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ club.nomC }}</h5>
-                            <p class="card-text text-muted">{{ club.description|slice(0, 100) ~ '...' }}</p>
-                           
-                            <div class="d-flex justify-content-between">
-                                <a href="{{ path('app_club_show', {'id': club.id}) }}" class="btn btn-info btn-sm">Voir plus</a>
-                                
-                                <a href="#" class="btn btn-success btn-sm">Participer</a>
+    <!-- course area start -->
+    <section class="course__area pt-115 pb-90 grey-bg-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-xxl-12">
+                    <div class="course__tab-inner white-bg mb-50">
+                        <div class="row align-items-center">
+                            <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6">
+                                <div class="course__tab-wrapper d-flex align-items-center">
+                                    <div class="course__tab-btn">
+                                        <ul class="nav nav-tabs" id="courseTab" role="tablist">
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link active" id="grid-tab" data-bs-toggle="tab" data-bs-target="#grid" type="button" role="tab" aria-controls="grid" aria-selected="true">
+                                                    <svg class="grid" viewBox="0 0 24 24">
+                                                        <rect x="3" y="3" class="st0" width="7" height="7"/>
+                                                        <rect x="14" y="3" class="st0" width="7" height="7"/>
+                                                        <rect x="14" y="14" class="st0" width="7" height="7"/>
+                                                        <rect x="3" y="14" class="st0" width="7" height="7"/>
+                                                    </svg>
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="course__view">
+                                        <h4>Showing 1 - 6</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6">
+                                <div class="course__sort d-flex justify-content-sm-end">
+                                    <div class="course__sort-inner">
+                                        <a href="{{ path('app_club_new') }}" class="tp-btn join-button" style="display: flex; align-items: center; justify-content: center; width: 100%; text-decoration: none; color: white;">
+                                            Create club
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            {% else %}
-                <p class="text-center">Aucun club trouvé.</p>
-            {% endfor %}
+            </div>
+
+            <div class="row" style="display: flex; flex-wrap: wrap; align-items: stretch;">
+                <!-- Carte 1 : Lion Club -->
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6" style="display: flex;">
+                    <div class="course__item-2 transition-3 white-bg mb-30 fix" style="display: flex; flex-direction: column; width: 100%;">
+                        <div class="course__thumb-2 w-img fix">
+                            <a href="#">
+                                <img src="{{ asset('front_assets/img/lion.jpg') }}" alt="Lion Club" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
+                            </a>
+                        </div>
+                        <div class="course__content-2 p-20" style="flex: 1; display: flex; flex-direction: column;">
+                            <h3 class="course__title-2" style="font-size: 24px; color: #333; margin-bottom: 15px;">
+                                <a href="{{ path('clubdetail') }}">Lion Club</a>
+                            </h3>
+                            <p style="font-size: 16px; color: #555; line-height: 1.6; margin-bottom: 20px; flex: 1;">
+                                Serving communities with compassion, unity, and a commitment to global impact.
+                            </p>
+                            <div class="course__bottom-2 d-flex align-items-center justify-content-between">
+                                <div class="course__action">
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        <li>
+                                            <div class="course__action-item d-flex align-items-center">
+                                                <div class="course__action-icon mr-5">
+                                                    <span>
+                                                        <!-- Score Icon -->
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#5F6160" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <div class="course__action-score">
+                                                    <span style="font-weight: bold; color: #5F6160;">1522</span>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carte 2 : IEEE -->
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6" style="display: flex;">
+                    <div class="course__item-2 transition-3 white-bg mb-30 fix" style="display: flex; flex-direction: column; width: 100%;">
+                        <div class="course__thumb-2 w-img fix">
+                            <a href="#">
+                                <img src="{{ asset('front_assets/img/IEEE.jpg') }}" alt="IEEE" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
+                            </a>
+                        </div>
+                        <div class="course__content-2 p-20" style="flex: 1; display: flex; flex-direction: column;">
+                            <h3 class="course__title-2" style="font-size: 24px; color: #333; margin-bottom: 15px;">
+                                <a>IEEE</a>
+                            </h3>
+                            <p style="font-size: 16px; color: #555; line-height: 1.6; margin-bottom: 20px; flex: 1;">
+                                Empowering future engineers through innovation, collaboration, and excellence.
+                            </p>
+                            <div class="course__bottom-2 d-flex align-items-center justify-content-between">
+                                <div class="course__action">
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        <li>
+                                            <div class="course__action-item d-flex align-items-center">
+                                                <div class="course__action-icon mr-5">
+                                                    <span>
+                                                        <!-- Score Icon -->
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#5F6160" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <div class="course__action-score">
+                                                    <span style="font-weight: bold; color: #5F6160;">1222</span>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carte 3 : Enactus -->
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6" style="display: flex;">
+                    <div class="course__item-2 transition-3 white-bg mb-30 fix" style="display: flex; flex-direction: column; width: 100%;">
+                        <div class="course__thumb-2 w-img fix">
+                            <a href="#">
+                                <img src="{{ asset('front_assets/img/Enactus.png') }}" alt="Enactus" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
+                            </a>
+                        </div>
+                        <div class="course__content-2 p-20" style="flex: 1; display: flex; flex-direction: column;">
+                            <h3 class="course__title-2" style="font-size: 24px; color: #333; margin-bottom: 15px;">
+                                <a>Enactus</a>
+                            </h3>
+                            <p style="font-size: 16px; color: #555; line-height: 1.6; margin-bottom: 20px; flex: 1;">
+                                Transforming ideas into action to create sustainable change in communities.
+                            </p>
+                            <div class="course__bottom-2 d-flex align-items-center justify-content-between">
+                                <div class="course__action">
+                                    <ul style="list-style: none; padding: 0; margin: 0;">
+                                        <li>
+                                            <div class="course__action-item d-flex align-items-center">
+                                                <div class="course__action-icon mr-5">
+                                                    <span>
+                                                        <!-- Score Icon -->
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#5F6160" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <div class="course__action-score">
+                                                    <span style="font-weight: bold; color: #5F6160;">1422</span>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="row">
+                <div class="col-xxl-12">
+                    <div class="basic-pagination">
+                        <nav class="pagination-container">
+                            <ul class="pagination-controls">
+                                <li>
+                                    <a href="#">
+                                        <i class="far fa-angle-left"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#">1</a>
+                                </li>
+                                <li>
+                                    <span class="current">2</span>
+                                </li>
+                                <li>
+                                    <a href="#">3</a>
+                                </li>
+                                <li>
+                                    <a href="#">
+                                        <i class="far fa-angle-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
+    <!-- course area end -->
+</main>
 {% endblock %}

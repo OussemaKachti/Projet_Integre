@@ -3,3 +3,17 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+clubdetails:
+    path: /club/{id}
+    controller: App\Controller\ClubController::details
+    methods: GET
+
+delete_club:
+    path: /club/{id}/delete
+    controller: App\Controller\ClubController::deleteClub
+    methods: POST
+
+joinclub:
+    path: /club/{id}/join
+    controller: App\Controller\ClubController::joinClub
+    methods: GET

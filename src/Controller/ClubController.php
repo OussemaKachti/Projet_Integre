@@ -105,6 +105,7 @@ class ClubController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $club->setStatus(StatutClubEnum::EN_ATTENTE);
             $club->setPoints(0);
+            dd($club);
             $entityManager->persist($club);
             $entityManager->flush();
 
@@ -163,6 +164,24 @@ class ClubController extends AbstractController
 
         return $this->redirectToRoute('app_club_index2', [], Response::HTTP_SEE_OTHER);
     }
+
+    #[Route('/club/{id}/delete', name: 'delete_club', methods: ['POST'])]
+    public function deleteClub(Club $club, EntityManagerInterface $entityManager, Request $request): Response
+    {
+        // Check if the request method is POST
+        if ($request->isMethod('POST')) {
+            // Delete the club
+            $entityManager->remove($club);
+            $entityManager->flush();
+
+            // Redirect to the homepage or another page
+            return $this->redirectToRoute('homepage');
+        }
+
+        // If not a POST request, redirect back to the club details page
+        return $this->redirectToRoute('clubdetails', ['id' => $club->getId()]);
+    }
+
 }
 
 
