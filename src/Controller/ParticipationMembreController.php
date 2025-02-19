@@ -21,6 +21,14 @@ class ParticipationMembreController extends AbstractController
             'participation_membres' => $participationMembreRepository->findAll(),
         ]);
     }
+
+    #[Route('/indexx', name: 'index2', methods: ['GET'])]
+    public function index2(ParticipationMembreRepository $participationMembreRepository): Response
+    {
+        return $this->render('participation_membre/index2.html.twig', [
+            'participation_membres' => $participationMembreRepository->findAll(),
+        ]);
+    }
     
 
     #[Route('/new', name: 'app_participation_membre_new', methods: ['GET', 'POST'])]
