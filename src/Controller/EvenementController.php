@@ -13,6 +13,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use App\Repository\ClubRepository;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 #[Route('/evenement')]
@@ -42,6 +45,28 @@ public function adminPage(EvenementRepository $evenementRepository , CategorieRe
         ]);
     }
 
+
+    #[Route('/club/{clubId}/events', name: 'club_events')]
+    public function showEvents(int $clubId, ClubRepository $clubRepository, EvenementRepository $evenementRepository): Response
+    {
+        // Récupérer le club via son ID
+        $club = $clubRepository->find($clubId);
+
+        if (!$club) {
+            throw $this->createNotFoundException('Le club n\'existe pas.');
+        }
+
+        // Récupérer les événements du club
+        $evenements = $evenementRepository->findBy(['club' => $club]);
+
+        // Rendre la vue en passant le club et ses événements
+        return $this->render('evenement/eventClub.html.twig', [
+            'club' => $club,
+            'evenements' => $evenements,
+        ]);
+    }
+
+
     #[Route('/event/details/{id}', name: 'eventdetails', methods: ['GET'])]
     public function show(EvenementRepository $evenementRepository, $id): Response
     {
@@ -70,56 +95,54 @@ public function adminPage(EvenementRepository $evenementRepository , CategorieRe
         ]);
     }
 
+ 
 
     #[Route('/new', name: 'app_evenement_new', methods: ['GET', 'POST'])]
-   // src/Controller/EvenementController.php
-
-public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
-{
-    $evenement = new Evenement();
-    $form = $this->createForm(EvenementType::class, $evenement);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        if ($evenement->getClub() === null) {
-            $this->addFlash('error', 'Le club doit être sélectionné.');
-            return $this->redirectToRoute('app_evenement_new');
-        }
-
-      
-
-        // Gestion de l'upload de l'image pour la description
-        $imageDescriptionFile = $form->get('imageDescription')->getData();
-        if ($imageDescriptionFile) {
-            $originalFilename = pathinfo($imageDescriptionFile->getClientOriginalName(), PATHINFO_FILENAME);
-            $safeFilename = $slugger->slug($originalFilename);
-            $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageDescriptionFile->guessExtension();
-
-            try {
-                $imageDescriptionFile->move(
-                    $this->getParameter('event_images_directory'), // Assurez-vous de spécifier le bon répertoire
-                    $newFilename
-                );
-                $evenement->setImageDescription($newFilename); // Enregistrez le nom de l'image dans la base de données
-            } catch (FileException $e) {
-                // Gérer l'erreur si l'upload échoue
+    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    {
+        $evenement = new Evenement();
+        $form = $this->createForm(EvenementType::class, $evenement);
+        
+        // Vérifier si des données sont présentes dans l'URL (params)
+       
+    
+        $form->handleRequest($request);
+    
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Gestion de l'image
+            $imageDescriptionFile = $form->get('imageDescription')->getData();
+            if ($imageDescriptionFile) {
+                $originalFilename = pathinfo($imageDescriptionFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageDescriptionFile->guessExtension();
+                try {
+                    $imageDescriptionFile->move(
+                        $this->getParameter('event_images_directory'),
+                        $newFilename
+                    );
+                    $evenement->setImageDescription($newFilename);
+                } catch (FileException $e) {
+                    // Si une erreur survient lors du déplacement de l'image
+                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image');
+                }
             }
+    
+            // Sauvegarder l'événement dans la base de données
+            $entityManager->persist($evenement);
+            $entityManager->flush();
+    
+            // Message flash pour informer l'utilisateur
+            $this->addFlash('success', 'Événement créé avec succès !');
+            return $this->redirectToRoute('event');
         }
-
-        // Sauvegarde en base de données
-        $entityManager->persist($evenement);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Événement créé avec succès !');
-        return $this->redirectToRoute('event');
+    
+        return $this->render('evenement/newevent.html.twig', [
+            'form' => $form->createView(),
+            'evenement' => $evenement,
+        ]);
     }
-
-    return $this->render('evenement/newevent.html.twig', [
-        'form' => $form->createView(),
-        'evenement' => $evenement,
-    ]);
-}
-
+    
+    
 
 #[Route('/{id}/edit', name: 'app_evenement_edit', methods: ['GET', 'POST'])]
 public function edit(Request $request, Evenement $evenement, EntityManagerInterface $entityManager): Response
@@ -157,7 +180,6 @@ public function delete(Request $request, EntityManagerInterface $entityManager, 
     if ($this->isCsrfTokenValid('delete' . $evenement->getId(), $request->request->get('_token'))) {
         $entityManager->remove($evenement);
         $entityManager->flush();
-        $this->addFlash('success', 'Événement supprimé avec succès.');
     }
 
     return $this->redirectToRoute('admin_page'); // Redirection vers la liste des événements
@@ -173,7 +195,7 @@ public function delete2(Request $request, EntityManagerInterface $entityManager,
     if ($this->isCsrfTokenValid('delete' . $evenement->getId(), $request->request->get('_token'))) {
         $entityManager->remove($evenement);
         $entityManager->flush();
-        $this->addFlash('success', 'Événement supprimé avec succès.');
+      
     }
 
     return $this->redirectToRoute('event'); // Redirection vers la liste des événements

@@ -15,31 +15,29 @@ use Symfony\Component\Routing\Annotation\Route;
 class CategorieController extends AbstractController
 {
     #[Route('/', name: 'app_categorie_index', methods: ['GET', 'POST'])]
-    public function index(Request $request, EntityManagerInterface $entityManager, CategorieRepository $categorieRepository): Response
-    {
-        // Créer un nouvel objet Categorie pour le formulaire
-        $categorie = new Categorie();
-        $form = $this->createForm(CategorieType::class, $categorie);
-        $form->handleRequest($request);
-    
-        // Si le formulaire est soumis et valide, on sauvegarde la catégorie
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($categorie);
-            $entityManager->flush();
-    
-            // Rediriger vers la même page après la soumission pour afficher la nouvelle catégorie
-            return $this->redirectToRoute('app_categorie_index');
-        }
-    
-        // Récupérer toutes les catégories existantes
-        $categories = $categorieRepository->findAll();
-    
-        return $this->render('categorie/show.html.twig', [
-            'categories' => $categories,
-            'form' => $form->createView(),  // Vue du formulaire pour ajout de catégorie
-        ]);
+public function index(Request $request, EntityManagerInterface $entityManager, CategorieRepository $categorieRepository): Response
+{
+    $categorie = new Categorie();
+    $form = $this->createForm(CategorieType::class, $categorie);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $entityManager->persist($categorie);
+        $entityManager->flush();
+
+        // Rediriger vers la création d'événement avec la nouvelle catégorie sélectionnée
+        return $this->redirectToRoute('app_evenement_new', ['newCategory' => $categorie->getId()]);
     }
-    
+
+    // Récupérer toutes les catégories existantes
+    $categories = $categorieRepository->findAll();
+
+    return $this->render('categorie/show.html.twig', [
+        'categories' => $categories,
+        'form' => $form->createView(),
+    ]);
+}
+
 
  
 

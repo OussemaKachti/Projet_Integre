@@ -126,7 +126,10 @@
                             {{ form_label(form.categorie) }}
                             {{ form_widget(form.categorie, {'attr': {'class': 'form-control'}}) }}
                             {{ form_errors(form.categorie) }}
-                            <a href="{{ path('app_categorie_index') }}" class="btn btn-success">Ajouter une autre catégorie</a>
+                           <a href="{{ path('app_categorie_index') }}" class="btn btn-success" target="_blank">
+    Ajouter une autre catégorie
+</a>
+
                         </div>
 
                         <div class="form-group mb-3">
