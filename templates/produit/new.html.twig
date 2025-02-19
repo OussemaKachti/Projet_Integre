@@ -3,9 +3,84 @@
 {% block title %}New Produit{% endblock %}
 
 {% block body %}
-    <h1>Create new Produit</h1>
+    <section class="checkout-area pb-85">
+        <div class="container">
+    {{form_start(form, {'action': path('app_produit_new'), 'attr': {'enctype': 'multipart/form-data'}}) }}
+                       <div class="row" style= center;justify-content: >
+                           <div class="col-lg-6">
+                               <div class="checkbox-form">
+                                   <h3>Create Product</h3>
+                                   <div class="row">
+                                       <div class="col-md-12">
+                                           
+                                       </div>
+                                       <div class="col-md-12">
+                                           <div class="checkout-form-list">
+                                               <label>Name of product <span class="required">*</span></label>
+                                               {{form_widget(form.nomProd,{'attr':{'class':'form-control'}})}}
+                                           </div>
+                                       </div>
+                                       <div class="col-md-12">
+                                           <div class="checkout-form-list">
+                                               <label>Discription <span class="required">*</span></label>
+                                               {{form_widget(form.descProd,{'attr':{'class':'form-control'}})}}
+                                           </div>
+                                       </div>
+                                       <div class="col-md-12">
+                                           <div class="checkout-form-list">
+                                               <label>Price</label>
+                                               {{form_widget(form.prix,{'attr':{'class':'form-control'}})}}
+                                           </div>
+                                       </div>
+                                       <div class="col-md-12">
+                                           <div class="checkout-form-list">
+                                               <label>Qauntity <span class="required">*</span></label>
+                                               {{form_widget(form.quantity,{'attr':{'class':'form-control'}})}}
+                                           </div>
+                                       </div>
+                                       
+                                       </div>
+                                       
+                                       </div>
+                                       <div class="col-md-6">
+                                           <div class="checkout-form-list">
+                                               <label>Image <span class="required">*</span></label>
+                                               {{form_widget(form.imgProd,{'attr':{'class':'form-control'}})}}
+                                               
+                                           </div>
+                                           <div class="col-md-6">
+                                           <div class="checkout-form-list">
+                                               <label>createdAt <span class="required">*</span></label>
+                                               {{form_widget(form.createdAt,{'attr':{'class':'form-control'}})}}
+                                               
+                                           </div>
+                                           
+                                            <div class="col-md-6">
+                                            <div class="checkout-form-list">
+                                             <label>Club <span class="required">*</span></label>
+                                             {{ form_widget(form.club, {'attr': {'class': 'form-control'}}) }}
+                                            </div>
+                                            </div>
+                                            
+                                           <div class="checkout-form-list">
+                                               
+                                               {{form_widget(form.save,{'attr':{'class':'tp-btn'}})}}
+                                               
+                                           </div>
+                                       </div>
+                                       
+                                       
+                                      
+                                  
+                               </div>
+                           </div>
+                       </div>
+                       </div>
+ </section>
+    {{form_end(form)}}
+    
 
-    {{ include('produit/_form.html.twig') }}
+    
 
     <a href="{{ path('app_produit_index') }}">back to list</a>
 {% endblock %}

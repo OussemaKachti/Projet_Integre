@@ -10,38 +10,110 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
+use App\Entity\Club;
+use App\Repository\ClubRepository;
 
 #[Route('/produit')]
 class ProduitController extends AbstractController
 {
     #[Route('/', name: 'app_produit_index', methods: ['GET'])]
-    public function index(ProduitRepository $produitRepository): Response
+    public function index(ProduitRepository $produitRepository,ClubRepository $clubRepository): Response
     {
-        return $this->render('produit/index.html.twig', [
+        return $this->render('produit/show.html.twig', [
+            'produits' => $produitRepository->findAll(),
+            'clubs' => $clubRepository->findAll(), // Fetch all clubs
+        ]);
+    }
+    #[Route('/admin', name: 'produit_index', methods: ['GET'])]
+    public function inde(ProduitRepository $produitRepository): Response
+    {
+        return $this->render('produit/produit.html.twig', [
             'produits' => $produitRepository->findAll(),
         ]);
     }
+    #[Route('/cart', name: 'cart_commande', methods: ['GET'])]
+    public function cart(ProduitRepository $produitRepository,ClubRepository $clubRepository): Response
+    {
+        return $this->render('produit/commande.html.twig', [
+            'produits' => $produitRepository->findAll(),
+            'clubs' => $clubRepository->findAll(), // Fetch all clubs
+        ]);
+    }
+    public function configurefields(string $pageName):iterable{
+        return[
+      datetimefield::new('createdAt'->hideonForm(),)];
+    }
 
     #[Route('/new', name: 'app_produit_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
+        //dump($request->getMethod()); // Should show 'POST' when the form is submitted
+     //dump($request->request->all()); // Display the submitted form data
         $produit = new Produit();
         $form = $this->createForm(ProduitType::class, $produit);
         $form->handleRequest($request);
-
+        // Debug: Vérifier si le formulaire est soumis et valide
+        
+        //dump($form->isSubmitted());
+      //if ($form->isSubmitted()) {
+         // dump($form->isValid());
+         //}
+       //die;
+    
         if ($form->isSubmitted() && $form->isValid()) {
+            // Vérifie si un club a été sélectionné dans le formulaire
+          $club = $form->get('club')->getData();  // Récupérer l'objet Club
+
+        if (!$club) {
+        // Si aucun club n'est sélectionné, tu peux assigner un club par défaut
+    // Assure-toi qu'un club par défaut existe en base de données
+         $club = $entityManager->getRepository(Club::class)->find(1); // Par exemple, récupérer un club avec ID 1
+
+    // Si le club par défaut n'existe pas, tu peux retourner une erreur ou gérer cette situation
+        if (!$club) {
+        // Ajouter une erreur ou un message d'alerte si aucun club n'est trouvé
+        $this->addFlash('error', 'Aucun club trouvé. Veuillez ajouter un club.');
+        return $this->redirectToRoute('app_produit_new');
+    }
+}
+
+// Assigner le club au produit
+        $produit->setClub($club);
+            
+    
+            // Gestion de l'upload de l'image du produit
+            $imageFile = $form->get('imgProd')->getData();
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+    
+                try {
+                    $imageFile->move(
+                        $this->getParameter('uploads_directory'), // Assurez-vous de définir ce paramètre
+                        $newFilename
+                    );
+                    $produit->setImgProd($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Une erreur est survenue lors du téléchargement de l\'image.');
+                    return $this->redirectToRoute('app_produit_new');
+                }
+            }
+    
+            // Sauvegarde en base de données
             $entityManager->persist($produit);
             $entityManager->flush();
-
-            return $this->redirectToRoute('app_produit_index', [], Response::HTTP_SEE_OTHER);
+    
+            $this->addFlash('success', 'Produit créé avec succès !');
+            return $this->redirectToRoute('app_produit_index');
         }
-
+    
         return $this->render('produit/new.html.twig', [
+            'form' => $form->createView(),
             'produit' => $produit,
-            'form' => $form,
         ]);
     }
-
     #[Route('/{id}', name: 'app_produit_show', methods: ['GET'])]
     public function show(Produit $produit): Response
     {
@@ -57,6 +129,8 @@ class ProduitController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            
+            $entityManager->persist($produit);
             $entityManager->flush();
 
             return $this->redirectToRoute('app_produit_index', [], Response::HTTP_SEE_OTHER);
@@ -78,4 +152,6 @@ class ProduitController extends AbstractController
 
         return $this->redirectToRoute('app_produit_index', [], Response::HTTP_SEE_OTHER);
     }
+
 }
+ 

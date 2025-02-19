@@ -23,15 +23,18 @@ class Produit
     #[ORM\Column]
     private ?float $prix = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $imgProd = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\ManyToOne(targetEntity: Club::class, inversedBy: "produits")]
-    #[ORM\JoinColumn(nullable: false)]
-    private Club $club;
+    #[ORM\JoinColumn(nullable: false,onDelete: "CASCADE")]
+    private Club $club ;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $quantity = null;
 
     public function getClub(): Club
     {
@@ -105,6 +108,18 @@ class Produit
     public function setCreatedAt(\DateTimeInterface $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getQuantity(): ?string
+    {
+        return $this->quantity;
+    }
+
+    public function setQuantity(?string $quantity): static
+    {
+        $this->quantity = $quantity;
 
         return $this;
     }

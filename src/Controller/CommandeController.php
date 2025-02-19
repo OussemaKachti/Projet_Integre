@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Commande;
+use App\Entity\produit;
 use App\Form\CommandeType;
 use App\Repository\CommandeRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,8 +18,9 @@ class CommandeController extends AbstractController
     #[Route('/', name: 'app_commande_index', methods: ['GET'])]
     public function index(CommandeRepository $commandeRepository): Response
     {
-        return $this->render('commande/index.html.twig', [
+        return $this->render('produit/commande.html.twig', [
             'commandes' => $commandeRepository->findAll(),
+            'produit' => $produit,
         ]);
     }
 

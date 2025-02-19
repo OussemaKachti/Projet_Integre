@@ -3,20 +3,64 @@
 {% block title %}Produit index{% endblock %}
 
 {% block body %}
-    <h1>Produit index</h1>
+  <section class="cart-area pt-120 pb-120">
+            <div class="container">
+               <div class="row">
+               <h1>Produit index</h1>
+                  <div class="col-12">
+                        <form action="#">
+                           <div class="table-content table-responsive">
+                              <table class="table">
+                                    <thead>
+                                       <tr>
+                                          <th class="product-remove">ID</th>
+                                          <th class="product-thumbnail">ImgProd</th>
+                                          <th class="cart-product-name">NomProd</th>
+                                          <th class="product-price">price</th>
+                                          <th class="product-quantity">Quantity</th>
+                                          <th class="product-subtotal">CreatedAt</th>
+                                          <th class="product-remove">Actions</th>
+                                          
+                                       </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for produit in produits %}
+                                       <tr>
+                                          <td class="product-id"><a href="course-details.html">{{ produit.id }}</a></td>
+                                          <td class="product-name"><a href="course-details.html">{{ produit.nomProd }}</a></td>
+                                          <td class="product-price"><span class="amount">{{ produit.prix }}</span></td>
+                                          <td class="product-quantity">
+                                            <span class="amount">{{ produit.quantity }}</span></td>
+                                          </td>
+                                          <td class="product-create">
+                                            <a class="tp-btn btn-create" href="checkout2.html">Create</a></td>
+                                            <td class="product-Remove">
+                                                <a class="tp-btn btn-create" href="create.html">Remove</a></td>
+                                          
+                                          <td class="product-Edit">
+                                            <a class="tp-btn btn-create" href="checkout_edit.html">Edit</a></td>
+                                       </tr>
+                                       {% else %}
+                                         <tr>
+                                           <td colspan="7">no records found</td>
+                                         </tr>
+                                        {% endfor %}
+                                       
+                                    </tbody>
+                              </table>
+                           </div>
+                           
+                                    
+                              
+                           
+                        </form>
+                  </div>
+               </div>
+            </div>
+         </section>
+    
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>NomProd</th>
-                <th>DescProd</th>
-                <th>Prix</th>
-                <th>ImgProd</th>
-                <th>CreatedAt</th>
-                <th>actions</th>
-            </tr>
-        </thead>
+   
         <tbody>
         {% for produit in produits %}
             <tr>
