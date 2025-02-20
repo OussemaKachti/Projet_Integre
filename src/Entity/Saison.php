@@ -26,7 +26,7 @@ class Saison
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $dateFin = null;
 
-    #[ORM\OneToMany(mappedBy: "season", targetEntity: Competition::class, cascade: ["persist", "remove"], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: "saison", targetEntity: Competition::class, cascade: ["persist", "remove"], orphanRemoval: true)]
     private Collection $competitions;
 
 

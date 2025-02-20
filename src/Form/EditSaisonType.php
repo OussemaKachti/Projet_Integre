@@ -11,7 +11,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
-class SaisonType extends AbstractType
+class EditSaisonType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -25,12 +25,12 @@ class SaisonType extends AbstractType
             ])
             ->add('dateFin', DateType::class, [
                 'label' => 'End Date',
-                'widget' => 'single_text', // Ensures compatibility with HTML date pickers
+                'widget' => 'single_text',
                 'required' => false,
             ])
             ->add('save', SubmitType::class, [
-                'label' => 'Create Season',
-                'attr' => ['class' => 'btn btn-primary'],
+                'label' => 'Update Season',
+                'attr' => ['class' => 'btn btn-primary']
             ]);
     }
 

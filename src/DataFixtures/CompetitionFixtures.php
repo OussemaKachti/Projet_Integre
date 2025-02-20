@@ -7,7 +7,8 @@ use App\Repository\SaisonRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
-class CompetitionFixtures extends Fixture
+
+class CompetitionFixtures extends Fixture 
 {
     private SaisonRepository $saisonRepository;
 
@@ -15,12 +16,15 @@ class CompetitionFixtures extends Fixture
     {
         $this->saisonRepository = $saisonRepository;
     }
+    
 
     public function load(ObjectManager $manager): void
     {
+
         // Récupérer une saison existante en base
         $saison = $this->saisonRepository->findOneBy([]);
 
+        
         
 
         // Création de quelques compétitions (missions)

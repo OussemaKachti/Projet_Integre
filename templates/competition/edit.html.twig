@@ -1,13 +1,32 @@
-{% extends 'base.html.twig' %}
+{% extends 'baseBack.html.twig' %}
 
-{% block title %}Edit Competition{% endblock %}
+{% block title %}Edit Mission{% endblock %}
 
-{% block body %}
-    <h1>Edit Competition</h1>
+{% block content %}
 
-    {{ include('competition/_form.html.twig', {'button_label': 'Update'}) }}
 
-    <a href="{{ path('app_competition_index') }}">back to list</a>
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Edit Mission</h4>
 
-    {{ include('competition/_delete_form.html.twig') }}
+                   {{ form_start(form , {'method': 'POST'}) }}
+    <div class="mb-3">{{ form_row(form.nomComp, {'attr': {'class': 'form-control'}}) }}</div>
+    <div class="mb-3">{{ form_row(form.descComp, {'attr': {'class': 'form-control'}}) }}</div>
+    <div class="mb-3">{{ form_row(form.points, {'attr': {'class': 'form-control'}}) }}</div>
+    <div class="mb-3">{{ form_row(form.startDate, {'attr': {'class': 'form-control'}}) }}</div>
+    <div class="mb-3">{{ form_row(form.endDate, {'attr': {'class': 'form-control'}}) }}</div>
+    <div class="mb-3">{{ form_row(form.saison, {'attr': {'class': 'form-select'}}) }}</div>
+
+    
+
+    <a href="{{ path('app_competition_index') }}" class="btn btn-secondary">Cancel</a>
+{{ form_end(form ) }}
+
+
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

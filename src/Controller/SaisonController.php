@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Saison;
 use App\Form\SaisonType;
+use App\Form\EditSaisonType;
+
 use App\Repository\SaisonRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,10 +17,22 @@ use Symfony\Component\Routing\Annotation\Route;
 class SaisonController extends AbstractController
 {
     #[Route('/', name: 'app_saison_index', methods: ['GET'])]
-    public function index(SaisonRepository $saisonRepository): Response
+    public function index(Request $request ,SaisonRepository $saisonRepository ,EntityManagerInterface $entityManager): Response
     {
+        $saison = new saison();
+        $form = $this->createForm(SaisonType::class, $saison);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($saison);
+            $entityManager->flush();
+    
+            return $this->redirectToRoute('app_saison_index'); 
+        }
+
         return $this->render('saison/index.html.twig', [
             'saisons' => $saisonRepository->findAll(),
+            'form' => $form->createView(),
         ]);
     }
 
@@ -53,11 +67,12 @@ class SaisonController extends AbstractController
     #[Route('/{id}/edit', name: 'app_saison_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Saison $saison, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(SaisonType::class, $saison);
+        $form = $this->createForm(EditSaisonType::class, $saison);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
+            $this->addFlash('success', 'Season updated successfully!');
 
             return $this->redirectToRoute('app_saison_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -72,6 +87,11 @@ class SaisonController extends AbstractController
     public function delete(Request $request, Saison $saison, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$saison->getId(), $request->request->get('_token'))) {
+            // Remove competitions first if needed
+            foreach ($saison->getCompetitions() as $competition) 
+            {
+                $entityManager->remove($competition);
+            }
             $entityManager->remove($saison);
             $entityManager->flush();
         }
