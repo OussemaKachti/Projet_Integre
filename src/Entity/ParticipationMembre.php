@@ -55,4 +55,8 @@ class ParticipationMembre
         $this->statut = $statut;
         return $this;
     }
+    public function getClub(): Club
+    {
+        return $this->club;
+    }
 }

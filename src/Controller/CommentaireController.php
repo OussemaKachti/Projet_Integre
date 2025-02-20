@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 use App\Entity\User;
 use App\Entity\Sondage;
@@ -128,7 +129,7 @@ public function delete($id, EntityManagerInterface $entityManager): RedirectResp
     $entityManager->flush(); // Appliquer les changements à la base de données
 
     // Message de succès
-    $this->addFlash('success', 'Commentaire supprimé avec succès.');
+    $this->addFlash('success', 'Comment successfully deleted!');
 
     // Rediriger vers la page d'index des commentaires après la suppression
     return $this->redirectToRoute('app_commentaire_index');
@@ -143,47 +144,59 @@ public function delete($id, EntityManagerInterface $entityManager): RedirectResp
 
 
     
-    #[Route('/comment/add/{id}', name: 'add_comment', methods: ['POST'])]
-    public function addComment(int $id, Request $request, SondageRepository $sondageRepository, EntityManagerInterface $em): JsonResponse
-    {
-       // $user = $this->getUser(); // 🔹 Récupérer l'utilisateur connecté
-        $user = $em->getRepository(User::class)->find(1); // Remplace 1 par l'ID d'un utilisateur existant
-
-        if (!$user) {
-            return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
-        }
-
-        $sondage = $sondageRepository->find($id);
-        if (!$sondage) {
-            return new JsonResponse(['error' => 'Survey not found'], Response::HTTP_NOT_FOUND);
-        }
-
-        $data = json_decode($request->getContent(), true);
-        if (!isset($data['contenuComment']) || empty($data['contenuComment'])) {
-            return new JsonResponse(['error' => 'Comment content is required'], Response::HTTP_BAD_REQUEST);
-        }
-
-        // 🔹 Création du commentaire
-        $comment = new Commentaire();
-        $comment->setContenuComment($data['contenuComment']);
-        $comment->setDateComment(new \DateTime());
-        $comment->setUser($user);
-        $comment->setSondage($sondage);
-
-        $em->persist($comment);
-        $em->flush();
-
-        return new JsonResponse([
-            'message' => 'Comment successfully added',
-            'comment' => [
-                'id' => $comment->getId(),
-                'contenu' => $comment->getContenuComment(),
-                'date' => $comment->getDateComment()->format('Y-m-d H:i:s'),
-                'user' => $user->getNom() . ' ' . $user->getPrenom(),
-                'sondage_id' => $sondage->getId()
-            ]
-        ], Response::HTTP_CREATED);
-    }
+                                                    #[Route('/comment/add/{id}', name: 'add_comment', methods: ['POST'])]
+                                                    public function addComment(
+                                                        int $id, 
+                                                        Request $request, 
+                                                        SondageRepository $sondageRepository, 
+                                                        EntityManagerInterface $em,
+                                                        ValidatorInterface $validator
+                                                    ): JsonResponse 
+                                                    {
+                                                        // $user = $this->getUser(); // 🔹 Récupérer l'utilisateur connecté
+                                                        $user = $em->getRepository(User::class)->find(1); // Remplace 1 par l'ID d'un utilisateur existant
+                                                        
+                                                        if (!$user) {
+                                                            return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
+                                                        }
+                                                
+                                                        $sondage = $sondageRepository->find($id);
+                                                        if (!$sondage) {
+                                                            return new JsonResponse(['error' => 'Survey not found'], Response::HTTP_NOT_FOUND);
+                                                        }
+                                                
+                                                        $data = json_decode($request->getContent(), true);
+                                                        
+                                                        $comment = new Commentaire();
+                                                        $comment->setContenuComment($data['contenuComment'] ?? null);
+                                                        $comment->setDateComment(new \DateTime());
+                                                        $comment->setUser($user);
+                                                        $comment->setSondage($sondage);
+                                                
+                                                        // Validation
+                                                        $errors = $validator->validate($comment);
+                                                        if (count($errors) > 0) {
+                                                            $errorMessages = [];
+                                                            foreach ($errors as $error) {
+                                                                $errorMessages[] = $error->getMessage();
+                                                            }
+                                                            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+                                                        }
+                                                
+                                                        $em->persist($comment);
+                                                        $em->flush();
+                                                
+                                                        return new JsonResponse([
+                                                            'message' => 'Comment successfully added',
+                                                            'comment' => [
+                                                                'id' => $comment->getId(),
+                                                                'contenu' => $comment->getContenuComment(),
+                                                                'date' => $comment->getDateComment()->format('Y-m-d H:i:s'),
+                                                                'user' => $user->getNom() . ' ' . $user->getPrenom(),
+                                                                'sondage_id' => $sondage->getId()
+                                                            ]
+                                                        ], Response::HTTP_CREATED);
+                                                    }
 
     #[Route('/comment/list/{id}', name: 'list_comments', methods: ['GET'])]
     public function listComments(int $id, EntityManagerInterface $em): JsonResponse

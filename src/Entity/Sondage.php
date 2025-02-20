@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 
 #[ORM\Entity(repositoryClass: SondageRepository::class)]
@@ -18,7 +19,15 @@ class Sondage
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "The question cannot be empty.")]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: "The question must contain at least {{ limit }} characters.",
+        maxMessage: "The question cannot be longer than {{ limit }} characters."
+    )]    
     private ?string $question = null;
+    
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
@@ -33,6 +42,10 @@ class Sondage
     
     
     #[ORM\OneToMany(targetEntity: ChoixSondage::class, mappedBy: "sondage", cascade: ["remove"], orphanRemoval: true)]
+    #[Assert\Count(
+        min: 2,
+        minMessage: "A survey must have at least 2 choices."
+    )]
 private Collection $choix;
 
 #[ORM\OneToMany(targetEntity: Commentaire::class, mappedBy: "sondage", cascade: ["remove"], orphanRemoval: true)]
@@ -55,7 +68,7 @@ private Collection $commentaires;
         public function addChoix(ChoixSondage $choix): self
         {
             if (!$this->choix->contains($choix)) {
-                $this->choix[] = $choix;
+                $this->choix->add($choix);
                 $choix->setSondage($this); // Assure que le sondage est bien assigné au choix
             }
     
@@ -138,6 +151,12 @@ public function getClub(): Club
 {
     return $this->club;
 }
+
+public function getReponses(): Collection
+{
+    return $this->reponses;
+}
+
 
 
 }
