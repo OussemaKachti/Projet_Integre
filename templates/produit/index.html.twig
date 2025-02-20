@@ -3,10 +3,21 @@
 {% block title %}Produit index{% endblock %}
 
 {% block body %}
+<style>
+.product-actions .btn-group {
+    display: flex;
+    gap: 10px; /* Espace entre les boutons */
+    justify-content: center; /* Centre les boutons */
+    align-items: center; /* Alignement vertical */
+}
+</style>
   <section class="cart-area pt-120 pb-120">
             <div class="container">
                <div class="row">
                <h1>Produit index</h1>
+               <a class="tp-btn btn-create" href="{{ path('app_produit_new') }}">Create</a>
+
+
                   <div class="col-12">
                         <form action="#">
                            <div class="table-content table-responsive">
@@ -25,20 +36,26 @@
                                     </thead>
                                     <tbody>
                                     {% for produit in produits %}
+
                                        <tr>
-                                          <td class="product-id"><a href="course-details.html">{{ produit.id }}</a></td>
-                                          <td class="product-name"><a href="course-details.html">{{ produit.nomProd }}</a></td>
+                                          <td class="product-id">{{ produit.id }}</a></td>
+                                          <td class="product-name">"{{ asset('uploads/' ~ produit.imgProd) }}"</td>
+                                          <td class="product-name">{{ produit.nomProd }}</td>
                                           <td class="product-price"><span class="amount">{{ produit.prix }}</span></td>
                                           <td class="product-quantity">
                                             <span class="amount">{{ produit.quantity }}</span></td>
                                           </td>
-                                          <td class="product-create">
-                                            <a class="tp-btn btn-create" href="checkout2.html">Create</a></td>
-                                            <td class="product-Remove">
-                                                <a class="tp-btn btn-create" href="create.html">Remove</a></td>
-                                          
-                                          <td class="product-Edit">
-                                            <a class="tp-btn btn-create" href="checkout_edit.html">Edit</a></td>
+                                          <td class="product-name"><a href="course-details.html">{{ produit.createdAt|date('Y-m-d H:i') }}</a></td>
+                                      <td class="product-actions">
+    <div class="btn-group" style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+        <form action="{{ path('app_produit_delete', {'id': produit.id}) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this product?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ produit.id) }}">
+            <button type="submit" class="tp-btn btn-create">Delete</button>
+        </form>
+        <a class="tp-btn btn-create" href="{{ path('app_produit_edit', {'id': produit.id }) }}">Edit</a>
+    </div>
+</td>
+
                                        </tr>
                                        {% else %}
                                          <tr>
@@ -61,27 +78,7 @@
     
 
    
-        <tbody>
-        {% for produit in produits %}
-            <tr>
-                <td>{{ produit.id }}</td>
-                <td>{{ produit.nomProd }}</td>
-                <td>{{ produit.descProd }}</td>
-                <td>{{ produit.prix }}</td>
-                <td>{{ produit.imgProd }}</td>
-                <td>{{ produit.createdAt ? produit.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_produit_show', {'id': produit.id}) }}">show</a>
-                    <a href="{{ path('app_produit_edit', {'id': produit.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="7">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+        
 
     <a href="{{ path('app_produit_new') }}">Create new</a>
 {% endblock %}
