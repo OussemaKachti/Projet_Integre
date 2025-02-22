@@ -13,6 +13,34 @@
 					<div class="card">
 						<div class="card-body">
 							<h4 class="card-title">Polls management</h4>
+							<!-- Formulaire de recherche -->
+							<form method="GET" action="{{ path('admin_search_poll') }}" class="filter-form">
+								<div class="dropdown">
+									<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+										Search by
+									</button>
+									<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+										<li>
+											<a class="dropdown-item" href="#" data-search-type="q">Poll Question</a>
+										</li>
+										<li>
+											<a class="dropdown-item" href="#" data-search-type="club_name">Club Name</a>
+										</li>
+										<li>
+											<a class="dropdown-item" href="#" data-search-type="start_date">Start Date</a>
+										</li>
+										<li>
+											<a class="dropdown-item" href="#" data-search-type="end_date">End Date</a>
+										</li>
+									</ul>
+								</div>
+
+								<input type="text" name="q" class="form-control" id="search-input" placeholder="Enter search value..." value="{{ query }}" required>
+								<input type="date" name="start_date" class="form-control" value="{{ startDate }}">
+								<input type="date" name="end_date" class="form-control" value="{{ endDate }}">
+								<input type="text" name="club_name" class="form-control" placeholder="Club Name" value="{{ clubName }}">
+								<button type="submit" class="filter-button">Search</button>
+							</form>
 
 							<div class="table-responsive">
 								<table class="table table-striped table-sm">
@@ -54,65 +82,100 @@
 
 									</tbody>
 
-		<script>
-				document.addEventListener("DOMContentLoaded", function () { // Sélectionne tous les boutons de suppression
-				document.querySelectorAll(".bin-button").forEach(button => {
-				button.addEventListener("click", function () {
-				const sondageId = this.getAttribute("data-id");
+									<script>
 
-				if (! sondageId) {
-				console.error("ID du sondage non trouvé !");
-				showToast("Erreur : ID du sondage introuvable.", "danger");
-				return;
-				}
 
-				if (confirm("Are you sure you want to delete this poll?")) {
-				fetch (`/sondage/deleteAdmin/${sondageId}`, {
-				method: "POST",
-				headers: {
-				"Content-Type": "application/json"
-				}
-				}).then(response => response.json()).then(data => {
-				if (data.message) {
-				showToast("Poll successfully deleted!", "success");
-				setTimeout(() => location.reload(), 1000);
-				} else {
-				showToast(data.error || "Erreur lors de la suppression", "danger");
-				}
-				}).catch(error => {
-				console.error("Erreur:", error);
-				showToast("Une erreur est survenue", "danger");
-				});
-				}
-				});
-				});
-				});
+										document.addEventListener("DOMContentLoaded", function () {
+const dropdownItems = document.querySelectorAll(".dropdown-item");
+const searchInput = document.getElementById("search-input");
+const startDateInput = document.querySelector("input[name='start_date']");
+const endDateInput = document.querySelector("input[name='end_date']");
+const clubNameInput = document.querySelector("input[name='club_name']");
 
-				// Fonction pour afficher un toast
-				function showToast(message, type = "success") {
-				const toastContainer = document.getElementById("toastContainer");
-				const toast = document.createElement("div");
+function hideAllInputs() {
+searchInput.style.display = "none";
+startDateInput.style.display = "none";
+endDateInput.style.display = "none";
+clubNameInput.style.display = "none";
+}
 
-				toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
-				toast.setAttribute("role", "alert");
-				toast.setAttribute("aria-live", "assertive");
-				toast.setAttribute("aria-atomic", "true");
+hideAllInputs(); // Masquer tous les champs au chargement
 
-				toast.innerHTML = `
+dropdownItems.forEach(item => {
+item.addEventListener("click", function () {
+hideAllInputs();
+let type = this.getAttribute("data-search-type");
+
+if (type === "q") {
+searchInput.style.display = "block";
+} else if (type === "start_date" || type === "end_date") {
+startDateInput.style.display = "block";
+endDateInput.style.display = "block";
+} else if (type === "club_name") {
+clubNameInput.style.display = "block";
+}
+});
+});
+});
+
+document.addEventListener("DOMContentLoaded", function () { // Sélectionne tous les boutons de suppression
+document.querySelectorAll(".bin-button").forEach(button => {
+button.addEventListener("click", function () {
+const sondageId = this.getAttribute("data-id");
+
+if (! sondageId) {
+console.error("ID du sondage non trouvé !");
+showToast("Erreur : ID du sondage introuvable.", "danger");
+return;
+}
+
+if (confirm("Are you sure you want to delete this poll?")) {
+fetch (`/sondage/deleteAdmin/${sondageId}`, {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+}
+}).then(response => response.json()).then(data => {
+if (data.message) {
+showToast("Poll successfully deleted!", "success");
+setTimeout(() => location.reload(), 1000);
+} else {
+showToast(data.error || "Erreur lors de la suppression", "danger");
+}
+}).catch(error => {
+console.error("Erreur:", error);
+showToast("Une erreur est survenue", "danger");
+});
+}
+});
+});
+});
+
+// Fonction pour afficher un toast
+function showToast(message, type = "success") {
+const toastContainer = document.getElementById("toastContainer");
+const toast = document.createElement("div");
+
+toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
+toast.setAttribute("role", "alert");
+toast.setAttribute("aria-live", "assertive");
+toast.setAttribute("aria-atomic", "true");
+
+toast.innerHTML = `
 						<div class="d-flex">
 							<div class="toast-body">${message}</div>
 							<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
 						</div>
 					`;
 
-				toastContainer.appendChild(toast);
+toastContainer.appendChild(toast);
 
-				setTimeout(() => {
-				toast.classList.remove("show");
-				toast.addEventListener("transitionend", () => toast.remove());
-				}, 2000);
-				}
-		</script>
+setTimeout(() => {
+toast.classList.remove("show");
+toast.addEventListener("transitionend", () => toast.remove());
+}, 2000);
+}
+									</script>
 
 
 									<style>

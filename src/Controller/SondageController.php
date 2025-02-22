@@ -224,59 +224,65 @@ public function getColorByPercentage(float $percentage): string
         // Passer les sondages avec le nom du club à la vue
         return $this->render('sondage/adminPolls.html.twig', [
             'sondages' => $sondagesAvecClub,
+            'query' => '',
+            'startDate' => '',
+            'endDate' => '',
+            'clubName' => '',
         ]);
     }
     
 
-   
+    #[Route('/admin/polls', name: 'admin_search_poll', methods: ['GET'])]
+    public function searchPolls(Request $request, SondageRepository $sondageRepository): Response
+    {
+        $query = $request->query->get('q', '');
+        $startDate = $request->query->get('start_date', null);
+        $endDate = $request->query->get('end_date', null);
+        $clubName = $request->query->get('club_name', null);
     
-/*
-            #[Route('/admin/polls', name: 'app_poll_index4')]
-        public function filterByClub(Request $request, EntityManagerInterface $entityManager): Response
-        {
-            // Récupérer tous les clubs pour le filtre
-            $clubs = $entityManager->getRepository(Club::class)->findAll();
-
-            // Récupérer le nom du club sélectionné depuis la requête
-            $clubFilter = $request->query->get('club'); // nom du club
-
-            // Construire la requête pour récupérer les sondages
-            $queryBuilder = $entityManager->getRepository(Sondage::class)->createQueryBuilder('s')
-                ->join('s.club', 'cl')  // Utilisation de 'join' pour relier Sondage à Club
-                ->addSelect('cl');       // Ajout de 'cl' pour récupérer les informations sur le club
-
-            // Appliquer le filtre si un club est sélectionné
-            if ($clubFilter && $clubFilter !== 'all') {
-                $queryBuilder->where('cl.nomC = :clubName')  // Utiliser 'nomC' pour la propriété correcte
-                    ->setParameter('clubName', $clubFilter);
-            }
-
-            // Exécuter la requête
-            $sondages = $queryBuilder->getQuery()->getResult();
-
-            // Formater les sondages avec les informations nécessaires
-            $sondagesAvecClub = [];
-            foreach ($sondages as $sondage) {
-                $club = $sondage->getClub();
-                $clubName = $club ? $club->getNomC() : 'Non défini'; // Utiliser getNomC() pour obtenir le nom du club
-
-                // Ajouter le sondage au tableau avec les informations nécessaires
-                $sondagesAvecClub[] = [
+        // Validation des critères de dates
+        $dateFilter = [];
+        if ($startDate) {
+            $dateFilter['start'] = \DateTime::createFromFormat('Y-m-d', $startDate);
+        }
+        if ($endDate) {
+            $dateFilter['end'] = \DateTime::createFromFormat('Y-m-d', $endDate);
+        }
+    
+        // Recherche des sondages avec des critères avancés
+        $results = $sondageRepository->advancedSearch($query, $dateFilter, $clubName);
+    
+        // Formatage des résultats pour l'affichage
+        $formattedResults = array_map(function($sondage) {
+            try {
+                return [
                     'id' => $sondage->getId(),
                     'question' => $sondage->getQuestion(),
-                    'club_name' => $clubName,
-                    'created_at' => $sondage->getCreatedAt()->format('Y-m-d'),
+                    'createdAt' => $sondage->getCreatedAt()->format('d/m/Y'),
+                    'club' => $sondage->getClub()->getNomC(),
+                    'url' => $this->generateUrl('app_sondage_show', ['id' => $sondage->getId()])
                 ];
+            } catch (\Exception $e) {
+                return null;
             }
+        }, $results);
+    
+        // Filtrer les résultats null
+        $formattedResults = array_filter($formattedResults);
+    
+        // Retourner la vue avec les résultats de recherche
+        return $this->render('sondage/adminPolls.html.twig', [
+            'sondages' => $formattedResults,
+            'query' => $query,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'clubName' => $clubName,
+        ]);
+        
+    }
+    
+    
 
-            // Retourner la vue avec les sondages et la liste des clubs
-            return $this->render('sondage/adminPolls.html.twig', [
-                'sondages' => $sondagesAvecClub,
-                'clubs' => $clubs,  // Liste des clubs pour le filtre
-                'selectedClub' => $clubFilter ?? 'all', // Club actuellement sélectionné
-            ]);
-        }
-*/
     
     
 
@@ -853,6 +859,81 @@ public function editPoll2(int $id, Request $request, EntityManagerInterface $em)
     
     
     
+    #[Route('/api/search-sondages', name: 'api_search_sondages', methods: ['GET'])]
+    public function searchSondages(Request $request, SondageRepository $sondageRepository): Response
+    {
+        try {
+            $query = $request->query->get('q', '');
+            
+            if (strlen($query) < 2) {
+                // Rediriger ou afficher un message vide dans le template
+                return $this->render('sondage/allPolls.html.twig', [
+                    'sondages' => [],
+                    'query' => $query
+                ]);
+            }
     
+            $results = $sondageRepository->searchByQuestion($query);
+            
+            $formattedResults = array_map(function($sondage) {
+                try {
+                    return [
+                        'id' => $sondage->getId(),
+                        'question' => $sondage->getQuestion(),
+                        'createdAt' => $sondage->getCreatedAt()->format('d/m/Y'),
+                        'club' => $sondage->getClub()->getNomC(),
+                        'url' => $this->generateUrl('app_sondage_show', ['id' => $sondage->getId()])
+                    ];
+                } catch (\Exception $e) {
+                    return null;
+                }
+            }, $results);
+    
+            // Filtrer les résultats null
+            $formattedResults = array_filter($formattedResults);
+            
+            // Rendre la page 'sondage/allPolls.html.twig' avec les résultats formatés
+            return $this->render('sondage/allPolls.html.twig', [
+                'sondages' => $formattedResults,
+                'query' => $query
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->render('sondage/allPolls.html.twig', [
+                'sondages' => [],
+                'query' => $query,
+                'error' => 'Une erreur est survenue lors de la recherche'
+            ]);
+        }
+    }
+    
+
+    //no
+
+    #[Route('/api/polls/search', name: 'api_polls_search', methods: ['GET'])]
+    public function search(Request $request, SondageRepository $sondageRepository): Response
+    {
+        $query = $request->query->get('q', '');
+    
+        // Recherche des sondages contenant le mot-clé dans la question
+        $sondages = $sondageRepository->createQueryBuilder('s')
+            ->where('s.question LIKE :query')
+            ->setParameter('query', '%' . $query . '%')
+            ->orderBy('s.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    
+        // Affichage des résultats dans la même page ou une autre page de résultats
+        return $this->render('sondage/allPolls.html.twig', [
+            'sondages' => $sondages,
+            'search_query' => $query,
+        ]);
+    }
+
+
+   
+
+
+
 
 }

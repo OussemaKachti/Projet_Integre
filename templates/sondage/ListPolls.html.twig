@@ -257,9 +257,22 @@ toast.show();
 						<div
 							class="blog__sidebar pl-70">
 							{# 
-							    {% if app.user and app.user.role == 'presidentClub' %}
-							#}
+																																										    {% if app.user and app.user.role == 'presidentClub' %}
+																																										#}
 							<form id="poll-form" method="POST" action="{{ path('api_poll_new') }}">
+								<div id="toastContainer" class="toast-container position-fixed top-50 start-50 translate-middle" style="z-index: 9999;"></div>
+								<style>
+									.toast-container {
+										z-index: 9999;
+
+									}
+
+									.toast {
+										margin-top: 20px;
+										margin-right: 20px;
+										min-width: 800px;
+									}
+								</style>
 								<div class="poll-creation-container">
 									<h2>Create a Poll</h2>
 									<input type="text" class="input-box" placeholder="Type your question here" name="question">
@@ -276,28 +289,28 @@ toast.show();
 									</div>
 									<button type="submit" class="create-btn">Create Poll</button>
 								</div>
-                                <style>
-.error-message {
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
-    color: #dc3545;
-}
+								<style>
+									.error-message {
+										font-size: 0.875rem;
+										margin-top: 0.25rem;
+										color: #dc3545;
+									}
 
-.input-box {
-    margin-bottom: 1rem;
-}
+									.input-box {
+										margin-bottom: 1rem;
+									}
 
-.poll-creation-container {
-    padding: 1.5rem;
-    background: #fff;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+									.poll-creation-container {
+										padding: 1.5rem;
+										background: #fff;
+										border-radius: 0.5rem;
+										box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+									}
 
-.toast-container {
-    z-index: 9999;
-}
-</style>
+									.toast-container {
+										z-index: 9999;
+									}
+								</style>
 							</form>
 
 							<!-- Toast Notification -->
@@ -313,8 +326,8 @@ toast.show();
 							</div>
 
 							{# 
-							    {% endif %}
-							#}
+																																										    {% endif %}
+																																										#}
 							<button style="--clr: #7808d0" class="button" onclick="window.location.href='{{ path('api_user_polls') }}';">
 								<span class="button__icon-wrapper">
 									<svg width="10" class="button__icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 14 15">
@@ -382,99 +395,126 @@ showToast("danger", "An error occurred during the deletion process.");
 });
 
 
-document.addEventListener("DOMContentLoaded", function() {
-    const pollForm = document.getElementById('poll-form');
-    
-    function showToast(message, type = "success") {
-        const toastElement = document.getElementById("toastMessage");
-        const toastBody = toastElement.querySelector(".toast-body");
-        
-        toastBody.textContent = message;
-        toastElement.classList.remove("bg-success", "bg-danger");
-        toastElement.classList.add(type === "error" ? "bg-danger" : "bg-success");
-        
-        const toast = new bootstrap.Toast(toastElement);
-        toast.show();
-    }
+document.addEventListener("DOMContentLoaded", function () {
+const pollForm = document.getElementById('poll-form');
 
-    function displayValidationErrors(errors) {
-        // Supprimer les messages d'erreur existants
-        document.querySelectorAll('.error-message').forEach(el => el.remove());
-        
-        // Afficher les nouvelles erreurs
-        if (errors.question) {
-            const questionInput = document.querySelector('input[name="question"]');
-            const errorDiv = createErrorElement(errors.question);
-            questionInput.parentNode.insertBefore(errorDiv, questionInput.nextSibling);
-        }
-        
-        if (errors.choices) {
-            const optionsContainer = document.getElementById('options-container');
-            const errorDiv = createErrorElement(errors.choices.join(', '));
-            optionsContainer.parentNode.insertBefore(errorDiv, optionsContainer.nextSibling);
-        }
-    }
+function showToast(message, type = "success") {
+const toastElement = document.getElementById("toastMessage");
+const toastBody = toastElement.querySelector(".toast-body");
 
-    function createErrorElement(message) {
-        const div = document.createElement('div');
-        div.className = 'error-message text-danger mt-1';
-        div.textContent = message;
-        return div;
-    }
+toastBody.textContent = message;
+toastElement.classList.remove("bg-success", "bg-danger");
+toastElement.classList.add(type === "error" ? "bg-danger" : "bg-success");
 
-    window.addOption = function() {
-        const container = document.getElementById('options-container');
-        const optionCount = container.children.length;
-        const newInput = document.createElement('input');
-        newInput.type = 'text';
-        newInput.className = 'input-box';
-        newInput.placeholder = `Option ${optionCount + 1}`;
-        newInput.name = `choix[${optionCount}][contenu]`;
-        container.appendChild(newInput);
-    };
+const toast = new bootstrap.Toast(toastElement);
+toast.show();
+}
 
-    if (pollForm) {
-        pollForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+function displayValidationErrors(errors) { // Supprimer les messages d'erreur existants
+document.querySelectorAll('.error-message').forEach(el => el.remove());
 
-            const question = document.querySelector('input[name="question"]').value.trim();
-            const choixInputs = document.querySelectorAll('#options-container input');
-            const choix = Array.from(choixInputs)
-                .map(input => ({contenu: input.value.trim()}))
-                .filter(option => option.contenu !== '');
+// Afficher les nouvelles erreurs
+if (errors.question) {
+const questionInput = document.querySelector('input[name="question"]');
+const errorDiv = createErrorElement(errors.question);
+questionInput.parentNode.insertBefore(errorDiv, questionInput.nextSibling);
+}
 
-            const data = { question, choix };
+if (errors.choices) {
+const optionsContainer = document.getElementById('options-container');
+const errorDiv = createErrorElement(errors.choices.join(', '));
+optionsContainer.parentNode.insertBefore(errorDiv, optionsContainer.nextSibling);
+}
+}
 
-            fetch('/sondage/api/poll/new', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    showToast(data.message, 'success');
-                    pollForm.reset();
-                    document.getElementById('options-container').innerHTML = `
-                        <input type="text" class="input-box" placeholder="Option 1" name="choix[0][contenu]">
-                        <input type="text" class="input-box" placeholder="Option 2" name="choix[1][contenu]">
-                    `;
-                    setTimeout(() => window.location.reload(), 2000);
-                } else {
-                    if (data.errors) {
-                        displayValidationErrors(data.errors);
-                    }
-                    showToast(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('An error occurred while creating the poll', 'error');
-            });
-        });
-    }
+function createErrorElement(message) {
+const div = document.createElement('div');
+div.className = 'error-message text-danger mt-1';
+div.textContent = message;
+return div;
+}
+
+window.addOption = function () {
+const container = document.getElementById('options-container');
+const optionCount = container.children.length;
+const newInput = document.createElement('input');
+newInput.type = 'text';
+newInput.className = 'input-box';
+newInput.placeholder = `Option ${
+optionCount + 1
+}`;
+newInput.name = `choix[${optionCount}][contenu]`;
+container.appendChild(newInput);
+};
+
+if (pollForm) {
+pollForm.addEventListener('submit', function (e) {
+e.preventDefault();
+
+const question = document.querySelector('input[name="question"]').value.trim();
+const choixInputs = document.querySelectorAll('#options-container input');
+const choix = Array.from(choixInputs).map(input => ({contenu: input.value.trim()})).filter(option => option.contenu !== '');
+
+const data = {
+question,
+choix
+};
+function showToast(message, type) { // Créer le toast
+const toast = document.createElement('div');
+toast.className = `toast align-items-center text-white bg-${
+type === 'success' ? 'success' : 'danger'
+} border-0 show`;
+toast.setAttribute('role', 'alert');
+toast.setAttribute('aria-live', 'assertive');
+toast.setAttribute('aria-atomic', 'true');
+
+toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+
+// Ajouter le toast au conteneur
+const toastContainer = document.getElementById('toastContainer');
+toastContainer.appendChild(toast);
+
+// Supprimer le toast après 3 secondes
+setTimeout(() => {
+toast.remove();
+}, 1000);
+}
+
+// Modification de la partie du fetch qui gère le toast
+fetch('/sondage/api/poll/new', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(data)
+}).then(response => response.json()).then(data => {
+if (data.status === 'success') {
+showToast('Poll created successfully!', 'success');
+pollForm.reset();
+document.getElementById('options-container').innerHTML = `
+            <input type="text" class="input-box" placeholder="Option 1" name="choix[0][contenu]">
+            <input type="text" class="input-box" placeholder="Option 2" name="choix[1][contenu]">
+        `;
+setTimeout(() => window.location.reload(), 2000);
+} else {
+if (data.errors) {
+displayValidationErrors(data.errors);
+}
+showToast(data.message || 'Error creating poll', 'danger');
+}
+}).catch(error => {
+console.error('Error:', error);
+showToast('An error occurred while creating the poll', 'danger');
+});
+});
+}
 });
 
 // Écoutez le submit du formulaire de vote

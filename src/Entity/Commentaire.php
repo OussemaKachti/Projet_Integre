@@ -17,8 +17,7 @@ class Commentaire
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "The content of the comment cannot be empty.")]
-
+    #[Assert\NotBlank(message: "The content of the comment cannot be empty.")]    
     private ?string $contenuComment = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

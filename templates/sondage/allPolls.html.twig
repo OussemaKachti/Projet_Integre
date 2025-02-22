@@ -30,69 +30,90 @@
 		<!-- Page Principale -->
 		<section class="blog__area pt-120 pb-120">
 			<div class="container">
-				<div class="row">
-					
-						<!-- Liste des sondages -->
-						<section class="cart-area pt-120 pb-120">
-							<div class="container">
-								<div class="row ">
-									<div class="col-12">
-										<div class="admin-container">
-											<h2>Poll Management</h2>
+				<div
+					class="row">
+
+					<!-- Liste des sondages -->
+					<section class="cart-area pt-120 pb-120">
+						<div class="container">
+							<div class="row ">
+								<div class="col-12">
+									<div class="admin-container">
+										<h2>Poll Management</h2>
+
+										{% if search_query is defined and search_query is not empty %}
+											<p>Search results for:
+												<strong>{{ search_query }}</strong>
+											</p>
+										{% endif %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a href="{{ path('app_sondage_index') }}" class="btn btn-secondary">Back</a>
+
+    <!-- Barre de recherche -->
+    <div class="header__search w-25 d-none d-xl-block">
+        <form method="GET" action="{{ path('api_polls_search') }}">
+            <div class="header__search-input">
+                <input type="text" name="q" class="form-control" placeholder="Search polls..." required>
+                <button type="submit" class="header__search-btn">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8.11117 15.2222C12.0385 15.2222 15.2223 12.0385 15.2223 8.11111C15.2223 4.18375 12.0385 1 8.11117 1C4.18381 1 1.00006 4.18375 1.00006 8.11111C1.00006 12.0385 4.18381 15.2222 8.11117 15.2222Z" stroke="#031220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M17 17L13.1334 13.1333" stroke="#031220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 
-											<div class="mb-3">
-												<a href="{{ path('app_sondage_index') }}" class="btn btn-secondary">Back</a>
-											</div>
-
-											<table>
-												<thead>
+										<table>
+											<thead>
+												<tr>
+													<th>Question</th>
+													<th>Options</th>
+													<th>Date Created</th>
+													<th>Actions</th>
+												</tr>
+											</thead>
+											<tbody>
+												{% for sondage in sondages %}
 													<tr>
-														<th>Question</th>
-														<th>Options</th>
-														<th>Date Created</th>
-														<th>Actions</th>
-													</tr>
-												</thead>
-												<tbody>
-													{% for sondage in sondages %}
-														<tr>
-															<td>{{ sondage.question }}</td>
-															<td>{{ sondage.choix|map(choice => choice.contenu)|join(', ') }}</td>
-															<td>{{ sondage.createdAt|date('Y-m-d H:i:s') }}</td>
-															<td>
-																<div class="d-flex gap-2">
-																	<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editPollModal" onclick="openEditModal({{ sondage.id }})">Edit</button>
-																	<button class="btn btn-danger" onclick="deletePoll({{ sondage.id }})">Delete</button>
-																</div>
-															</td>
-														</tr>
-													{% else %}
-														<tr>
-															<td colspan="4">No polls found.</td>
-														</tr>
-													{% endfor %}
-												</tbody>
-
-												<!-- Toast Notification -->
-												<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
-													<div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-														<div class="d-flex">
-															<div class="toast-body">
-																Action completed successfully!
+														<td>{{ sondage.question }}</td>
+														<td>{{ sondage.choix|map(choice => choice.contenu)|join(', ') }}</td>
+														<td>{{ sondage.createdAt|date('Y-m-d H:i:s') }}</td>
+														<td>
+															<div class="d-flex gap-2">
+																<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editPollModal" onclick="openEditModal({{ sondage.id }})">Edit</button>
+																<button class="btn btn-danger" onclick="deletePoll({{ sondage.id }})">Delete</button>
 															</div>
-															<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+														</td>
+													</tr>
+												{% else %}
+													<tr>
+														<td colspan="4">No polls found.</td>
+													</tr>
+												{% endfor %}
+											</tbody>
+
+											<!-- Toast Notification -->
+											<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+												<div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+													<div class="d-flex">
+														<div class="toast-body">
+															Action completed successfully!
 														</div>
+														<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 													</div>
 												</div>
+											</div>
 
 
-											</table>
-										</div>
+										</table>
 									</div>
 								</div>
 							</div>
-						</section>
+						</div>
+					</section>
 				</div>
 			</div>
 		</section>
@@ -215,6 +236,8 @@
 	</main>
 
 	<script>
+
+
 		function showToast(message, type = "success") {
 let toastElement = document.getElementById("toastMessage");
 let toastBody = toastElement.querySelector(".toast-body");

@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ORM\Entity(repositoryClass: SondageRepository::class)]
@@ -26,6 +27,8 @@ class Sondage
         minMessage: "The question must contain at least {{ limit }} characters.",
         maxMessage: "The question cannot be longer than {{ limit }} characters."
     )]    
+    #[Groups(['sondage:read'])]
+
     private ?string $question = null;
     
 
