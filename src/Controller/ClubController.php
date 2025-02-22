@@ -102,18 +102,18 @@ class ClubController extends AbstractController
         $form = $this->createForm(ClubType::class, $club);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) { // if the form is submitted and valid
             $club->setStatus(StatutClubEnum::EN_ATTENTE);
             $club->setPoints(0);
             $entityManager->persist($club);  // save
             $entityManager->flush(); // save in the database
 
-            return $this->redirectToRoute('app_club_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_club_index', [], Response::HTTP_SEE_OTHER); // redirect to the index page
         }
 
         return $this->render('club/new.html.twig', [
-            'club' => $club,
-            'form' => $form,
+            'club' => $club, // send the club object to the view
+            'form' => $form, // send the form to the view
         ]);
     }
 

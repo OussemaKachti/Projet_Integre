@@ -21,7 +21,7 @@
                 <td>{{ participation_membre.dateRequest ? participation_membre.dateRequest|date('Y-m-d H:i:s') : '' }}</td>
                 <td>{{ participation_membre.statut }}</td>
                 <td>
-                    <a href="{{ path('club_accepte', {'id': club.id}) }}" class="btn btn-success btn-sm" style="background-color: #28a745; border-color: #28a745; color: white;">
+                    <a href="{{ path('club_accepte', {'id': user.id}) }}" class="btn btn-success btn-sm" style="background-color: #28a745; border-color: #28a745; color: white;">
         <i class="fas fa-check-circle"></i> Accept
     </a>
     <a href="{{ path('app_club_delete', {'id': club.id}) }}" class="btn btn-light btn-sm" style="background-color: #f8d7da; border-color: #f5c6cb; color: #721c24;">

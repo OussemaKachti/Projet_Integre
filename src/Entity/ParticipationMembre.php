@@ -31,6 +31,12 @@ class ParticipationMembre
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
+    public function __construct()
+    {
+        // Set the current date and time as the default value for dateRequest
+        $this->dateRequest = new \DateTime();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -56,6 +62,28 @@ class ParticipationMembre
     public function setStatut(string $statut): self
     {
         $this->statut = $statut;
+        return $this;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    public function setUser(User $user): self
+    {
+        $this->user = $user;
+        return $this;
+    }
+
+    public function getClub(): Club
+    {
+        return $this->club;
+    }
+
+    public function setClub(Club $club): self
+    {
+        $this->club = $club;
         return $this;
     }
 

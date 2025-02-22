@@ -35,16 +35,17 @@ class ParticipationMembreController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $participationMembre = new ParticipationMembre();
-        $form = $this->createForm(ParticipationMembreType::class, $participationMembre);
+        $form = $this->createForm(ParticipationMembreType::class, $participationMembre); // create the form
         $form->handleRequest($request);
 
         
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) { // if the form is submitted and valid
             $participationMembre->setStatut("enAttente");
-            $entityManager->persist($participationMembre);
-            $entityManager->flush();
+            dd($participationMembre);
+            $entityManager->persist($participationMembre);//save
+            $entityManager->flush(); // save in the database
 
-            return $this->redirectToRoute('clubdetail', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('clubdetail', [], Response::HTTP_SEE_OTHER); // redirect to the club detail page
         }
 
         return $this->render('participation_membre/new.html.twig', [

@@ -1,13 +1,19 @@
 <div class="container mt-5">
     <div class="card shadow-lg p-4">
-        <h2 class="text-center mb-4">{{ button_label|default('Save Club') }}</h2>
-        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate', 'id': 'clubForm'}}) }}
 
         <div class="row">
             {% for field in form %}
                 <div class="col-md-6 mb-3">
                     <label class="form-label">{{ field.vars.label|capitalize }}</label>
-                    {{ form_widget(field, {'attr': {'class': 'form-control'}}) }}
+
+                    {% if field.vars.name == 'description' %}
+                        <h5 class="text-secondary mb-2">Why did you choose us?</h5>
+                        {{ form_widget(field, {'attr': {'class': 'form-control', 'placeholder': 'Share your thoughts with us... 😊', 'required': 'required'}}) }}
+                    {% else %}
+                        {{ form_widget(field, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                    {% endif %}
+
                     {{ form_errors(field) }}
                 </div>
             {% endfor %}
@@ -15,10 +21,52 @@
 
         <div class="text-center mt-3">
             <button type="submit" class="btn btn-primary px-4 py-2">
-                <i class="fas fa-save"></i> {{ button_label|default('Save') }}
+                <i class="fas fa-save"></i> {{ button_label|default('Submit') }}
             </button>
         </div>
 
         {{ form_end(form) }}
+
+        <!-- Friendly Reminder -->
+        <div class="alert alert-info mt-4 text-center" role="alert">
+            <i class="fas fa-info-circle"></i> Please ensure your content is respectful and appropriate for all audiences. 🚀
+        </div>
     </div>
 </div>
+
+<!-- Pop-up Modal for Validation -->
+<div class="modal fade" id="validationModal" tabindex="-1" aria-labelledby="validationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="validationModalLabel">Oops! 🚫</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Please fill in all required fields before submitting the form.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var form = document.getElementById('clubForm');
+
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                // Initialize and show Bootstrap Modal
+                var validationModal = new bootstrap.Modal(document.getElementById('validationModal'));
+                validationModal.show();
+            }
+
+            form.classList.add('was-validated');
+        });
+    });
+</script>

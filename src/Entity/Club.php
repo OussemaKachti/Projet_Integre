@@ -23,6 +23,7 @@ class Club
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
+    
 
     #[ORM\Column(type: "string", enumType: StatutClubEnum::class)]
     private StatutClubEnum $status;
