@@ -39,10 +39,10 @@ class ClubController extends AbstractController
         ]);
     }
 
-    #[Route('/listeclub', name: 'listeclub', methods: ['GET'])]
-    public function listeclub(ClubRepository $clubRepository): Response
+    #[Route('/member', name: 'member', methods: ['GET'])]
+    public function member(ClubRepository $clubRepository): Response
     {
-        return $this->render('club/listeClub.html.twig', [
+        return $this->render('club/member.html.twig', [
             'clubs' => $clubRepository->findAll(),
         ]);
     }
@@ -63,10 +63,10 @@ class ClubController extends AbstractController
         ]);
     }
 
-    #[Route('/createclub', name: 'createclub', methods: ['GET'])]
-    public function createclub(ClubRepository $clubRepository): Response
+    #[Route('/frontpage', name: 'frontpage', methods: ['GET'])]
+    public function frontpage(ClubRepository $clubRepository): Response
     {
-        return $this->render('club/createClub.html.twig', [
+        return $this->render('club/frontpage.html.twig', [
             'clubs' => $clubRepository->findAll(),
         ]);
     }
