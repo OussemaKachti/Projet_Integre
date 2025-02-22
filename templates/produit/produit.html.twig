@@ -27,7 +27,9 @@
                     <!-- Colonne gauche (Image du produit) -->
                     <div class="col-lg-6 d-flex justify-content-center">
                         <div class="course__img w-img mb-30" style="max-width: 100%;">
-                            <img src="{{ produit.imgProd }}" alt="Hoodie" class="img-fluid rounded shadow-lg">
+                             <a href="{{ path('app_produit_show', {'id': produit.id})}}">
+                        <img src="{{ asset('uploads/' ~ produit.imgProd) }}" alt="">
+                    </a>
                         </div>
                     </div>
                     <!-- Colonne droite (Formulaire) -->
@@ -45,7 +47,8 @@
                             </div>
         
                             <!-- Bouton de commande -->
-                            <a class="btn btn-success w-100 py-2" href="{{ path('cart_commande')}}">Order</a>
+                            
+                            <a class="btn btn-success" href="{{ path('cart_add', {'id': produit.id}) }}">Order</a>
                         </div>
                     </div>
                     

@@ -5,7 +5,7 @@
 {% block body %}
     <section class="checkout-area pb-85">
         <div class="container">
-    {{form_start(form, {'action': path('app_produit_new'), 'attr': {'enctype': 'multipart/form-data'}}) }}
+    {{form_start(form, {'action': path('app_produit_new'), 'attr': {'enctype': 'multipart/form-data'},'attr':{novalidate:'novalidate'}}) }}
                        <div class="row" style= center;justify-content: >
                            <div class="col-lg-6">
                                <div class="checkbox-form">
@@ -18,24 +18,53 @@
                                            <div class="checkout-form-list">
                                                <label>Name of product <span class="required">*</span></label>
                                                {{form_widget(form.nomProd,{'attr':{'class':'form-control'}})}}
+                                               {{form_errors(form.nomProd,{'attr':{'class':'text-danger'}})}}
                                            </div>
                                        </div>
                                        <div class="col-md-12">
                                            <div class="checkout-form-list">
                                                <label>Discription <span class="required">*</span></label>
                                                {{form_widget(form.descProd,{'attr':{'class':'form-control'}})}}
+                                               {{form_errors(form.descProd,{'attr':{'class':'text-danger'}})}}
+                                               <small id="descHelp" class="form-text text-muted">
+            Veuillez fournir une description claire et compréhensible du produit.
+        </small>
+        <span id="descError" style="color: red; font-size: 14px; display: none;">
+            Votre description est trop courte ou peu compréhensible !
+        </span>
                                            </div>
                                        </div>
+                                       <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const descInput = document.getElementById('descProd');
+        const errorSpan = document.getElementById('descError');
+        
+        descInput.addEventListener('input', function () {
+            let value = descInput.value.trim();
+
+            // Vérifie si la description a au moins 10 mots
+            let wordCount = value.split(/\s+/).filter(word => word.length > 2).length;
+
+            if (wordCount < 10) {
+                errorSpan.style.display = 'block';
+            } else {
+                errorSpan.style.display = 'none';
+            }
+        });
+    });
+</script>
                                        <div class="col-md-12">
                                            <div class="checkout-form-list">
                                                <label>Price</label>
                                                {{form_widget(form.prix,{'attr':{'class':'form-control'}})}}
+                                               {{form_errors(form.prix,{'attr':{'class':'text-danger'}})}}
                                            </div>
                                        </div>
                                        <div class="col-md-12">
                                            <div class="checkout-form-list">
                                                <label>Qauntity <span class="required">*</span></label>
                                                {{form_widget(form.quantity,{'attr':{'class':'form-control'}})}}
+                                               {{form_errors(form.quantity,{'attr':{'class':'test-danger'}})}}
                                            </div>
                                        </div>
                                        

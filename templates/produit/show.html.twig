@@ -78,7 +78,7 @@
         <div class="col-xxl-4 col-xl-4 col-lg-6 col-md-6">
             <div class="course__item white-bg transition-3 mb-30">
                 <div class="course__thumb w-img fix">
-                    <a href="{{ path('app_produit_show', {'id': produit.id})}}>
+                    <a href="{{ path('app_produit_show', {'id': produit.id})}}">
                         <img src="{{ asset('uploads/' ~ produit.imgProd) }}" alt="">
                     </a>
                 </div>
@@ -90,14 +90,14 @@
                         <a href="#">{{ produit.club.nomC }}</a>
                     </div>
                     <h3 class="course__title">
-                        <a href="course-details.html">{{ produit.descProd }}</a>
+                        <a href="course-details.html">{{ produit.nomProd }}</a>
                     </h3>
                     <p>{{ produit.descProd }}</p>
                     <div class="course__bottom d-sm-flex align-items-center justify-content-between">
                         <div class="course__tutor">
                             <a href="#">
                                 <img src="https://logos-world.net/wp-content/uploads/2023/08/AIESEC-Logo.png" alt="">
-                                {{ produit.club.nomC }}
+
                             </a>
                         </div>
                         <div class="course__lesson">

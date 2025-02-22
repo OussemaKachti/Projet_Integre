@@ -5,7 +5,9 @@ namespace App\Controller;
 use App\Entity\Commande;
 use App\Entity\produit;
 use App\Form\CommandeType;
+use App\Repository\ProduitRepository;
 use App\Repository\CommandeRepository;
+use App\Repository\clubRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,12 +17,14 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/commande')]
 class CommandeController extends AbstractController
 {
-    #[Route('/', name: 'app_commande_index', methods: ['GET'])]
-    public function index(CommandeRepository $commandeRepository): Response
+    #[Route('/adminn', name: 'commande_admin', methods: ['GET'])] //show tab produit d admin 
+    public function comadmin(ProduitRepository $produitRepository,ClubRepository $clubRepository): Response
     {
-        return $this->render('produit/commande.html.twig', [
-            'commandes' => $commandeRepository->findAll(),
-            'produit' => $produit,
+        $user = $this->getUser(); // Récupère l'utilisateur connecté
+        return $this->render('produit/commande_admin.html.twig', [
+            'produits' => $produitRepository->findAll(),
+            'clubs' => $clubRepository->findAll(),
+            'user'     => $user,
         ]);
     }
 

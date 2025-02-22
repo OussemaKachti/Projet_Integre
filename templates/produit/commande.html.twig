@@ -41,7 +41,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for produit in produits %}
+                                {% for produit in cartProducts %}
                                 <tr>
                                     <td class="product-thumbnail"><a href="course-details.html"><img src="https://th.bing.com/th/id/OIP.jzNV4d-xQqYp6jo_m3ScUAHaHa?rs=1&pid=ImgDetMain" alt=""></a></td>
                                     <td class="product-name"><a href="course-details.html">{{ produit.nomProd }}</a></td>
@@ -58,9 +58,12 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="product-Edit">
-                                        <a class="tp-btn btn-create" href="{{ path('cart_remove', {'id': produit.id }) }}">Remove</a>
-                                    </td>
+                                    <td class="product-remove">
+    <form action="{{ path('cart_remove', {'id': produit.id}) }}" method="post" onsubmit="return confirm('Are you sure you want to remove this product?');">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ produit.id) }}">
+        <button type="submit" class="tp-btn btn-create">Remove</button>
+    </form>
+</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

@@ -15,15 +15,35 @@ class Produit
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank (message:"name is required")]
     private ?string $nomProd = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank (message:"description is required")]
+    #[Assert\Length(
+        min: 8,
+        max: 200,
+        minMessage: 'Le titre doit faire au moins {{ limit }} caractères',
+        maxMessage: 'Le titre ne doit pas faire plus de {{ limit }} caractères'
+    )]
     private ?string $descProd = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank (message:"price is required")]
+    #[Assert\Type(
+        type: 'integer',
+        message: 'The value {{ value }} is not a valid {{ type }}.',
+    )]
     private ?float $prix = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank (message:"image is required")]
+    #[Assert\Image(
+        minWidth: 200,
+        maxWidth: 400,
+        minHeight: 200,
+        maxHeight: 400,
+    )]
     private ?string $imgProd = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -31,9 +51,15 @@ class Produit
 
     #[ORM\ManyToOne(targetEntity: Club::class, inversedBy: "produits")]
     #[ORM\JoinColumn(nullable: false,onDelete: "CASCADE")]
+    #[Assert\NotBlank(message: 'Le nom du produit ne peut pas être vide')]
     private Club $club ;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank (message:"quantity is required")]
+    #[Assert\Type(
+        type: 'integer',
+        message: 'The value {{ value }} is not a valid {{ type }}.',
+    )]
     private ?string $quantity = null;
 
     public function getClub(): Club

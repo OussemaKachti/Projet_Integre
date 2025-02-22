@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 #[Route('/produit')]
 class ProduitController extends AbstractController
 {
-    #[Route('/', name: 'app_produit_index', methods: ['GET'])]
+    #[Route('/', name: 'app_produit_index', methods: ['GET'])] //show form
     public function index(ProduitRepository $produitRepository,ClubRepository $clubRepository): Response
     {
         return $this->render('produit/show.html.twig', [
@@ -25,7 +25,7 @@ class ProduitController extends AbstractController
             'clubs' => $clubRepository->findAll(), // Fetch all clubs
         ]);
     }
-    #[Route('/presi', name: 'produit_index', methods: ['GET'])]
+    #[Route('/presi', name: 'produit_index', methods: ['GET'])] //show tab produit de  president 
     public function inde(ProduitRepository $produitRepository,ClubRepository $clubRepository): Response
     {
         return $this->render('produit/index.html.twig', [
@@ -33,20 +33,51 @@ class ProduitController extends AbstractController
             'clubs' => $clubRepository->findAll(),
         ]);
     }
-    #[Route('/cart', name: 'cart_commande', methods: ['GET'])]
-    public function cart(ProduitRepository $produitRepository,ClubRepository $clubRepository): Response
+    #[Route('/admin', name: 'produit_admin', methods: ['GET'])] //show tab produit d admin 
+    public function proadmin(ProduitRepository $produitRepository,ClubRepository $clubRepository): Response
     {
-        return $this->render('produit/commande.html.twig', [
+        return $this->render('produit/produit.admin.html.twig', [
             'produits' => $produitRepository->findAll(),
-            'clubs' => $clubRepository->findAll(), // Fetch all clubs
+            'clubs' => $clubRepository->findAll(),
         ]);
     }
+    #[Route('/{id}/delete', name: 'produit.admin_delete', methods: ['POST'])]
+public function deletee(Request $request, int $id, ProduitRepository $produitRepository, EntityManagerInterface $entityManager): Response
+{
+    $produit = $produitRepository->find($id);
+
+    if (!$produit) {
+        throw $this->createNotFoundException('Le produit avec ID '.$id.' n\'existe pas.');
+    }
+
+    if ($this->isCsrfTokenValid('delete'.$produit->getId(), $request->request->get('_token'))) {
+        $entityManager->remove($produit);
+        $entityManager->flush();
+        $this->addFlash('success', 'Le produit a été supprimé avec succès.');
+    } else {
+        $this->addFlash('error', 'Jeton CSRF invalide.');
+    
+    }
+
+    return $this->redirect($request->headers->get('referer') ?: $this->generateUrl('produit_admin'));
+}
+    #[Route('/adminn', name: 'commande_admin', methods: ['GET'])] //show tab produit d admin 
+    public function comadmin(ProduitRepository $produitRepository,ClubRepository $clubRepository): Response
+    {
+        $user = $this->getUser(); // Récupère l'utilisateur connecté
+        return $this->render('produit/commande_admin.html.twig', [
+            'produits' => $produitRepository->findAll(),
+            'clubs' => $clubRepository->findAll(),
+            'user'     => $user,
+        ]);
+    }
+    
     public function configurefields(string $pageName):iterable{
         return[
       datetimefield::new('createdAt'->hideonForm(),)];
     }
 
-    #[Route('/new', name: 'app_produit_new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'app_produit_new', methods: ['GET', 'POST'])] //ajout de produits
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         //dump($request->getMethod()); // Should show 'POST' when the form is submitted
@@ -115,7 +146,7 @@ class ProduitController extends AbstractController
             'produit' => $produit,
         ]);
     }
-    #[Route('/{id}', name: 'app_produit_show', methods: ['GET'])]
+    #[Route('/{id}', name: 'app_produit_show', requirements: ['id' => '\d+'],methods: ['GET'])]
 public function show(ProduitRepository $produitRepository, ClubRepository $clubRepository, int $id): Response
 {
     $produit = $produitRepository->find($id);
@@ -131,26 +162,29 @@ public function show(ProduitRepository $produitRepository, ClubRepository $clubR
 }
 
 
-    #[Route('/{id}/edit', name: 'app_produit_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Produit $produit, EntityManagerInterface $entityManager): Response
-    {
-        
-        $form = $this->createForm(ProduitType::class, $produit);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            
-            $entityManager->persist($produit);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_produit_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('produit/edit.html.twig', [
-            'produit' => $produit,
-            'form' => $form->createView(), // Passer la vue du formulaire ici,
-        ]);
+#[Route('/{id}/edit', name: 'app_produit_edit', methods: ['GET', 'POST'])]
+public function edit(Request $request, ?Produit $produit, EntityManagerInterface $entityManager): Response
+{
+    //dump($produit); die;
+    if (!$produit) {
+        throw $this->createNotFoundException('Produit non trouvé.');
     }
+    
+    $form = $this->createForm(ProduitType::class, $produit);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $entityManager->persist($produit);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('app_produit_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    return $this->render('produit/edit.html.twig', [
+        'produit' => $produit,
+        'form'    => $form->createView(),
+    ]);
+}
 
     #[Route('/{id}/delete', name: 'app_produit_delete', methods: ['POST'])]
 public function delete(Request $request, int $id, ProduitRepository $produitRepository, EntityManagerInterface $entityManager): Response
@@ -174,67 +208,87 @@ public function delete(Request $request, int $id, ProduitRepository $produitRepo
 }
 //cart
     #[Route('/cart', name: 'cart_index')]
-    public function cartt(SessionInterface $session): Response
+    public function cart(SessionInterface $session, ProduitRepository $produitRepository): Response
     {
-        $cart = $session->get('cart', []);
+        // Récupérer le panier depuis la session
+        // Par exemple : [ 1 => 2, 5 => 1 ] où 1 et 5 sont les IDs des produits, et les valeurs représentent la quantité
+        $cartData = $session->get('cart', []);
+        $cartProducts = [];
 
+        // Pour chaque produit dans le panier, récupérer ses informations complètes en base
+        foreach ($cartData as $productId => $quantity) {
+            $product = $produitRepository->find($id);
+            if ($product) {
+                $cartProducts[] = [
+                    'product'  => $product,
+                    'quantity' => $quantity,
+                ];
+                $total += $product->getPrice() * $quantity;
+            }
+            
+        }
+
+        // Passer les données à la vue
         return $this->render('produit/commande.html.twig', [
-            'cart' => $cart,
+            'cartProducts' => $cartProducts
         ]);
     }
+
  
-    #[Route('/add', name: 'cart_add')]
-    public function add(Request $request, ProduitRepository $produitRepository, SessionInterface $session): Response
+    #[Route('/add/{id}', name: 'cart_add', methods: ['GET'] )]
+    public function add(int $id,Request $request, ProduitRepository $produitRepository, SessionInterface $session): Response
     {
-        // Récupérer l'ID du produit depuis la requête (GET ou POST)
-        $productId = $request->query->get('id');
-        if (!$productId) {
-            throw $this->createNotFoundException('L\'identifiant du produit est manquant.');
-        }
-        
-        // Rechercher le produit dans la base de données
-        $produit = $produitRepository->find($productId);
-        if (!$produit) {
-            throw $this->createNotFoundException('Produit non trouvé.');
-        }
+        // Récupérer le produit à partir de l'ID
+    $produit = $produitRepository->find($id);
     
-        // Récupérer le panier depuis la session (ou un tableau vide par défaut)
+
+    // Vérifier si le produit existe
+    if (!$produit) {
+        throw $this->createNotFoundException('Le produit n\'existe pas.');
+    }
+
+        // On récupère le panier existant
         $cart = $session->get('cart', []);
-    
-        // Ajouter le produit au panier ou incrémenter sa quantité s'il existe déjà
-        if (!isset($cart[$productId])) {
-            $cart[$productId] = [
-                'produit' => $produit,
-                'quantity' => 1,
-            ];
-        } else {
-            $cart[$productId]['quantity']++;
+
+        // On ajoute le produit dans le panier s'il n'y est pas encore
+        // Sinon on incrémente sa quantité
+        if(empty($cart[$id])){
+            $cart[$id] = 1;
+        }else{
+            $cart[$id]++;
         }
-    
-        // Mettre à jour le panier dans la session
-        $session->set('cart', $cart);
-    
+
+        $session->set('panier', $cart);
+        
+        //return $this->redirectToRoute('cart_index');
         return $this->redirectToRoute('cart_index');
     }
     
 
     #[Route('/remove/{id}', name: 'cart_remove')]
-public function remove(Produit $produit, SessionInterface $session): Response
-{
-    $cart = $session->get('cart', []);
-    $id = $produit->getId();
-
-    dump($cart, $id); // Vérification
-
-    if ($id !== null && isset($cart[$id])) {
-        unset($cart[$id]);
-        $session->set('cart', $cart);
-        $session->save();
-        dump($cart); // Vérification après suppression
+    public function remove(Request $request, int $id, SessionInterface $session): Response
+    {
+        // Récupérer le panier depuis la session (tableau associatif)
+        $cart = $session->get('cart', []);
+        
+        // Vérifier si le produit avec cet ID existe dans le panier
+        if (!isset($cart[$id])) {
+            throw $this->createNotFoundException('Le produit avec ID ' . $id . ' n\'existe pas dans le panier.');
+        }
+        
+        // Vérifier la validité du token CSRF
+        if ($this->isCsrfTokenValid('delete' . $id, $request->request->get('_token'))) {
+            // Supprimer le produit du panier
+            unset($cart[$id]);
+            // Mettre à jour la session avec le nouveau contenu du panier
+            $session->set('cart', $cart);
+            $this->addFlash('success', 'Le produit a été supprimé du panier avec succès.');
+        } else {
+            $this->addFlash('error', 'Jeton CSRF invalide.');
+        }
+    
+        return $this->redirect($request->headers->get('referer') ?: $this->generateUrl('cart_index'));
     }
-
-    return $this->redirectToRoute('cart_index');
-}
 
     #[Route('/increase/{id}', name: 'cart_increase')]
     public function increase(Produit $produit, SessionInterface $session): Response
