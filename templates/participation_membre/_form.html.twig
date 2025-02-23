@@ -1,49 +1,49 @@
 <div class="container mt-5">
     <div class="card shadow-lg p-4">
-        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate', 'id': 'clubForm'}}) }}
+        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate', 'id': 'participationForm'}}) }}
 
         <div class="row">
-            {% for field in form %}
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">{{ field.vars.label|capitalize }}</label>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.description.vars.label|capitalize }}</label>
+                <h5 class="text-secondary mb-2">Pourquoi souhaitez-vous participer ?</h5>
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'placeholder': 'Exprimez vos motivations...', 'required': 'required'}}) }}
+                {{ form_errors(form.description) }}
+            </div>
 
-                    {% if field.vars.name == 'description' %}
-                        <h5 class="text-secondary mb-2">Why did you choose us?</h5>
-                        {{ form_widget(field, {'attr': {'class': 'form-control', 'placeholder': 'Share your thoughts with us... 😊', 'required': 'required'}}) }}
-                    {% else %}
-                        {{ form_widget(field, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
-                    {% endif %}
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.user.vars.label|capitalize }}</label>
+                {{ form_widget(form.user, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                {{ form_errors(form.user) }}
+            </div>
 
-                    {{ form_errors(field) }}
-                </div>
-            {% endfor %}
+          
         </div>
 
         <div class="text-center mt-3">
             <button type="submit" class="btn btn-primary px-4 py-2">
-                <i class="fas fa-save"></i> {{ button_label|default('Submit') }}
+                <i class="fas fa-paper-plane"></i> {{ button_label|default('Envoyer') }}
             </button>
         </div>
 
         {{ form_end(form) }}
 
-        <!-- Friendly Reminder -->
+        <!-- Message d'information -->
         <div class="alert alert-info mt-4 text-center" role="alert">
-            <i class="fas fa-info-circle"></i> Please ensure your content is respectful and appropriate for all audiences. 🚀
+            <i class="fas fa-info-circle"></i> Assurez-vous que toutes les informations sont correctes avant de soumettre. 🚀
         </div>
     </div>
 </div>
 
-<!-- Pop-up Modal for Validation -->
+<!-- Modal d'alerte pour validation -->
 <div class="modal fade" id="validationModal" tabindex="-1" aria-labelledby="validationModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="validationModalLabel">Oops! 🚫</h5>
+                <h5 class="modal-title" id="validationModalLabel">Attention ! 🚫</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Please fill in all required fields before submitting the form.
+                Veuillez remplir tous les champs obligatoires avant de soumettre le formulaire.
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
@@ -54,14 +54,14 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        var form = document.getElementById('clubForm');
+        var form = document.getElementById('participationForm');
 
         form.addEventListener('submit', function(event) {
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
 
-                // Initialize and show Bootstrap Modal
+                // Affichage du modal Bootstrap en cas d'erreur
                 var validationModal = new bootstrap.Modal(document.getElementById('validationModal'));
                 validationModal.show();
             }

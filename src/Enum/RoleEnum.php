@@ -7,6 +7,7 @@ enum RoleEnum: string
     case MEMBRE = 'membre';
     case PRESIDENT_CLUB = 'presidentClub';
     case ADMINISTRATEUR = 'administrateur';
+    case USER = 'user';
 
     public static function getValues(): array
     {
@@ -15,6 +16,7 @@ enum RoleEnum: string
             self::MEMBRE->value,
             self::PRESIDENT_CLUB->value,
             self::ADMINISTRATEUR->value,
+            self::USER->value,
         ];
     }
 }

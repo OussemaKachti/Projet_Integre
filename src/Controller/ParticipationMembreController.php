@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Club;
 use App\Entity\User;
+use App\Repository\ClubRepository;
 
 #[Route('/participation/membre')]
 class ParticipationMembreController extends AbstractController
@@ -32,30 +33,49 @@ class ParticipationMembreController extends AbstractController
         ]);
     }
     
-
-    #[Route('/new', name: 'app_participation_membre_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new/{clubId}', name: 'app_participation_membre_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager, int $clubId ,ClubRepository $clubRepository): Response
     {
+        // Récupérer le club à partir de l'ID passé dans l'URL
+        $club = $entityManager->getRepository(Club::class)->find($clubId);
+    
+        // Vérifie si le club existe
+        $clubs = $clubRepository->findAll();
+
+    
+        // Créer une nouvelle participation
         $participationMembre = new ParticipationMembre();
-        $form = $this->createForm(ParticipationMembreType::class, $participationMembre); // create the form
+        $participationMembre->setClub($club); // Associer le club à la participation
+    
+        $form = $this->createForm(ParticipationMembreType::class, $participationMembre);
         $form->handleRequest($request);
-
-        
-        if ($form->isSubmitted() && $form->isValid()) { // if the form is submitted and valid
+    
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Normalisation du statut
             $participationMembre->setStatut("enAttente");
-            dd($participationMembre);
-            $entityManager->persist($participationMembre);//save
-            $entityManager->flush(); // save in the database
-
-            return $this->redirectToRoute('clubdetail', [], Response::HTTP_SEE_OTHER); // redirect to the club detail page
-        }
-
+    
+            // Persist l'objet
+            $entityManager->persist($participationMembre);
+            $entityManager->flush();
+    
+            // Message flash pour informer l'utilisateur
+            $this->addFlash('success', 'Votre demande de participation a été enregistrée avec succès.');
+    
+            // Redirige vers le détail du club
+            return $this->render('club/index.html.twig', [
+                'clubs' => $clubs,
+            ]);        }
+    
+        // Afficher le formulaire
         return $this->render('participation_membre/new.html.twig', [
             'participation_membre' => $participationMembre,
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
+    
 
+    
+    
     #[Route('/{id}', name: 'app_participation_membre_show', methods: ['GET'])]
     public function show(ParticipationMembre $participationMembre): Response
     {
