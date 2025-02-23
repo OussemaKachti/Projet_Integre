@@ -193,15 +193,19 @@
 
 
 
-
-           <div class="row">
+<div class="row">
     {% for club in clubs %}
         <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6" style="display: flex;">
             <div class="course__item-2 transition-3 white-bg mb-30 fix" style="display: flex; flex-direction: column; width: 100%;">
                 
                 <div class="course__thumb-2 w-img fix">
                     <a href="#">
-                        <img src="{{ asset('uploads/clubs/' ~ club.image) }}" alt="{{ club.nomC }}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
+                        {% if club.image %}
+                            <img src="{{ asset('uploads/' ~ club.image) }}" alt="" 
+                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
+                        {% else %}
+                            <img src="file:///C:/Users/YourUsername/Pictures/myimage.jpg" alt="Local Image">
+                        {% endif %}
                     </a>
                 </div>
 
@@ -235,6 +239,8 @@
                 </div>
             </div>
         </div>
+    
+</div>
     {% else %}
         <p>No clubs available yet!</p>
     {% endfor %}

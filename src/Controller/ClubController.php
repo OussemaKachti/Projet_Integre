@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Enum\StatutClubEnum;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\String\Slugger\SluggerInterface;  
 
 #[Route('/club')]
 class ClubController extends AbstractController
@@ -71,51 +73,72 @@ class ClubController extends AbstractController
         ]);
     }
 
-    #[Route('/adminclub', name: 'adminclub', methods: ['GET'])]
-    public function adminclub(ClubRepository $clubRepository): Response
-    {
-        return $this->render('club/adminClub.html.twig', [
-            'clubs' => $clubRepository->findAll(),
-        ]);
-    }
+    //#[Route('/adminclub', name: 'adminclub', methods: ['GET'])]
+    //public function adminclub(ClubRepository $clubRepository): Response
+    //{
+    //    return $this->render('club/adminClub.html.twig', [
+    //        'clubs' => $clubRepository->findAll(),
+    //    ]);
+    //}
 
-    #[Route('/adminmember', name: 'adminmember', methods: ['GET'])]
-    public function adminmember(ClubRepository $clubRepository): Response
-    {
-        return $this->render('club/adminMember.html.twig', [
-            'clubs' => $clubRepository->findAll(),
-        ]);
-    }
+    //#[Route('/adminmember', name: 'adminmember', methods: ['GET'])]
+    //public function adminmember(ClubRepository $clubRepository): Response
+    //{
+    //    return $this->render('club/adminMember.html.twig', [
+    //        'clubs' => $clubRepository->findAll(),
+    //    ]);
+    //}
 
     #[Route('/index2', name: 'app_club_index2', methods: ['GET'])]
     public function index2(ClubRepository $clubRepository): Response
-    {
+    {   
         return $this->render('club/index2.html.twig', [
             'clubs' => $clubRepository->findAll(),
         ]);
     }
 
     #[Route('/newClub', name: 'app_club_new', methods: ['GET', 'POST'])]
-    public function newClub(Request $request, EntityManagerInterface $entityManager): Response
+    public function newClub(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $club = new Club();
         $form = $this->createForm(ClubType::class, $club);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) { // if the form is submitted and valid
+        if ($form->isSubmitted() && $form->isValid()) { 
             $club->setStatus(StatutClubEnum::EN_ATTENTE);
             $club->setPoints(0);
-            $entityManager->persist($club);  // save
-            $entityManager->flush(); // save in the database
 
-            return $this->redirectToRoute('app_club_index', [], Response::HTTP_SEE_OTHER); // redirect to the index page
+            // Gestion de l'upload de l'image du club
+            $imageFile = $form->get('image')->getData();
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('uploads_directory'), // Assurez-vous de définir ce paramètre
+                        $newFilename
+                    );
+                    $club->setImage($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Une erreur est survenue lors du téléchargement de l\'image.');
+                    return $this->redirectToRoute('app_club_new');
+                }
+            }
+
+            $entityManager->persist($club); 
+            $entityManager->flush(); 
+
+            return $this->redirectToRoute('app_club_index', [], Response::HTTP_SEE_OTHER); 
         }
 
         return $this->render('club/new.html.twig', [
-            'club' => $club, // send the club object to the view
-            'form' => $form, // send the form to the view
+            'club' => $club, 
+            'form' => $form, 
         ]);
-    }
+    }   
+
 
     #[Route('/{id}', name: 'app_club_show', methods: ['GET'])] // show the club
     public function show($id, EntityManagerInterface $entityManager): Response
