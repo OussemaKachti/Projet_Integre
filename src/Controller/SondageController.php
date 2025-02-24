@@ -84,7 +84,7 @@ class SondageController extends AbstractController
             }
     
             
-            $user = $em->getRepository(User::class)->find(2);  // Utilisateur statique pour tester
+            $user = $em->getRepository(User::class)->find(1);  // Utilisateur statique pour tester
   
            
     
@@ -107,6 +107,7 @@ class SondageController extends AbstractController
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
     private $entityManager;
 
     // Injection de dépendance du EntityManagerInterface
@@ -193,93 +194,102 @@ public function getColorByPercentage(float $percentage): string
                                         // ADMINNNN
 
 
+                                        #[Route('/adminPolls', name: 'app_sondage_index2')]
+                                        public function index2(Request $request, SondageRepository $sondageRepository): Response 
+                                        {
+                                            $query = trim($request->query->get('q', ''));
+                                            
+                                            $qb = $sondageRepository->createQueryBuilder('s')
+                                                ->leftJoin('s.club', 'c')
+                                                ->select('s', 'c', 'ch')
+                                                ->leftJoin('s.choix', 'ch');
+                                        
+                                            if ($query !== '') {
+                                                $qb->where('s.question LIKE :query OR c.nomC LIKE :query')
+                                                   ->setParameter('query', '%' . $query . '%');
+                                            }
+                                        
+                                            $qb->orderBy('s.createdAt', 'DESC');
+                                            
+                                            $sondages = $qb->getQuery()->getResult();
+                                        
+                                            $sondagesFormatted = array_map(function($sondage) {
+                                                return [
+                                                    'id' => $sondage->getId(),
+                                                    'question' => $sondage->getQuestion(),
+                                                    'club_name' => $sondage->getClub() ? $sondage->getClub()->getNomC() : 'Non défini',
+                                                    'created_at' => $sondage->getCreatedAt() ? $sondage->getCreatedAt()->format('Y-m-d') : 'Non défini',
+                                                    'choix' => $sondage->getChoix()->map(function($choix) {
+                                                        return $choix->getContenu();
+                                                    })->toArray(),
+                                                ];
+                                            }, $sondages);
+                                        
+                                            // Si c'est une requête AJAX, renvoyer du JSON
+                                            if ($request->isXmlHttpRequest()) {
+                                                return new JsonResponse([
+                                                    'sondages' => $sondagesFormatted,
+                                                    'count' => count($sondagesFormatted)
+                                                ]);
+                                            }
+                                        
+                                            // Sinon, renvoyer la vue Twig
+                                            return $this->render('sondage/adminPolls.html.twig', [
+                                                'sondages' => $sondagesFormatted
+                                            ]);
+                                        }
+                                        
+                                        
+                                        
 
+    // #[Route('/admin/polls', name: 'admin_search_poll', methods: ['GET'])]
+    // public function searchPolls(Request $request, SondageRepository $sondageRepository): Response
+    // {
+    //     $query = $request->query->get('q', '');
+    //     $startDate = $request->query->get('start_date', null);
+    //     $endDate = $request->query->get('end_date', null);
+    //     $clubName = $request->query->get('club_name', null);
     
-    #[Route('/adminPolls', name: 'app_sondage_index2', methods: ['GET'])]
-    public function index2(SondageRepository $sondageRepository, EntityManagerInterface $em): Response
-    {
-        // Récupérer tous les sondages
-        $sondages = $sondageRepository->findAll();
+    //     // Validation des critères de dates
+    //     $dateFilter = [];
+    //     if ($startDate) {
+    //         $dateFilter['start'] = \DateTime::createFromFormat('Y-m-d', $startDate);
+    //     }
+    //     if ($endDate) {
+    //         $dateFilter['end'] = \DateTime::createFromFormat('Y-m-d', $endDate);
+    //     }
     
-        // Tableau pour stocker les sondages avec le nom du club
-        $sondagesAvecClub = [];
+    //     // Recherche des sondages avec des critères avancés
+    //     $results = $sondageRepository->advancedSearch($query, $dateFilter, $clubName);
     
-        // Pour chaque sondage, récupérer le club du président
-        foreach ($sondages as $sondage) {
-            // Récupérer l'utilisateur qui a créé le sondage (président du club)
-            $user = $sondage->getUser();  // Assurez-vous que 'getUser' récupère bien l'utilisateur qui a créé le sondage
+    //     // Formatage des résultats pour l'affichage
+    //     $formattedResults = array_map(function($sondage) {
+    //         try {
+    //             return [
+    //                 'id' => $sondage->getId(),
+    //                 'question' => $sondage->getQuestion(),
+    //                 'createdAt' => $sondage->getCreatedAt()->format('d/m/Y'),
+    //                 'club' => $sondage->getClub()->getNomC(),
+    //                 'url' => $this->generateUrl('app_sondage_show', ['id' => $sondage->getId()])
+    //             ];
+    //         } catch (\Exception $e) {
+    //             return null;
+    //         }
+    //     }, $results);
     
-            // Récupérer le club du président (user)
-            $club = $em->getRepository(Club::class)->findOneBy(['president' => $user]);
+    //     // Filtrer les résultats null
+    //     $formattedResults = array_filter($formattedResults);
     
-            if ($club) {
-                // Ajouter le nom du club au sondage
-                $sondagesAvecClub[] = [
-                    'sondage' => $sondage,
-                    'club_name' => $club->getNomC() // Assurez-vous que 'getNomC' existe pour obtenir le nom du club
-                ];
-            }
-        }
-    
-        // Passer les sondages avec le nom du club à la vue
-        return $this->render('sondage/adminPolls.html.twig', [
-            'sondages' => $sondagesAvecClub,
-            'query' => '',
-            'startDate' => '',
-            'endDate' => '',
-            'clubName' => '',
-        ]);
-    }
-    
-
-    #[Route('/admin/polls', name: 'admin_search_poll', methods: ['GET'])]
-    public function searchPolls(Request $request, SondageRepository $sondageRepository): Response
-    {
-        $query = $request->query->get('q', '');
-        $startDate = $request->query->get('start_date', null);
-        $endDate = $request->query->get('end_date', null);
-        $clubName = $request->query->get('club_name', null);
-    
-        // Validation des critères de dates
-        $dateFilter = [];
-        if ($startDate) {
-            $dateFilter['start'] = \DateTime::createFromFormat('Y-m-d', $startDate);
-        }
-        if ($endDate) {
-            $dateFilter['end'] = \DateTime::createFromFormat('Y-m-d', $endDate);
-        }
-    
-        // Recherche des sondages avec des critères avancés
-        $results = $sondageRepository->advancedSearch($query, $dateFilter, $clubName);
-    
-        // Formatage des résultats pour l'affichage
-        $formattedResults = array_map(function($sondage) {
-            try {
-                return [
-                    'id' => $sondage->getId(),
-                    'question' => $sondage->getQuestion(),
-                    'createdAt' => $sondage->getCreatedAt()->format('d/m/Y'),
-                    'club' => $sondage->getClub()->getNomC(),
-                    'url' => $this->generateUrl('app_sondage_show', ['id' => $sondage->getId()])
-                ];
-            } catch (\Exception $e) {
-                return null;
-            }
-        }, $results);
-    
-        // Filtrer les résultats null
-        $formattedResults = array_filter($formattedResults);
-    
-        // Retourner la vue avec les résultats de recherche
-        return $this->render('sondage/adminPolls.html.twig', [
-            'sondages' => $formattedResults,
-            'query' => $query,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
-            'clubName' => $clubName,
-        ]);
+    //     // Retourner la vue avec les résultats de recherche
+    //     return $this->render('sondage/adminPolls.html.twig', [
+    //         'sondages' => $formattedResults,
+    //         'query' => $query,
+    //         'startDate' => $startDate,
+    //         'endDate' => $endDate,
+    //         'clubName' => $clubName,
+    //     ]);
         
-    }
+    // // }
     
     
 
@@ -908,8 +918,8 @@ public function editPoll2(int $id, Request $request, EntityManagerInterface $em)
     }
     
 
-    //no
 
+   
     #[Route('/api/polls/search', name: 'api_polls_search', methods: ['GET'])]
     public function search(Request $request, SondageRepository $sondageRepository): Response
     {
@@ -929,10 +939,6 @@ public function editPoll2(int $id, Request $request, EntityManagerInterface $em)
             'search_query' => $query,
         ]);
     }
-
-
-   
-
 
 
 
