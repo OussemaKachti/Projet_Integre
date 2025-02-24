@@ -5,12 +5,16 @@ use App\Enum\RoleEnum;
 use App\Entity\Club;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Psr\Log\LoggerInterface;
 
 use App\Entity\Sondage;
 use App\Form\SondageType;
 use App\Entity\Reponse;
 use App\Repository\ClubRepository;
 use App\Repository\UserRepository;
+use Symfony\Component\Mime\Email;
 
 use App\Repository\SondageRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -418,78 +422,135 @@ public function create(Request $request, EntityManagerInterface $em): Response
         ]);
  */    
 #[Route('/api/poll/new', name: 'api_poll_new', methods: ['POST'])]
-public function createPoll(Request $request, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
-{
-    $data = json_decode($request->getContent(), true);
-
-    if (!$data) {
-        return new JsonResponse(['status' => 'error', 'message' => 'Invalid JSON data'], 400);
-    }
-
-    // Récupérer l'utilisateur et le club
-    $user = $em->getRepository(User::class)->find(1);
-    if (!$user) {
-        return new JsonResponse(['status' => 'error', 'message' => 'User not found'], 404);
-    }
-
-    $club = $em->getRepository(Club::class)->findOneBy(['president' => $user->getId()]);
-    if (!$club) {
-        return new JsonResponse(['status' => 'error', 'message' => 'You must be a club president to create polls'], 403);
-    }
-
-    // Créer et configurer le sondage
-    $sondage = new Sondage();
-    $sondage->setQuestion($data['question'] ?? '');
-    $sondage->setCreatedAt(new \DateTime());
-    $sondage->setUser($user);
-    $sondage->setClub($club);
-
-    // Ajouter les choix
-    if (isset($data['choix']) && is_array($data['choix'])) {
-        foreach ($data['choix'] as $choixData) {
-            $choix = new ChoixSondage();
-            $choix->setContenu($choixData['contenu'] ?? '');
-            $choix->setSondage($sondage);
-            $sondage->addChoix($choix);
-            $em->persist($choix);        }
-    }
-
-    // Validation
-    $errors = $validator->validate($sondage);
-    if (count($errors) > 0) {
-        $errorMessages = [];
-        foreach ($errors as $error) {
-            $path = $error->getPropertyPath();
-            if (str_contains($path, 'choix')) {
-                $errorMessages['choices'][] = $error->getMessage();
-            } else {
-                $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+    public function createPoll(
+        Request $request, 
+        EntityManagerInterface $em, 
+        ValidatorInterface $validator,
+        MailerInterface $mailer,
+        LoggerInterface $logger
+    ): JsonResponse {
+        $data = json_decode($request->getContent(), true);
+        
+        if (!$data) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Invalid JSON data'], 400);
+        }
+        
+        // Pour l'instant, on utilise un utilisateur statique (ID 1)
+        $user = $em->getRepository(User::class)->find(1);
+        if (!$user) {
+            return new JsonResponse(['status' => 'error', 'message' => 'User not found'], 404);
+        }
+        
+        $club = $em->getRepository(Club::class)->findOneBy(['president' => $user->getId()]);
+        if (!$club) {
+            return new JsonResponse(['status' => 'error', 'message' => 'You must be a club president to create polls'], 403);
+        }
+        
+        // Créer et configurer le sondage
+        $sondage = new Sondage();
+        $sondage->setQuestion($data['question'] ?? '');
+        $sondage->setCreatedAt(new \DateTime());
+        $sondage->setUser($user);
+        $sondage->setClub($club);
+        
+        // Ajouter les choix
+        if (isset($data['choix']) && is_array($data['choix'])) {
+            foreach ($data['choix'] as $choixData) {
+                $choix = new ChoixSondage();
+                $choix->setContenu($choixData['contenu'] ?? '');
+                $choix->setSondage($sondage);
+                $sondage->addChoix($choix);
+                $em->persist($choix);
             }
         }
-        return new JsonResponse([
-            'status' => 'error',
-            'message' => 'Validation failed',
-            'errors' => $errorMessages
-        ], 400);
+        
+        // Validation
+        $errors = $validator->validate($sondage);
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $path = $error->getPropertyPath();
+                if (str_contains($path, 'choix')) {
+                    $errorMessages['choices'][] = $error->getMessage();
+                } else {
+                    $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+                }
+            }
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $errorMessages
+            ], 400);
+        }
+        
+        try {
+            $em->persist($sondage);
+            $em->flush();
+            
+            // Récupérer tous les membres du club via ParticipationMembre où statut = "acceptée"
+            $clubParticipations = $em->getRepository(ParticipationMembre::class)->findBy([
+                'club' => $club->getId(),
+                'statut' => 'accepte'
+            ]);
+            
+            $emailsSent = 0;
+            $emailErrors = [];
+            
+            // Envoyer une notification par e-mail à chaque membre
+            foreach ($clubParticipations as $participation) {
+                $member = $participation->getUser();
+                
+                if ($member && method_exists($member, 'getEmail') && $member->getEmail()) {
+                    try {
+                        // Log pour le debug
+                        $logger->info('Tentative d\'envoi d\'email à: ' . $member->getEmail());
+                        
+                        $email = (new Email())
+                        ->from($_ENV['MAILER_FROM'])
+                        ->to($member->getEmail())
+                            ->subject('Nouveau sondage dans votre club: ' . $club->getNomC())
+                            ->html($this->renderView(
+                                'emails/new_poll.html.twig',
+                                [
+                                    'club' => $club,
+                                    'sondage' => $sondage,
+                                    'member' => $member
+                                ]
+                            ));
+                        
+                        $mailer->send($email);
+                        $emailsSent++;
+                        
+                    } catch (TransportExceptionInterface $e) {
+                        $logger->error('Échec d\'envoi d\'email à ' . $member->getEmail() . ': ' . $e->getMessage());
+                        $emailErrors[] = 'Échec d\'envoi à ' . $member->getEmail() . ': ' . $e->getMessage();
+                    }
+                } else {
+                    $logger->warning('Membre sans email valide trouvé');
+                }
+            }
+            
+            return new JsonResponse([
+                'status' => 'success',
+                'emailSender' => $user->getEmail(),
+                'message' => 'Poll created successfully',
+                'club_name' => $club->getNomC(),
+                'emails_sent' => $emailsSent,
+                'email_errors' => $emailErrors,
+                'debug_info' => [
+                    'total_members' => count($clubParticipations),
+                    'mailer_dsn' => $_ENV['MAILER_DSN'] ?? 'Non configuré'
+                ]
+            ], 201);
+            
+        } catch (\Exception $e) {
+            $logger->error('Erreur générale: ' . $e->getMessage());
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
     }
-
-    try {
-        $em->persist($sondage);
-        $em->flush();
-        return new JsonResponse([
-            'status' => 'success',
-            'message' => 'Poll created successfully',
-            'club_name' => $club->getNomC()
-        ], 201);
-    } catch (\Exception $e) {
-        return new JsonResponse([
-            'status' => 'error',
-            'message' => 'Database error occurred'
-        ], 500);
-    }
-}
-
-
 
     
 
@@ -535,7 +596,7 @@ public function createPoll(Request $request, EntityManagerInterface $em, Validat
         ]);
     }
 
-    
+    //jdida
     #[Route('/AllPolls', name: 'api_user_polls', methods: ['GET'])]
     public function getUserPolls(EntityManagerInterface $em): Response
     {
@@ -557,7 +618,7 @@ public function createPoll(Request $request, EntityManagerInterface $em, Validat
         }
     
         // Renvoyer la vue avec les sondages
-        return $this->render('sondage/AllPolls.html.twig', [
+        return $this->render('sondage/allPolls.html.twig', [
             'sondages' => $sondages,
         ]);
     }
@@ -571,10 +632,12 @@ public function getUserSondages(EntityManagerInterface $em, SondageRepository $s
     // Récupérer l'utilisateur connecté
     //$user = $this->getUser();
     $user = $em->getRepository(User::class)->find(1);
-
+    $sondages = $em->getRepository(Sondage::class)->findAll();
     // Vérifier si l'utilisateur est bien connecté
     if (!$user) {
         return $this->render('sondage/allPolls.html.twig', [
+            'sondages' => $sondages,
+
             'error' => 'Utilisateur non connecté.'
         ]);
     }
@@ -846,78 +909,58 @@ public function editPoll2(int $id, Request $request, EntityManagerInterface $em)
 
 
 
-   /* #[Route('/{id}/edit', name: 'app_sondage_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Sondage $sondage, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(SondageType::class, $sondage);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_sondage_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('sondage/edit.html.twig', [
-            'sondage' => $sondage,
-            'form' => $form,
-        ]);
-    }
 
     
-    */
     
-    
-    
-    #[Route('/api/search-sondages', name: 'api_search_sondages', methods: ['GET'])]
-    public function searchSondages(Request $request, SondageRepository $sondageRepository): Response
-    {
-        try {
-            $query = $request->query->get('q', '');
+    //jdida
+    // #[Route('/api/search-sondages', name: 'api_search_sondages', methods: ['GET'])]
+    // public function searchSondages(Request $request, SondageRepository $sondageRepository): Response
+    // {
+    //     try {
+    //         $query = $request->query->get('q', '');
             
-            if (strlen($query) < 2) {
-                // Rediriger ou afficher un message vide dans le template
-                return $this->render('sondage/allPolls.html.twig', [
-                    'sondages' => [],
-                    'query' => $query
-                ]);
-            }
+    //         if (strlen($query) < 2) {
+    //             // Rediriger ou afficher un message vide dans le template
+    //             return $this->render('sondage/allPolls.html.twig', [
+    //                 'sondages' => [],
+    //                 'query' => $query
+    //             ]);
+    //         }
     
-            $results = $sondageRepository->searchByQuestion($query);
+    //         $results = $sondageRepository->searchByQuestion($query);
             
-            $formattedResults = array_map(function($sondage) {
-                try {
-                    return [
-                        'id' => $sondage->getId(),
-                        'question' => $sondage->getQuestion(),
-                        'createdAt' => $sondage->getCreatedAt()->format('d/m/Y'),
-                        'club' => $sondage->getClub()->getNomC(),
-                        'url' => $this->generateUrl('app_sondage_show', ['id' => $sondage->getId()])
-                    ];
-                } catch (\Exception $e) {
-                    return null;
-                }
-            }, $results);
+    //         $formattedResults = array_map(function($sondage) {
+    //             try {
+    //                 return [
+    //                     'id' => $sondage->getId(),
+    //                     'question' => $sondage->getQuestion(),
+    //                     'createdAt' => $sondage->getCreatedAt()->format('d/m/Y'),
+    //                     'club' => $sondage->getClub()->getNomC(),
+    //                     'url' => $this->generateUrl('app_sondage_show', ['id' => $sondage->getId()])
+    //                 ];
+    //             } catch (\Exception $e) {
+    //                 return null;
+    //             }
+    //         }, $results);
     
-            // Filtrer les résultats null
-            $formattedResults = array_filter($formattedResults);
+    //         // Filtrer les résultats null
+    //         $formattedResults = array_filter($formattedResults);
             
-            // Rendre la page 'sondage/allPolls.html.twig' avec les résultats formatés
-            return $this->render('sondage/allPolls.html.twig', [
-                'sondages' => $formattedResults,
-                'query' => $query
-            ]);
+    //         // Rendre la page 'sondage/allPolls.html.twig' avec les résultats formatés
+    //         return $this->render('sondage/allPolls.html.twig', [
+    //             'sondages' => $formattedResults,
+    //             'query' => $query
+    //         ]);
             
-        } catch (\Exception $e) {
-            return $this->render('sondage/allPolls.html.twig', [
-                'sondages' => [],
-                'query' => $query,
-                'error' => 'Une erreur est survenue lors de la recherche'
-            ]);
-        }
-    }
+    //     } catch (\Exception $e) {
+    //         return $this->render('sondage/allPolls.html.twig', [
+    //             'sondages' => [],
+    //             'query' => $query,
+    //             'error' => 'Une erreur est survenue lors de la recherche'
+    //         ]);
+    //     }
+    // }
     
-
 
    
     #[Route('/api/polls/search', name: 'api_polls_search', methods: ['GET'])]

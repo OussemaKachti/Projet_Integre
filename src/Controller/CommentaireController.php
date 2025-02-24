@@ -2,22 +2,22 @@
 
 namespace App\Controller;
 
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-
 use App\Entity\User;
+
 use App\Entity\Sondage;
 use App\Entity\Commentaire;
 use App\Form\CommentaireType;
-use App\Repository\CommentaireRepository;
+use App\Repository\SondageRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Repository\CommentaireRepository;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use App\Repository\SondageRepository;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 
 
@@ -34,149 +34,60 @@ class CommentaireController extends AbstractController
 
 
 
-    
-    // #[Route('/adminComments', name: 'app_commentaire_index', methods: ['GET'])]
-    // public function afficherCommentaires(CommentaireRepository $commentaireRepository): Response
-    // {
-    //     $commentairesAvecClub = [];
-
-    //     // Récupérer tous les commentaires
-    //     $commentaires = $commentaireRepository->findAll();
-
-    //     foreach ($commentaires as $commentaire) {
-    //         $sondage = $commentaire->getSondage();
-    //         $club = $sondage->getClub(); // Assurez-vous que la relation existe
-    //         $clubName = $club ? $club->getNomC() : 'Non défini'; // Vérifiez que le club n'est pas null
-
-    //         $commentairesAvecClub[] = [
-    //             'id' => $commentaire->getId(),
-    //             'user' => $commentaire->getUser()->getNom() . ' ' . $commentaire->getUser()->getPrenom(),
-    //             'contenu' => $commentaire->getContenuComment(),
-    //             'club_name' => $clubName,
-    //             'created_at' => $commentaire->getDateComment()->format('Y-m-d')
-    //         ];
-    //     }
-
-    //     return $this->render('commentaire/adminComments.html.twig', [
-    //         'commentaires' => $commentairesAvecClub,
-    //     ]);
-    // }
-    #[Route('/filterByClub', name: 'app_commentaire_filterByClub', methods: ['GET'])]
-public function filterByClub(Request $request, EntityManagerInterface $entityManager, CommentaireRepository $commentaireRepository): JsonResponse
-{
-    $clubName = $request->query->get('club');
-
-    // Si "all" est sélectionné, récupérer tous les commentaires
-    if ($clubName === "all") {
-        $commentaires = $commentaireRepository->findAll();
-    } else {
-        // Récupérer uniquement les commentaires du club sélectionné
-        $commentaires = $commentaireRepository->createQueryBuilder('c')
-        ->join('c.sondage', 's')  // Joindre le sondage auquel le commentaire appartient
-        ->join('s.club', 'cl')    // Joindre le club du sondage
-        ->where('cl.nomC = :club')  // Filtrer par le nom du club
-        ->setParameter('club', $clubName)
-        ->getQuery()
-        ->getResult();
-    }
-
-    // Transformer les commentaires en JSON
-    $commentairesData = [];
-    foreach ($commentaires as $commentaire) {
-        $commentairesData[] = [
-            'id' => $commentaire->getId(),
-            'user' => $commentaire->getUser()->getNom(),
-            'contenu' => $commentaire->getContenuComment(),
-            'club_name' => $commentaire->getSondage()->getClub() ? $commentaire->getSondage()->getClub()->getNomC() : 'Non défini',
-            'created_at' => $commentaire->getDateComment()->format('Y-m-d'),
-            'deleteUrl' => $this->generateUrl('app_commentaire_delete', ['id' => $commentaire->getId()])
-        ];
-    }
-
-    return new JsonResponse(['commentaires' => $commentairesData]);
-}#[Route('/filterByClub', name: 'filter_by_club')] 
-    public function index(Request $request, CommentaireRepository $commentaireRepository): JsonResponse
-    {
-        $club = $request->query->get('club', 'all');
-    
-        $queryBuilder = $commentaireRepository->createQueryBuilder('c')
-            ->leftJoin('c.sondage', 's')
-            ->leftJoin('s.club', 'cl'); // Ajouter la jointure avec Club via Sondage
-    
-        if ($club !== 'all') {
-            $queryBuilder->where('cl.nomC = :club')
-                ->setParameter('club', $club);
-        }
-    
-        $commentaires = $queryBuilder->getQuery()->getResult();
-    
-        $formattedCommentaires = array_map(function($commentaire) {
-            return [
-                'id' => $commentaire->getId(),
-                'user' => $commentaire->getUser()->getNom(),
-                'contenu' => $commentaire->getContenuComment(),
-                'club_name' => $commentaire->getSondage()->getClub()->getNomC(),
-                'created_at' => $commentaire->getDateComment()->format('Y-m-d'),
-                'deleteUrl' => $this->generateUrl('app_commentaire_delete', ['id' => $commentaire->getId()]),
-            ];
-        }, $commentaires);
-    
-        return new JsonResponse(['commentaires' => $formattedCommentaires]);
-    }
-    
+   
     
     
 
 
 
-    #[Route('/adminComments', name: 'app_commentaire_index', methods: ['GET'])]
-    public function afficherCommentairesClub(CommentaireRepository $commentaireRepository, Request $request): Response
-    {
-        $clubFilter = $request->query->get('club'); // Récupération du filtre depuis l'URL
-    
-        if ($clubFilter && $clubFilter !== 'all') {
-            // Filtrer les commentaires en fonction du club sélectionné
-            $commentaires = $commentaireRepository->createQueryBuilder('c')
-                ->join('c.sondage', 's')
-                ->join('s.club', 'cl')
-                ->where('cl.nomC = :clubName')
-                ->setParameter('clubName', $clubFilter)
-                ->getQuery()
-                ->getResult();
-        } else {
-            // Sinon, récupérer tous les commentaires
-            $commentaires = $commentaireRepository->findAll();
-        }
-    
-        // Formater les commentaires
-        $commentairesAvecClub = [];
-        $clubs = []; // Liste pour stocker les noms des clubs disponibles
-    
-        foreach ($commentaires as $commentaire) {
-            $sondage = $commentaire->getSondage();
-            $club = $sondage->getClub(); // Assurez-vous que la relation existe
-            $clubName = $club ? $club->getNomC() : 'Non défini'; 
-    
-            if ($club) {
-                $clubs[$clubName] = $clubName; // Ajouter à la liste des clubs uniques
-            }
-    
-            $commentairesAvecClub[] = [
-                'id' => $commentaire->getId(),
-                'user' => $commentaire->getUser()->getNom() . ' ' . $commentaire->getUser()->getPrenom(),
-                'contenu' => $commentaire->getContenuComment(),
-                'club_name' => $clubName,
-                'created_at' => $commentaire->getDateComment()->format('Y-m-d')
-            ];
-        }
-    
-        return $this->render('commentaire/adminComments.html.twig', [
-            'commentaires' => $commentairesAvecClub,
-            'clubs' => $clubs, // Envoyer la liste des clubs pour le filtre
-            'selectedClub' => $clubFilter ?? 'all' // Club actuellement sélectionné
-        ]);
-    }
-    
+                                                #[Route('/adminComments', name: 'app_commentaire_index', methods: ['GET'])]
+                                                public function afficherCommentairesClub(CommentaireRepository $commentaireRepository, Request $request): Response
+                                                {
+                                                    $clubFilter = $request->query->get('club'); // Récupération du filtre depuis l'URL
+                                                
+                                                    if ($clubFilter && $clubFilter !== 'all') {
+                                                        // Filtrer les commentaires en fonction du club sélectionné
+                                                        $commentaires = $commentaireRepository->createQueryBuilder('c')
+                                                            ->join('c.sondage', 's')
+                                                            ->join('s.club', 'cl')
+                                                            ->where('cl.nomC = :clubName')
+                                                            ->setParameter('clubName', $clubFilter)
+                                                            ->getQuery()
+                                                            ->getResult();
+                                                    } else {
+                                                        // Sinon, récupérer tous les commentaires
+                                                        $commentaires = $commentaireRepository->findAll();
+                                                    }
+                                                
+                                                    // Formater les commentaires
+                                                    $commentairesAvecClub = [];
+                                                    $clubs = []; // Liste pour stocker les noms des clubs disponibles
+                                                
+                                                    foreach ($commentaires as $commentaire) {
+                                                        $sondage = $commentaire->getSondage();
+                                                        $club = $sondage->getClub(); // Assurez-vous que la relation existe
+                                                        $clubName = $club ? $club->getNomC() : 'Non défini'; 
+                                                
+                                                        if ($club) {
+                                                            $clubs[$clubName] = $clubName; // Ajouter à la liste des clubs uniques
+                                                        }
+                                                
+                                                        $commentairesAvecClub[] = [
+                                                            'id' => $commentaire->getId(),
+                                                            'user' => $commentaire->getUser()->getNom() . ' ' . $commentaire->getUser()->getPrenom(),
+                                                            'contenu' => $commentaire->getContenuComment(),
+                                                            'club_name' => $clubName,
+                                                            'created_at' => $commentaire->getDateComment()->format('Y-m-d')
+                                                        ];
+                                                    }
+                                                
+                                                    return $this->render('commentaire/adminComments.html.twig', [
+                                                        'commentaires' => $commentairesAvecClub,
+                                                        'clubs' => $clubs, // Envoyer la liste des clubs pour le filtre
+                                                        'selectedClub' => $clubFilter ?? 'all' // Club actuellement sélectionné
+                                                    ]);
+                                                }
+                                                
 
     #[Route('/{id}/delete', name: 'app_commentaire_delete', methods: ['POST'])]
 public function delete($id, EntityManagerInterface $entityManager): RedirectResponse
