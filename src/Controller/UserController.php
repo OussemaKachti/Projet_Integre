@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controller;
-
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use App\Enum\RoleEnum;
 use App\Entity\User;
 use App\Form\UserType;
@@ -26,10 +26,15 @@ class UserController extends AbstractController
     //     return $this->render('admin.html.twig');
     // }
     #[Route('/profile', name: 'app_profile')]
-    public function index(): Response
+    public function index(Request $request,SessionInterface $session): Response
     {
+        if ($request->query->has('cleanup')) {
+            $session->remove('password_tab_active');
+            return new Response('', Response::HTTP_NO_CONTENT);
+        }
+    
         return $this->render('user/profile.html.twig', [
-            'user' => $this->getUser(), // Pass the logged-in user to the Twig template
+            'user' => $this->getUser(),
         ]);
     }
     #[Route('/sign-up', name: 'app_user_signup')]
@@ -71,8 +76,11 @@ class UserController extends AbstractController
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         Security $security,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        SessionInterface $session
     ): Response {
+        // Set a flag in the session to keep the password tab active
+        $session->set('password_tab_active', true);
         // Get the logged in user
         $user = $security->getUser();
 
@@ -108,6 +116,7 @@ class UserController extends AbstractController
 
         $this->addFlash('success', 'Password updated successfully');
         return $this->redirectToRoute('app_profile');
+
     }
     #[Route('/update-profile', name: 'app_update_profile', methods: ['POST'])]
     public function updateProfile(Request $request, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response

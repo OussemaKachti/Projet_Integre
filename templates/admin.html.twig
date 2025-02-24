@@ -1,64 +1,76 @@
 {% extends 'baseback.html.twig' %}
 
-{% block title %}Edit User
-{% endblock %}
+{% block title %}Edit User{% endblock %}
 
 {% block body %}
-	
-		<div class="content-wrapper">
-			<div class="row">
-				<div
-					class="col-12">
-					{# Changed from col-lg-12 to col-12 for full width #}
-					<div class="card">
-						<div class="card-body">
-							<h4 class="card-title">Admin's Dashboard</h4>
-							{% for message in app.flashes('success') %}
-								<div class="alert alert-success">
-									{{ message }}
-								</div>
-							{% endfor %}
-							<p class="card-description">List of users</p>
-							<div class="table-responsive">
-								<table class="table table-hover">
-									<thead>
-										<tr>
-											<th>Name</th>
-											<th>Email</th>
-											<th>Phone Number</th>
-											<th>Role</th>
-											<th>Action</th>
-										</tr>
-									</thead>
-
-									<tbody>
-										{% for user in users %}
-											<tr>
-												<td>{{ user.prenom }}
-													{{ user.nom }}</td>
-												<td>{{ user.email }}</td>
-												<td>{{ user.tel }}</td>
-												<td>{{ user.role.value }}</td>
-												<td>
-													<form action="{{ path('app_admin_delete_user', {'id': user.id}) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this user?');">
-														<button class="btn btn-inverse-danger btn-fw">Delete</button>
-													</form>
-												</td>
-											</tr>
-										{% else %}
-											<tr>
-												<td colspan="5">No users found.</td>
-											</tr>
-										{% endfor %}
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-
-
-
+<div class="content-wrapper p-0"> {# Removed padding #}
+    <div class="row m-0"> {# Removed margin #}
+        <div class="col-12 p-0"> {# Removed padding #}
+            <div class="card h-100"> {# Added height 100% #}
+                <div class="card-body">
+                    <h4 class="card-title">Admin's Dashboard</h4>
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                    <p class="card-description">List of users</p>
+                    <div class="table-responsive">
+                        <table class="table table-hover w-100"> {# Added full width #}
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone Number</th>
+                                    <th>Role</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                    <tr>
+                                        <td>{{ user.prenom }} {{ user.nom }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>{{ user.tel }}</td>
+                                        <td>{{ user.role.value }}</td>
+                                        <td>
+                                            <form action="{{ path('app_admin_delete_user', {'id': user.id}) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                                <button class="btn btn-inverse-danger btn-fw">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5">No users found.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .content-wrapper {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+    
+    .card {
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+    
+    .table-responsive {
+        margin: -1rem !important; /* Compensate for card-body padding */
+        padding: 1rem !important;
+    }
+    
+    .table {
+        margin-bottom: 0 !important;
+    }
+</style>
 {% endblock %}

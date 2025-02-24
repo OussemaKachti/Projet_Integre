@@ -30,7 +30,8 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/admin, roles: ROLE_ADMINISTRATEUR }
-        - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/login, roles: PUBLIC_ACCESS, allow_if: "not is_authenticated()" }
+        - { path: ^/user/sign-up, roles: PUBLIC_ACCESS, allow_if: "not is_authenticated()" }
 
 when@test:
     security:

@@ -103,17 +103,18 @@
 												Edit Profile</button>
 										</div>
 
-										<div class="profile__info-wrapper white-bg">
-											{% for message in app.flashes('success') %}
-												<div class="alert alert-success">
-													{{ message }}
-												</div>
-											{% endfor %}
-											{% for message in app.flashes('error') %}
-												<div class="alert alert-danger">
-													{{ message }}
-												</div>
-											{% endfor %}
+										<div
+											class="profile__info-wrapper white-bg">
+											{# {% for message in app.flashes('success') %}
+																																																								<div class="alert alert-success">
+																																																									{{ message }}
+																																																								</div>
+																																																							{% endfor %}
+																																																							{% for message in app.flashes('error') %}
+																																																								<div class="alert alert-danger">
+																																																									{{ message }}
+																																																								</div>
+																																																							{% endfor %} #}
 											<div class="profile__info-item">
 												<p>Name</p>
 												<h4>{{user.nom ?? 'N/A'}}
@@ -149,41 +150,250 @@
 								<div class="tab-pane fade" id="nav-password" role="tabpanel" aria-labelledby="nav-password-tab">
 									<div class="password__change">
 										<div class="password__change-top">
-											{% for message in app.flashes('success') %}
+											{# {% for message in app.flashes('success') %}
 												<div class="alert alert-success">
 													{{ message }}
 												</div>
-											{% endfor %}
-											{% for message in app.flashes('error') %}
+											{% endfor %} #}
+											<h3 class="password__change-title">Change Password</h3>
+											{# {% for message in app.flashes('error') %}
 												<div class="alert alert-danger">
 													{{ message }}
 												</div>
-											{% endfor %}
+											{% endfor %} #}
 										</div>
 										<div class="password__form white-bg">
 
 											<form action="{{ path('app_change_password') }}" method="POST" id="changePasswordForm">
+												<input type="hidden" name="active_tab" value="password">
 												<div class="password__change-top">
-													<h3 class="password__change-title">Change Password</h3>
-
+												{% for message in app.flashes('success') %}
+												<div class="alert alert-success">
+													{{ message }}
+												</div>
+											    {% endfor %}
+													
 												</div>
 												<div class="password__input">
 													<p>Old Password</p>
-													<input type="password" name="oldPassword" required placeholder="Enter Old Password">
+													<input type="password" name="oldPassword" id="oldPassword" required placeholder="Enter Old Password">
+													<span class="error-message" id="oldPasswordError">
+														{% for message in app.flashes('error') %}
+															{% if message == 'Current password is incorrect' %}
+																{{ message }}
+															{% endif %}
+														{% endfor %}
+													</span>
+												
 												</div>
 												<div class="password__input">
 													<p>New Password</p>
-													<input type="password" name="newPassword" required placeholder="Enter New Password">
+													<input type="password" name="newPassword" id="newPassword" required placeholder="Enter New Password">
+													<span class="error-message" id="newPasswordError"></span>
+													<div class="password-requirements" id="passwordRequirements">
+														<p class="requirements-title">Password must include:</p>
+														<ul>
+															<li id="length-check">At least 8 characters</li>
+															<li id="uppercase-check">At least one uppercase letter</li>
+															<li id="lowercase-check">At least one lowercase letter</li>
+															<li id="number-check">At least one number</li>
+															<li id="special-check">At least one special character (#?!@$%^&*-)</li>
+														</ul>
+													</div>
 												</div>
 												<div class="password__input">
 													<p>Confirm Password</p>
-													<input type="password" name="confirmPassword" required placeholder="Confirm Password">
+													<input type="password" name="confirmPassword" id="confirmPassword" required placeholder="Confirm Password">
+													<span class="error-message" id="confirmPasswordError"></span>
 												</div>
 												<div class="password__input">
-													<button type="submit" class="tp-btn">Update password</button>
+													<button type="submit" class="tp-btn" id="submitButton">Update password</button>
 												</div>
 											</form>
-										</div</div>
+
+											<style>
+												.error-message {
+													color: #dc3545;
+													font-size: 14px;
+													margin-top: 5px;
+													display: block;
+												}
+
+												.password-requirements {
+													font-size: 14px;
+													margin-top: 10px;
+													padding: 10px;
+													border: 1px solid #ddd;
+													border-radius: 4px;
+													display: none;
+												}
+
+												.password-requirements ul {
+													margin: 5px 0 0 20px;
+													padding: 0;
+												}
+
+												.requirements-title {
+													margin: 0;
+													font-weight: bold;
+												}
+
+												.requirement-met {
+													color: #28a745;
+												}
+
+												.requirement-unmet {
+													color: #dc3545;
+												}
+											</style>
+
+											<script>
+												document.addEventListener('DOMContentLoaded', function () {
+const form = document.getElementById('changePasswordForm');
+const oldPassword = document.getElementById('oldPassword');
+const newPassword = document.getElementById('newPassword');
+const confirmPassword = document.getElementById('confirmPassword');
+const oldPasswordError = document.getElementById('oldPasswordError');
+const newPasswordError = document.getElementById('newPasswordError');
+const confirmPasswordError = document.getElementById('confirmPasswordError');
+const passwordRequirements = document.getElementById('passwordRequirements');
+
+// Password requirement elements
+const lengthCheck = document.getElementById('length-check');
+const uppercaseCheck = document.getElementById('uppercase-check');
+const lowercaseCheck = document.getElementById('lowercase-check');
+const numberCheck = document.getElementById('number-check');
+const specialCheck = document.getElementById('special-check');
+
+// Show password requirements when the new password field is focused
+newPassword.addEventListener('focus', function () {
+passwordRequirements.style.display = 'block';
+});
+
+// Hide password requirements when clicked outside
+document.addEventListener('click', function (event) {
+if (event.target !== newPassword && ! passwordRequirements.contains(event.target)) {
+passwordRequirements.style.display = 'none';
+}
+});
+
+// Real-time validation for new password
+newPassword.addEventListener('input', validateNewPassword);
+
+function validateNewPassword() {
+const value = newPassword.value;
+let valid = true;
+
+// Check length
+if (value.length >= 8) {
+lengthCheck.classList.add('requirement-met');
+lengthCheck.classList.remove('requirement-unmet');
+} else {
+lengthCheck.classList.add('requirement-unmet');
+lengthCheck.classList.remove('requirement-met');
+valid = false;
+}
+
+// Check uppercase
+if (/[A-Z]/.test(value)) {
+uppercaseCheck.classList.add('requirement-met');
+uppercaseCheck.classList.remove('requirement-unmet');
+} else {
+uppercaseCheck.classList.add('requirement-unmet');
+uppercaseCheck.classList.remove('requirement-met');
+valid = false;
+}
+
+// Check lowercase
+if (/[a-z]/.test(value)) {
+lowercaseCheck.classList.add('requirement-met');
+lowercaseCheck.classList.remove('requirement-unmet');
+} else {
+lowercaseCheck.classList.add('requirement-unmet');
+lowercaseCheck.classList.remove('requirement-met');
+valid = false;
+}
+
+// Check number
+if (/[0-9]/.test(value)) {
+numberCheck.classList.add('requirement-met');
+numberCheck.classList.remove('requirement-unmet');
+} else {
+numberCheck.classList.add('requirement-unmet');
+numberCheck.classList.remove('requirement-met');
+valid = false;
+}
+
+// Check special character
+if (/[#?!@$%^&*-]/.test(value)) {
+specialCheck.classList.add('requirement-met');
+specialCheck.classList.remove('requirement-unmet');
+} else {
+specialCheck.classList.add('requirement-unmet');
+specialCheck.classList.remove('requirement-met');
+valid = false;
+}
+
+// Clear previous error
+newPasswordError.textContent = '';
+
+return valid;
+}
+
+// Real-time validation for password confirmation
+confirmPassword.addEventListener('input', function () {
+validateConfirmPassword();
+});
+
+function validateConfirmPassword() {
+if (confirmPassword.value !== newPassword.value) {
+confirmPasswordError.textContent = 'Passwords do not match';
+return false;
+} else {
+confirmPasswordError.textContent = '';
+return true;
+}
+}
+
+// Form submission handler
+form.addEventListener('submit', function (e) {
+let isValid = true;
+
+// Reset error messages
+oldPasswordError.textContent = '';
+newPasswordError.textContent = '';
+confirmPasswordError.textContent = '';
+
+// Validate old password
+if (! oldPassword.value.trim()) {
+oldPasswordError.textContent = 'Old password cannot be empty';
+isValid = false;
+}
+
+// Validate new password
+if (! newPassword.value.trim()) {
+newPasswordError.textContent = 'New password cannot be empty';
+isValid = false;
+} else if (! validateNewPassword()) {
+newPasswordError.textContent = 'Password must include uppercase, lowercase, numbers, and special characters';
+isValid = false;
+}
+
+// Validate password confirmation
+if (! confirmPassword.value.trim()) {
+confirmPasswordError.textContent = 'Please confirm your password';
+isValid = false;
+} else if (! validateConfirmPassword()) {
+isValid = false;
+}
+
+if (! isValid) {
+e.preventDefault();
+}
+});
+});
+											</script>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -232,5 +442,22 @@
 				</div>
 			</div>
 		</main>
+		{# <script>
+			document.addEventListener('DOMContentLoaded', function (){
+{% if app.session.get('password_tab_active') %}
+const passwordTab = document.getElementById('nav-password-tab');
+passwordTab.click();{% endif %}
+});
+		</script> #}
+		<script>
+			document.addEventListener('DOMContentLoaded', function (){
+{% if app.session.get('password_tab_active') %}
+const passwordTab = document.getElementById('nav-password-tab');
+passwordTab.click();
+
+// Tell the server to clean up the session variable
+fetch('{{ path("app_profile") }}?cleanup=true');{% endif %}
+});
+		</script>
 
 	{% endblock %}
