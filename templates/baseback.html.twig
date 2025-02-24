@@ -70,7 +70,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic" >
+             <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
               
                 <i class="icon-layout menu-icon"></i>
                 <span class="menu-title">Clubs</span>
@@ -78,18 +78,34 @@
               </a>
               <div class="collapse" id="ui-basic">
                 <ul class="nav flex-column sub-menu">
-                  <li class="nav-item"> <a class="nav-link" href="../../pages/tables/club_admin.html">Club</a></li>
-                  <li class="nav-item"> <a class="nav-link" href="../../pages/tables/members_admin.html">Member List</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="nav-link">Club</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="nav-link">Member List</a></li>
                 </ul>
               </div>
             </li>
+
+            
             <li class="nav-item">
-              <a class="nav-link" >
+             <a class="nav-link" data-bs-toggle="collapse" href="#Events" aria-expanded="false" aria-controls="Events">
+            
                   <i class="icon-layout menu-icon"></i>
                 <span class="menu-title">Event</span>
                 <i class="menu-arrow"></i>
-              </a>
 
+              
+              </a>
+             <div class="collapse" id="Events">
+  <ul class="nav flex-column sub-menu">
+    <li class="nav-item">
+      <a class="nav-link" href="{{ path('admin_page') }}">Events</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ path('admincat_page') }}">Category</a>
+    </li>
+  </ul>
+</div>
+
+</li>
 
 
 
@@ -102,8 +118,8 @@
               </a>
               <div class="collapse" id="tables">
                 <ul class="nav flex-column sub-menu">
-                  <li class="nav-item"> <a class="nav-link" href="../../pages/tables/products_admin.html">Products</a></li>
-                  <li class="nav-item"> <a class="nav-link" href="../../pages/tables/commands_admin.html">Orders</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="nav-link"">Products</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="nav-link"nav-link"">Orders</a></li>
                 </ul>
               </div>
             </li>
@@ -117,8 +133,8 @@
               </a>
               <div class="collapse" id="icons">
                 <ul class="nav flex-column sub-menu">
-                  <li class="nav-item"> <a class="nav-link" href="../../pages/tables/comp_admin.html">Competitions</a></li>
-                  <li class="nav-item"> <a class="nav-link" href="../../pages/tables/seasons_admin.html">Seasons</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="nav-link"">Competitions</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="nav-link"nav-link"">Seasons</a></li>
                 </ul>
               </div>
             </li>
@@ -140,7 +156,7 @@
       <footer class="footer">
         <div class="d-sm-flex justify-content-center justify-content-sm-between">
           <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2023. Premium <a href="https://www.bootstrapdash.com/" target="_blank">Bootstrap admin template</a> from BootstrapDash. All rights reserved.</span>
-          <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Hand-crafted & made with <i class="ti-heart text-danger ms-1"></i></span>
+
         </div>
       </footer>
     </div>

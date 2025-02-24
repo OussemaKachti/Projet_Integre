@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Evenement;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Form\EvenementType;
 use App\Repository\CategorieRepository;
 use App\Repository\EvenementRepository;
@@ -31,6 +32,19 @@ public function adminPage(EvenementRepository $evenementRepository , CategorieRe
  
     return $this->render('evenement/admin.html.twig', [
         'evenements' => $evenements,
+        'categories'=>$categories,
+        
+    ]);
+}
+#[Route('/admincat', name: 'admincat_page')]
+public function admincatPage(  CategorieRepository $categorieRepository): Response
+{
+    // Récupérer les événements ou d'autres données nécessaires
+   
+    $categories =$categorieRepository->findAll();
+ 
+    return $this->render('evenement/admincat.html.twig', [
+        
         'categories'=>$categories,
         
     ]);
@@ -96,19 +110,25 @@ public function adminPage(EvenementRepository $evenementRepository , CategorieRe
     }
 
  
-
     #[Route('/new', name: 'app_evenement_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
-    {
-        $evenement = new Evenement();
-        $form = $this->createForm(EvenementType::class, $evenement);
-        
-        // Vérifier si des données sont présentes dans l'URL (params)
-       
-    
-        $form->handleRequest($request);
-    
-        if ($form->isSubmitted() && $form->isValid()) {
+public function new(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    SluggerInterface $slugger,
+    ValidatorInterface $validator
+): Response {
+    $evenement = new Evenement();
+    $form = $this->createForm(EvenementType::class, $evenement);
+    $form->handleRequest($request);
+
+    // On initialise $errors à un tableau vide pour la requête GET
+    $errors = [];
+
+    if ($form->isSubmitted()) {
+        // Valider l'entité avec les contraintes définies dans l'entité Evenement
+        $errors = $validator->validate($evenement);
+
+        if ($form->isValid() && count($errors) === 0) {
             // Gestion de l'image
             $imageDescriptionFile = $form->get('imageDescription')->getData();
             if ($imageDescriptionFile) {
@@ -122,26 +142,25 @@ public function adminPage(EvenementRepository $evenementRepository , CategorieRe
                     );
                     $evenement->setImageDescription($newFilename);
                 } catch (FileException $e) {
-                    // Si une erreur survient lors du déplacement de l'image
-                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image');
+                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
                 }
             }
-    
-            // Sauvegarder l'événement dans la base de données
+
             $entityManager->persist($evenement);
             $entityManager->flush();
-    
-            // Message flash pour informer l'utilisateur
+
             $this->addFlash('success', 'Événement créé avec succès !');
             return $this->redirectToRoute('event');
         }
-    
-        return $this->render('evenement/newevent.html.twig', [
-            'form' => $form->createView(),
-            'evenement' => $evenement,
-        ]);
     }
-    
+
+    return $this->render('evenement/newevent.html.twig', [
+        'form' => $form->createView(),
+        'evenement' => $evenement,
+        'errors' => $errors,
+    ]);
+}
+
     
 
 #[Route('/{id}/edit', name: 'app_evenement_edit', methods: ['GET', 'POST'])]

@@ -79,7 +79,7 @@ public function delete(Request $request, EntityManagerInterface $entityManager, 
     if ($this->isCsrfTokenValid('delete' . $categorie->getId(), $request->request->get('_token'))) {
         $entityManager->remove($categorie);
         $entityManager->flush();
-        $this->addFlash('success', 'Categorie supprimé avec succès.');
+      
     }
 
     return $this->redirectToRoute('admin_page'); // Redirection vers la liste des événements
