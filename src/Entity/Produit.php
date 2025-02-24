@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ProduitRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -61,6 +63,17 @@ class Produit
         message: 'The value {{ value }} is not a valid {{ type }}.',
     )]
     private ?string $quantity = null;
+
+    /**
+     * @var Collection<int, Orderdetails>
+     */
+    #[ORM\OneToMany(targetEntity: Orderdetails::class, mappedBy: 'produit')]
+    private Collection $orderdetails;
+
+    public function __construct()
+    {
+        $this->orderdetails = new ArrayCollection();
+    }
 
     public function getClub(): Club
     {
@@ -146,6 +159,36 @@ class Produit
     public function setQuantity(?string $quantity): static
     {
         $this->quantity = $quantity;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Orderdetails>
+     */
+    public function getOrderdetails(): Collection
+    {
+        return $this->orderdetails;
+    }
+
+    public function addOrderdetail(Orderdetails $orderdetail): static
+    {
+        if (!$this->orderdetails->contains($orderdetail)) {
+            $this->orderdetails->add($orderdetail);
+            $orderdetail->setProduit($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrderdetail(Orderdetails $orderdetail): static
+    {
+        if ($this->orderdetails->removeElement($orderdetail)) {
+            // set the owning side to null (unless already changed)
+            if ($orderdetail->getProduit() === $this) {
+                $orderdetail->setProduit(null);
+            }
+        }
 
         return $this;
     }

@@ -37,46 +37,72 @@
                                     <th class="product-quantity">Name Club</th>
                                     <th class="product-price">Price</th>
                                     <th class="product-quantity">Quantity</th>
+                                    <th class="product-total">total</th>
                                     <th class="product-remove">Remove</th>
+
                                 </tr>
                             </thead>
-                            <tbody>
-                                {% for produit in cartProducts %}
-                                <tr>
-                                    <td class="product-thumbnail"><a href="course-details.html"><img src="https://th.bing.com/th/id/OIP.jzNV4d-xQqYp6jo_m3ScUAHaHa?rs=1&pid=ImgDetMain" alt=""></a></td>
-                                    <td class="product-name"><a href="course-details.html">{{ produit.nomProd }}</a></td>
-                                    <td class="product-club"><span class="amount">{{ produit.club.nomC }}</span></td>
-                                    <td class="product-price"><span class="amount">{{ produit.prix }} TND</span></td>
-                                    <td class="product-quantity">
-                                        <div class="cart-plus-minus">
-                                            <input type="text" value="1">
-                                            <div class="dec qtybutton">
-                                                <a href="{{ path('cart_decrease', {'id': produit.id }) }}">-</a>
-                                            </div>
-                                            <div class="inc qtybutton">
-                                                <a href="{{ path('cart_increase', {'id': produit.id }) }}">+</a>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="product-remove">
-    <form action="{{ path('cart_remove', {'id': produit.id}) }}" method="post" onsubmit="return confirm('Are you sure you want to remove this product?');">
-        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ produit.id) }}">
-        <button type="submit" class="tp-btn btn-create">Remove</button>
-    </form>
-</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
+<tbody>
+    {% for item in cartProduits %}
+    <tr>
+        <td class="product-thumbnail">
+            <a href="course-details.html">
+                <img src="{{ asset('uploads/' ~ item.produit.imgProd) }}" alt="">
+            </a>
+        </td>
+        <td class="product-name"><a href="course-details.html">{{ item.produit.nomProd }}</a></td>
+        <td class="product-club"><span class="amount">{{ item.produit.club.nomC }}</span></td>
+        <td class="product-price"><span class="amount">{{ item.produit.prix }} TND</span></td>
+        <td class="product-quantity">
+            <div class="cart-plus-minus">
+                <input type="text" value="{{ item.quantity }}" readonly>
+                <div class="dec qtybutton">
+                    <a href="{{ path('cart_decrease', {'id': item.produit.id }) }}">-</a>
+                </div>
+                <div class="inc qtybutton">
+                    <a href="{{ path('cart_increase', {'id': item.produit.id }) }}">+</a>
+                </div>
+            </div>
+        <td class="product-total"><span class="amount">{{ item.produit.prix* item.quantity  }} TND</span></td>
+        </td>
+        <td class="product-remove">
+            <form action="{{ path('cart_remove', {'id': item.produit.id}) }}" method="post" onsubmit="return confirm('Are you sure you want to remove this product?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.produit.id) }}">
+                <button type="submit" class="tp-btn btn-create">Remove</button>
+            </form>
+        </td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="6">Le panier est vide.</td>
+    </tr>
+    {% endfor %}
+    
+</tbody>
+    <tfoot>
+    <tr>
+        <td colspan="5"></td>
+        <td>total: {{total}}</td>
+             <td><button class="btn btn-danger" name="update_cart" type="submit">remove all</button></td>
+        
+    </tr>    
+    
+
+    </foot>
+    
+
                         </table>
+                        
                     </div>
+                    
                     <div class="row">
                         <div class="col-12">
                             <div class="coupon-all">
                                 <div class="coupon2">
-                                    <button class="tp-btn" name="update_cart" type="submit">Update</button>
+                                  <a href="{{ path('order_create') }}" class="btn btn-primary">confirm order</a>  
                                 </div>
                                 <div class="cart-page-total">
-                                    <a class="tp-btn" href="checkout1.html">Confirm Order</a>
+                                    
                                 </div>
                             </div>
                         </div>

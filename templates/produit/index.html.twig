@@ -10,6 +10,12 @@
     justify-content: center; /* Centre les boutons */
     align-items: center; /* Alignement vertical */
 }
+.table-image {
+    width: 70px; /* Ajuste la largeur selon tes besoins */
+    height: auto; /* Garde le ratio d'aspect */
+    object-fit: cover; /* Ajuste l’image sans la déformer */
+    border-radius: 5px; /* Coins arrondis pour un meilleur look */
+}
 </style>
   <section class="cart-area pt-120 pb-120">
             <div class="container">
@@ -41,7 +47,7 @@
                                        <tr>
                                           <td class="product-id">{{ produit.id }}</a></td>
                                           <td class="product-name"><a href="{{ path('app_produit_show', {'id': produit.id})}}">
-                        <img src="{{ asset('uploads/' ~ produit.imgProd) }}" alt="">
+                        <img src="{{ asset('uploads/' ~ produit.imgProd) }}" class="table-image" alt="">
                     </a></td>
                                           <td class="product-name">{{ produit.nomProd }}</td>
                                           <td class="product-price"><span class="amount">{{ produit.prix }}</span></td>

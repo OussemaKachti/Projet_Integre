@@ -59,7 +59,7 @@ private ?string $tel = null;
         $this->commentaires = new ArrayCollection();
         $this->likes = new ArrayCollection();
         $this->sondages = new ArrayCollection();
-
+        $this->commandes = new ArrayCollection();
     }
 
 
@@ -151,5 +151,39 @@ public function setTel(string $tel): static
     public function getLikes(): Collection
     {
         return $this->likes;
+    }
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Commande::class)]
+    private Collection $commandes;
+
+    
+
+    /**
+     * @return Collection|Commande[]
+     */
+    public function getCommandes(): Collection
+    {
+        return $this->commandes;
+    }
+
+    public function addCommande(Commande $commande): self
+    {
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes[] = $commande;
+            $commande->setUser($this); // Lien inverse
+        }
+
+        return $this;
+    }
+
+    public function removeCommande(Commande $commande): self
+    {
+        if ($this->commandes->removeElement($commande)) {
+            // Lien inverse
+            if ($commande->getUser() === $this) {
+                $commande->setUser(null);
+            }
+        }
+
+        return $this;
     }
 }

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Produit;
 use App\Form\ProduitType;
 use App\Repository\ProduitRepository;
+use App\Repository\CommandeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -61,21 +62,23 @@ public function deletee(Request $request, int $id, ProduitRepository $produitRep
 
     return $this->redirect($request->headers->get('referer') ?: $this->generateUrl('produit_admin'));
 }
-    #[Route('/adminn', name: 'commande_admin', methods: ['GET'])] //show tab produit d admin 
-    public function comadmin(ProduitRepository $produitRepository,ClubRepository $clubRepository): Response
-    {
+    /**#[Route('/adminn', name: 'commande_admin', methods: ['GET'])] //show tab produit d admin 
+    public function comadmin(ProduitRepository $produitRepository,ClubRepository $clubRepository,CommandeRepository $commandeRepository,): Response
+    { 
+        $commandes = $commandeRepository->findAll(); 
         $user = $this->getUser(); // Récupère l'utilisateur connecté
         return $this->render('produit/commande_admin.html.twig', [
             'produits' => $produitRepository->findAll(),
             'clubs' => $clubRepository->findAll(),
             'user'     => $user,
+            'data' => $commandes,
         ]);
     }
     
     public function configurefields(string $pageName):iterable{
         return[
       datetimefield::new('createdAt'->hideonForm(),)];
-    }
+    }**/
 
     #[Route('/new', name: 'app_produit_new', methods: ['GET', 'POST'])] //ajout de produits
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
@@ -209,30 +212,28 @@ public function delete(Request $request, int $id, ProduitRepository $produitRepo
 //cart
     #[Route('/cart', name: 'cart_index')]
     public function cart(SessionInterface $session, ProduitRepository $produitRepository): Response
-    {
-        // Récupérer le panier depuis la session
-        // Par exemple : [ 1 => 2, 5 => 1 ] où 1 et 5 sont les IDs des produits, et les valeurs représentent la quantité
-        $cartData = $session->get('cart', []);
-        $cartProducts = [];
+{
+    // Récupérer le panier depuis la session
+    $cartData = $session->get('cart', []);
+    $cartProduits = []; // Utilisation du nom demandé
+    $total = 0; // Initialisation du total
 
-        // Pour chaque produit dans le panier, récupérer ses informations complètes en base
-        foreach ($cartData as $productId => $quantity) {
-            $product = $produitRepository->find($id);
-            if ($product) {
-                $cartProducts[] = [
-                    'product'  => $product,
-                    'quantity' => $quantity,
-                ];
-                $total += $product->getPrice() * $quantity;
-            }
-            
+    // Pour chaque produit dans le panier, récupérer ses informations
+    foreach ($cartData as $productId => $quantity) {
+        $produit = $produitRepository->find($productId); // Correction de la variable
+        if ($produit) {
+            $cartProduits[] = [
+                'produit'  => $produit, // Changer la clé pour 'produit'
+                'quantity' => $quantity,
+            ];
+            $total += $produit->getPrix() * $quantity;
         }
-
-        // Passer les données à la vue
-        return $this->render('produit/commande.html.twig', [
-            'cartProducts' => $cartProducts
-        ]);
     }
+
+    // Passer les données à la vue
+    return $this->render('produit/cart.html.twig', compact('cartProduits', 'total')
+    );
+}
 
  
     #[Route('/add/{id}', name: 'cart_add', methods: ['GET'] )]
@@ -258,7 +259,7 @@ public function delete(Request $request, int $id, ProduitRepository $produitRepo
             $cart[$id]++;
         }
 
-        $session->set('panier', $cart);
+        $session->set('cart', $cart);
         
         //return $this->redirectToRoute('cart_index');
         return $this->redirectToRoute('cart_index');
@@ -266,25 +267,24 @@ public function delete(Request $request, int $id, ProduitRepository $produitRepo
     
 
     #[Route('/remove/{id}', name: 'cart_remove')]
-    public function remove(Request $request, int $id, SessionInterface $session): Response
-    {
+    public function remove(Request $request, int $id, SessionInterface $session,ProduitRepository $produitRepository): Response
+    {  
+         // Si vous avez besoin de récupérer le produit, vous pouvez le faire ainsi :
+    $produit = $produitRepository->find($id);
+    if (!$produit) {
+        throw $this->createNotFoundException("Produit introuvable !");
+    }
         // Récupérer le panier depuis la session (tableau associatif)
         $cart = $session->get('cart', []);
         
         // Vérifier si le produit avec cet ID existe dans le panier
-        if (!isset($cart[$id])) {
-            throw $this->createNotFoundException('Le produit avec ID ' . $id . ' n\'existe pas dans le panier.');
-        }
-        
-        // Vérifier la validité du token CSRF
-        if ($this->isCsrfTokenValid('delete' . $id, $request->request->get('_token'))) {
-            // Supprimer le produit du panier
+        if (!empty($cart[$id])) {
+            
+            
             unset($cart[$id]);
+            dump($cart);
             // Mettre à jour la session avec le nouveau contenu du panier
             $session->set('cart', $cart);
-            $this->addFlash('success', 'Le produit a été supprimé du panier avec succès.');
-        } else {
-            $this->addFlash('error', 'Jeton CSRF invalide.');
         }
     
         return $this->redirect($request->headers->get('referer') ?: $this->generateUrl('cart_index'));
@@ -298,6 +298,8 @@ public function delete(Request $request, int $id, ProduitRepository $produitRepo
 
         if (isset($cart[$id])) {
             $cart[$id]['quantity']++;
+            // Recalcul du total pour ce produit
+    $cart[$id]['total'] = $produit->getPrix() * $cart[$id]['quantity'];
         }
 
         $session->set('cart', $cart);
@@ -306,20 +308,29 @@ public function delete(Request $request, int $id, ProduitRepository $produitRepo
     }
 
     #[Route('/decrease/{id}', name: 'cart_decrease')]
-    public function decrease(Produit $produit, SessionInterface $session): Response
-    {
-        $cart = $session->get('cart', []);
-        $id = $produit->getId();
+public function decrease(Produit $produit, SessionInterface $session): Response
+{
+    $cart = $session->get('cart', []);
+    $id = $produit->getId();
 
-        if (isset($cart[$id])) {
-            if ($cart[$id]['quantity'] > 1) {
-                $cart[$id]['quantity']--;
-            } else {
-                unset($cart[$id]);
-            }
+    if (isset($cart[$id])) {
+        if ($cart[$id]['quantity'] > 1) {
+            $cart[$id]['quantity']--;
+            // Recalcul du total pour ce produit
+            $cart[$id]['total'] = $produit->getPrix() * $cart[$id]['quantity'];
+        } else {
+            unset($cart[$id]);
         }
+    }
 
-        $session->set('cart', $cart);
+    $session->set('cart', $cart);
+
+    return $this->redirectToRoute('cart_index');
+}
+#[Route('/empty', name: 'empty')]
+    public function empty(SessionInterface $session)
+    {
+        $session->remove('cart');
 
         return $this->redirectToRoute('cart_index');
     }
