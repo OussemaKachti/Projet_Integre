@@ -1,84 +1,102 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ProduitController!{% endblock %}
-
 {% block body %}
- <!-- partial -->
-        <div class="main-panel">
-          <div class="content-wrapper">
-            <div class="row">
-              
-             
-              <div class="col-lg-12 grid-margin stretch-card">
-                <div class="card">
-                  <div class="card-body">
-                    <h4 class="card-title">Products Table</Table></h4>
-                    
-                    <div class="table-responsive">
-                      <table class="table table-striped">
+<section class="cart-area pt-120 pb-120">
+    <div class="container">
+        <div class="row">
+            <h1>Table des commandes</h1>
+            <div class="col-12">
+                <div class="table-content table-responsive">
+                    <table class="table table-striped">
                         <thead>
-                          <tr>
-                            <th>Image</th>
-                            <th>Name of Club</th>
-                            <th>Name of Product</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Delete</th>
-                          </tr>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Email</th>
+                                <th>Date</th>
+                                <th>Nom du Produit</th>
+                                <th>Nom du Club</th>
+                                <th>Image</th>
+                                <th>Actions</th>
+                            </tr>
                         </thead>
                         <tbody>
-                          <tr>
-                            
-                                <td><img src="https://th.bing.com/th/id/OIP.jzNV4d-xQqYp6jo_m3ScUAHaHa?rs=1&pid=ImgDetMain" alt="" style="width: 90px; height: 90px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></td>
-                                <td>Enactus</td>
-                                <td>Hoodie</td>
-                                <td>70</td>
-                                <td>30</td>
-                                
-                                <td><button class="trash-button" aria-label="Supprimer">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="trash-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M3 6h18"></path>
-                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg>
-                                </button></td>
-                              </tr>
-                              <tr>
-                                <td><img src="https://th.bing.com/th/id/OIP.GKvMfPzZSEIqpsJNu9xMnQHaHa?rs=1&pid=ImgDetMain" alt="" style="width: 90px; height: 90px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></td>
-                                <td>AIESSEC</td>
-                                <td>SILICON BRACELET</td>
-                                <td>10</td>
-                                <td>40</td>
-                                
-                                <td><button class="trash-button" aria-label="Supprimer">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="trash-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M3 6h18"></path>
-                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg>
-                                </button></td>
-                              </tr>
-                          </tr>
-                          
-                            
+                            {% for item in data %}
+                                <tr>
+                                    {# Informations de l'utilisateur #}
+                                    {% if item.user is not null and item.user is iterable == false %}
+                                        <td>{{ item.user.nom }}</td>
+                                        <td>{{ item.user.prenom }}</td>
+                                        <td>{{ item.user.email }}</td>
+                                    {% else %}
+                                        <td colspan="3">Utilisateur inconnu</td>
+                                    {% endif %}
+
+                                    {# Date de la commande #}
+                                    <td>{{ item.dateComm|date('Y-m-d H:i') }}</td>
+
+                                    {# Récupérer le premier OrderDetail s'il existe #}
+                                    {% set orderDetails = item.orderDetails|default([]) %}
+                                    {% set firstDetail = orderDetails is not empty ? orderDetails.first() : null %}
+
+                                    {# Nom du produit #}
+        <td>
+            {% if item.produit is not null %}
+                {{ item.produit.nomProd }}
+            {% else %}
+                Produit inconnu
+            {% endif %}
+        </td>
+
+        {# Nom du club #}
+        <td>
+            {% if item.club is not null %}
+                {{ item.club.nomC }}
+            {% else %}
+                Club inconnu
+            {% endif %}
+        </td>
+
+        
+
+        {# Image du produit #}
+        <td>
+            {% if item.produit is not null and item.produit.imgprod is not null %}
+                <img src="{{ asset('uploads/' ~ item.produit.imgprod) }}" 
+                     alt="Image de {{ item.produit.nomProd }}" 
+                     style="width: 90px; height: 90px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            {% else %}
+                <span>Aucune image</span>
+            {% endif %}
+        </td>
+
+                                    {# Actions #}
+                                    <td class="product-actions">
+                                        <div class="btn-group">
+                                            <form action="{{ path('admin_commande_supprimer', {'id': item.commande.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande ?');">
+                                                <button class="trash-button" aria-label="Supprimer">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="trash-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M3 6h18"></path>
+                                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="8">Aucune commande trouvée</td>
+                                </tr>
+                            {% endfor %}
                         </tbody>
-                      </table>
-                    </div>
-                  </div>
+                    </table>
                 </div>
-              </div>
-              
             </div>
-          </div>
-          <!-- content-wrapper ends -->
-          <!-- partial:../../partials/_footer.html -->
-          <footer class="footer">
-  <div class="d-sm-flex justify-content-center justify-content-sm-between">
-    <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2023. Premium <a href="https://www.bootstrapdash.com/" target="_blank">Bootstrap admin template</a> from BootstrapDash. All rights reserved.</span>
-    <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Hand-crafted & made with <i class="ti-heart text-danger ms-1"></i></span>
-  </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

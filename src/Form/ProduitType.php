@@ -28,6 +28,7 @@ class ProduitType extends AbstractType
             ])
             ->add('createdAt' ,DateType::class, [
                 'widget' => 'single_text',
+                'mapped' => false,
             ])
             ->add('quantity')
             ->add('club', EntityType::class, [

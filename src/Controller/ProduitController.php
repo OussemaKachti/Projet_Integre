@@ -62,23 +62,6 @@ public function deletee(Request $request, int $id, ProduitRepository $produitRep
 
     return $this->redirect($request->headers->get('referer') ?: $this->generateUrl('produit_admin'));
 }
-    /**#[Route('/adminn', name: 'commande_admin', methods: ['GET'])] //show tab produit d admin 
-    public function comadmin(ProduitRepository $produitRepository,ClubRepository $clubRepository,CommandeRepository $commandeRepository,): Response
-    { 
-        $commandes = $commandeRepository->findAll(); 
-        $user = $this->getUser(); // Récupère l'utilisateur connecté
-        return $this->render('produit/commande_admin.html.twig', [
-            'produits' => $produitRepository->findAll(),
-            'clubs' => $clubRepository->findAll(),
-            'user'     => $user,
-            'data' => $commandes,
-        ]);
-    }
-    
-    public function configurefields(string $pageName):iterable{
-        return[
-      datetimefield::new('createdAt'->hideonForm(),)];
-    }**/
 
     #[Route('/new', name: 'app_produit_new', methods: ['GET', 'POST'])] //ajout de produits
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
@@ -134,6 +117,9 @@ public function deletee(Request $request, int $id, ProduitRepository $produitRep
                     $this->addFlash('error', 'Une erreur est survenue lors du téléchargement de l\'image.');
                     return $this->redirectToRoute('app_produit_new');
                 }
+            }
+            if (!$produit->getCreatedAt()) {
+                $produit->setCreatedAt(new \DateTime());
             }
     
             // Sauvegarde en base de données
@@ -278,7 +264,7 @@ public function delete(Request $request, int $id, ProduitRepository $produitRepo
         $cart = $session->get('cart', []);
         
         // Vérifier si le produit avec cet ID existe dans le panier
-        if (!empty($cart[$id])) {
+        if (isset($cart[$id])) {
             
             
             unset($cart[$id]);
@@ -327,13 +313,22 @@ public function decrease(Produit $produit, SessionInterface $session): Response
 
     return $this->redirectToRoute('cart_index');
 }
-#[Route('/empty', name: 'empty')]
-    public function empty(SessionInterface $session)
-    {
-        $session->remove('cart');
+#[Route('/cart/clear', name: 'cart_clear', methods: ['POST', 'GET'])]
+public function clearCart(Request $request, SessionInterface $session): Response
+{
+    // Supprimer la clé 'cart' de la session (vidant ainsi le panier)
+    $session->remove('cart');
 
-        return $this->redirectToRoute('cart_index');
-    }
+    // Ou alternativement, vous pouvez simplement réinitialiser le panier à un tableau vide :
+    // $session->set('cart', []);
+
+    $this->addFlash('success', 'Votre panier a été vidé avec succès.');
+
+    // Rediriger vers la page précédente ou vers la page du panier
+    return $this->redirect(
+        $request->headers->get('referer') ?: $this->generateUrl('cart_index')
+    );
+}
 
 }
  

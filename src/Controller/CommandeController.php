@@ -67,6 +67,50 @@ class CommandeController extends AbstractController
         ]);
     }
 
+    #[Route('/president', name: 'presi_commandes')]
+    public function commande(EntityManagerInterface $entityManager): Response
+    { 
+        // Récupérer toutes les commandes
+        $commandes = $entityManager->getRepository(Commande::class)->findAll();
+    
+        $data = [];
+        foreach ($commandes as $commande) {
+            $user = $commande->getUser();
+            if (!$user) {
+                $user = null; // Correction ici pour éviter l'erreur
+            }
+    
+            $orderDetails = $commande->getOrderDetails(); // Collection d'OrderDetails
+            if ($orderDetails->isEmpty()) {
+                $data[] = [
+                    'user' => $user ? $user : 'Utilisateur inconnu',
+                    'commande' => $commande,
+                    'produit' => null, // Pas de produit
+                    'club' => null,
+                    'dateComm' => $commande->getDateComm(),
+                    'orderDetails' => $orderDetails,
+                ];
+            } else {
+                foreach ($orderDetails as $orderDetail) {
+                    $produit = $orderDetail->getProduit();
+                    $club = $produit ? $produit->getClub() : null;
+    
+                    $data[] = [
+                        'user' => $user ? $user : 'Utilisateur inconnu',
+                        'commande' => $commande,
+                        'produit' => $produit,
+                        'club' => $club,
+                        'dateComm' => $commande->getDateComm(),
+                    ];
+                }
+            }
+        }
+        
+        return $this->render('produit/index2.html.twig', [
+            'data' => $data,
+        ]);
+    }
+
     #[Route('/admin/supprimer/{id}', name: 'admin_commande_supprimer', methods: ['POST', 'GET'])]
     public function supprimerCommande(int $id, EntityManagerInterface $entityManager): Response
     {
@@ -85,6 +129,26 @@ class CommandeController extends AbstractController
         $this->addFlash('success', 'Commande supprimée avec succès.');
 
         return $this->redirectToRoute('admin_commandes');
+    }
+
+    #[Route('/presi/supprimer/{id}', name: 'presi_commande_supprimer', methods: ['POST', 'GET'])]
+    public function supprimerCommandepresi(int $id, EntityManagerInterface $entityManager): Response
+    {
+        // Récupérer la commande par ID
+        $commande = $entityManager->getRepository(Commande::class)->find($id);
+
+        if (!$commande) {
+            $this->addFlash('danger', 'Commande non trouvée.');
+            return $this->redirectToRoute('admin_commandes');
+        }
+
+        // Supprimer la commande
+        $entityManager->remove($commande);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Commande supprimée avec succès.');
+
+        return $this->redirectToRoute('presi_commandes');
     }
 
     
@@ -128,37 +192,34 @@ class CommandeController extends AbstractController
     }
     
     #[Route('/commande/creer', name: 'order_create')]
+    
     public function createOrder(
         SessionInterface $session, 
         ProduitRepository $produitRepository, 
         EntityManagerInterface $entityManager
     ): Response {
-        // Récupérer l'utilisateur connecté
-    $user = $this->getUser();
+        // Récupérer un utilisateur de test (remplacez l'ID 1 par un ID valide dans votre base)
+    $user = $entityManager->getRepository(User::class)->find(1);
+    
     if (!$user) {
-        $this->addFlash('error', 'Vous devez être connecté pour passer une commande.');
-        return $this->redirectToRoute('cart_index'); // Rediriger vers la page de connexion
+        throw new \Exception("Utilisateur de test non trouvé !");
     }
+    
         // Récupérer le panier depuis la session
         $cart = $session->get('cart', []);
         
-        if (empty($cart)) {
-            $this->addFlash('error', 'Votre panier est vide.');
-            return $this->redirectToRoute('cart_index');
-        }
-
+    
         // Créer une nouvelle commande
         $commande = new Commande();
         $commande->setUser($user);
         $commande->setDateComm(new \DateTime());
-        // Si vous avez une gestion d'utilisateur, par exemple :
-        // $order->setUser($this->getUser());
-
-        $orderTotal = 0;
+        
+        // Définir le statut de la commande
         $statutCommande = StatutCommandeEnum::EN_COURS; 
-        $commande->setStatut($statutCommande); // Assure-toi que cette méthode existe dans ta classe Commande
-
-
+        $commande->setStatut($statutCommande);
+    
+        $orderTotal = 0;
+    
         // Pour chaque produit dans le panier, créer une ligne de commande (OrderDetails)
         foreach ($cart as $productId => $data) {
             $produit = $produitRepository->find($productId);
@@ -167,40 +228,38 @@ class CommandeController extends AbstractController
             }
             
             // Gérer le cas où $data est un entier (ancienne structure) ou un tableau
-            if (is_array($data)) {
-                $quantity = $data['quantity'] ?? 1;
-            } else {
-                $quantity = $data;
-            }
+            $quantity = is_array($data) ? ($data['quantity'] ?? 1) : $data;
             
             // Créer une nouvelle ligne de commande (OrderDetails)
             $orderDetails = new OrderDetails();
             $orderDetails->setproduit($produit);
             $orderDetails->setquantity($quantity);
             $orderDetails->setprice($produit->getPrix());
-            $orderDetails->calculateTotal(); //  Calcul automatique du total de la ligne
-
-        // Associer la ligne de commande à la commande
-        $commande->addOrderDetails($orderDetails);
-
-        $orderTotal += $orderDetails->getTotal();
-
-        // Définir le total de la commande
-        $orderDetails->setTotal($orderTotal);
-
+            $orderDetails->calculateTotal(); // Calcul automatique du total de la ligne
+            
+            // Associer la ligne de commande à la commande
+            $commande->addOrderDetails($orderDetails);
+            
+            // Additionner le total de la ligne au total de la commande
+            $orderTotal += $orderDetails->getTotal();
+        }
+        
+        // Si vous avez une méthode setTotal sur la commande, utilisez-la sinon stockez le total comme vous le souhaitez
+        $commande->setTotal($orderTotal);
+    
         // Persister la commande et ses lignes dans la base de données
         $entityManager->persist($commande);
         $entityManager->flush();
-
+    
         // Optionnel : vider le panier de la session après validation
         $session->remove('cart');
-
+    
         $this->addFlash('success', 'Commande enregistrée avec succès.');
-
+    
         // Rediriger vers une page de confirmation ou vers la liste des commandes
         return $this->redirectToRoute('order_success', ['id' => $commande->getId()]);
-        }
-}
+    }
+    
 #[Route('/order/{id}', name: 'order_success', methods: ['GET'])]
 public function success(Commande $commande): Response
 {

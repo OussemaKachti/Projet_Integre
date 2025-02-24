@@ -73,6 +73,7 @@ class Produit
     public function __construct()
     {
         $this->orderdetails = new ArrayCollection();
+        $this->createdAt = new \DateTime();
     }
 
     public function getClub(): Club
