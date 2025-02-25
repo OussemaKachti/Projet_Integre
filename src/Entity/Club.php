@@ -41,6 +41,9 @@ class Club
 
     #[ORM\OneToMany(targetEntity: ParticipationMembre::class, mappedBy: "club", cascade: ["persist", "remove"])]
     private Collection $participations;
+    #[ORM\ManyToMany(targetEntity: Competition::class, mappedBy: "clubs")]
+private Collection $competitions;
+
 
 
     #[ORM\ManyToOne(targetEntity: User::class)]

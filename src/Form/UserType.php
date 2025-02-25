@@ -6,7 +6,7 @@ use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-
+use Symfony\Component\Security\Core\User\UserInterface;
 class UserType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -16,7 +16,7 @@ class UserType extends AbstractType
             ->add('prenom')
             ->add('email')
             ->add('password')
-            ->add('role')
+         
             ->add('tel')
         ;
     }

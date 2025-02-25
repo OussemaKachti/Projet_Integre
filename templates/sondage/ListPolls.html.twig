@@ -56,13 +56,18 @@
 														<input type="radio" name="choix" id="option-{{ loop.index }}" value="{{ choix.id }}" class="poll-option-radio">
 														<label for="option-{{ loop.index }}">{{ choix.contenu }}</label>
 														<div class="progress-bar">
-															{% for resultat in sondageResults[sondage.id] %}
-																{% if resultat.choix == choix.contenu %}
-																	<div class="progress" style="width: {{ resultat.percentage }}%; background-color: {{ resultat.color }}">
-																		{{ resultat.percentage }}%
-																	</div>
-																{% endif %}
-															{% endfor %}
+															{% if sondageResults[sondage.id] is defined and sondageResults[sondage.id] is not empty %}
+																{% for resultat in sondageResults[sondage.id] %}
+																	{% if resultat.choix == choix.contenu %}
+																		<div class="progress" style="width: {{ resultat.percentage }}%; background-color: {{ resultat.color }}">
+																			{{ resultat.percentage }}%
+																		</div>
+																	{% endif %}
+																{% endfor %}
+															{% else %}
+																<p>Aucun résultat disponible pour ce sondage.</p>
+															{% endif %}
+
 														</div>
 													</div>
 												{% endfor %}
@@ -229,6 +234,7 @@ toast.show();
 											<!-- Comment Form -->
 											<div class="postbox__comment">
 												<h3>Write a comment</h3>
+												<br>
 												<form id="comment-form-{{ sondage.id }}" data-sondage-id="{{ sondage.id }}">
 													<div class="row">
 														<div class="col-xxl-12">
@@ -257,8 +263,8 @@ toast.show();
 						<div
 							class="blog__sidebar pl-70">
 							{# 
-																																										    {% if app.user and app.user.role == 'presidentClub' %}
-																																										#}
+																																																																						    {% if app.user and app.user.role == 'presidentClub' %}
+																																																																						#}
 							<form id="poll-form" method="POST" action="{{ path('api_poll_new') }}">
 								<div id="toastContainer" class="toast-container position-fixed top-50 start-50 translate-middle" style="z-index: 9999;"></div>
 								<style>
@@ -326,8 +332,8 @@ toast.show();
 							</div>
 
 							{# 
-																																										    {% endif %}
-																																										#}
+																																																																						    {% endif %}
+																																																																						#}
 							<button style="--clr: #7808d0" class="button" onclick="window.location.href='{{ path('api_user_polls') }}';">
 								<span class="button__icon-wrapper">
 									<svg width="10" class="button__icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 14 15">

@@ -19,9 +19,10 @@ class Reponse
     #[ORM\JoinColumn(nullable: false)]
     private User $user;
 
-    #[ORM\ManyToOne(targetEntity: ChoixSondage::class)]
+    #[ORM\ManyToOne(targetEntity: ChoixSondage::class, inversedBy: "reponses")]
     #[ORM\JoinColumn(nullable: true)]
     private ChoixSondage $choixSondage;
+    
 
     #[ORM\ManyToOne(targetEntity: Sondage::class, inversedBy: "reponses")]
 #[ORM\JoinColumn(nullable: false)]

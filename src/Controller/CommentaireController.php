@@ -127,11 +127,13 @@ public function delete($id, EntityManagerInterface $entityManager): RedirectResp
                                                         Request $request, 
                                                         SondageRepository $sondageRepository, 
                                                         EntityManagerInterface $em,
+                                                        Security $security,
+
                                                         ValidatorInterface $validator
                                                     ): JsonResponse 
                                                     {
                                                         // $user = $this->getUser(); // 🔹 Récupérer l'utilisateur connecté
-                                                        $user = $em->getRepository(User::class)->find(1); // Remplace 1 par l'ID d'un utilisateur existant
+                                                        $user = $security->getUser();
                                                         
                                                         if (!$user) {
                                                             return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
@@ -217,7 +219,8 @@ public function delete($id, EntityManagerInterface $entityManager): RedirectResp
 
 
 #[Route('/comment/edit/{id}', name: 'edit_comment', methods: ['POST', 'PUT'])]
-public function editComment(int $id, Request $request, EntityManagerInterface $em): Response
+public function editComment(int $id, Request $request, EntityManagerInterface $em,        Security $security,
+): Response
 {
     $comment = $em->getRepository(Commentaire::class)->find($id);
 
@@ -226,7 +229,7 @@ public function editComment(int $id, Request $request, EntityManagerInterface $e
     }
 
     // Récupérer l'utilisateur (ici simulé pour le test, remplace par $this->getUser() quand l'authentification est implémentée)
-    $user = $em->getRepository(User::class)->find(1);
+    $user = $security->getUser();
 
     if (!$user) {
         return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
@@ -253,7 +256,8 @@ public function editComment(int $id, Request $request, EntityManagerInterface $e
 
 
     #[Route('/comment/delete/{id}', name: 'delete_comment', methods: ['POST', 'DELETE'])]
-    public function deleteComment(int $id, EntityManagerInterface $em): Response
+    public function deleteComment(int $id, EntityManagerInterface $em,        Security $security,
+    ): Response
     {
         $comment = $em->getRepository(Commentaire::class)->find($id);
     
@@ -262,7 +266,7 @@ public function editComment(int $id, Request $request, EntityManagerInterface $e
         }
     
         // 🔹 Simuler un utilisateur (Remplace par `$this->getUser()` si authentification active)
-        $user = $em->getRepository(User::class)->find(1); // Remplace par l'ID d'un utilisateur existant
+        $user = $security->getUser();
     
         if (!$user) {
             return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
