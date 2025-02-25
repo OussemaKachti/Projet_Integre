@@ -4,30 +4,41 @@
 
 {% block body %}
 <main>
-    <style>
-        /* Type d'événement */
-        .open-event {
-            background-color: #28a745; /* Vert */
-            color: white;  /* Texte blanc pour la lisibilité */
-            padding: 5px 10px;  /* Ajouter un peu de padding */
-            border-radius: 5px;  /* Arrondir les coins */
-        }
+  <style>
+    /* Type d'événement */
+    .open-event {
+        background-color: #28a745; /* Vert */
+        color: white;  /* Texte blanc pour la lisibilité */
+        padding: 5px 10px;  /* Ajouter un peu de padding */
+        border-radius: 5px;  /* Arrondir les coins */
+    }
 
-        .closed-event {
-            background-color: #dc3545; /* Rouge */
-            color: white;  /* Texte blanc pour la lisibilité */
-            padding: 5px 10px;  /* Ajouter un peu de padding */
-            border-radius: 5px;  /* Arrondir les coins */
-        }
+    .closed-event {
+        background-color: #dc3545; /* Rouge */
+        color: white;  /* Texte blanc pour la lisibilité */
+        padding: 5px 10px;  /* Ajouter un peu de padding */
+        border-radius: 5px;  /* Arrondir les coins */
+    }
 
-        .fas.fa-lock {
-            margin-right: 5px;  /* Espacement entre l'icône et le texte */
-        }
+    .fas.fa-lock {
+        margin-right: 5px;  /* Espacement entre l'icône et le texte */
+    }
 
-        .fas.fa-unlock {
-            margin-right: 5px;  /* Espacement entre l'icône et le texte */
-        }
-    </style>
+    .fas.fa-unlock {
+        margin-right: 5px;  /* Espacement entre l'icône et le texte */
+    }
+
+    /* Amélioration de la pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    
+    
+</style>
+
 
     <!-- breadcrumb area start -->
     <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay"
@@ -60,6 +71,36 @@
                     </div>
                 </div>
             </div>
+             <form method="get" class="mb-4" id="searchForm">
+    <div class="row">
+        <!-- Recherche par nom -->
+        <div class="col-md-4">
+            <input type="text" name="search" class="form-control" placeholder="Search event..." value="{{ app.request.get('search') }}">
+        </div>
+        
+        <!-- Filtrer par type -->
+        <div class="col-md-3">
+            <select name="type" class="form-control">
+                <option value="">All Types</option>
+                <option value="open" {% if app.request.get('type') == 'open' %}selected{% endif %}>Open</option>
+                <option value="closed" {% if app.request.get('type') == 'closed' %}selected{% endif %}>Closed</option>
+            </select>
+        </div>
+
+        <!-- Filtrer par date -->
+        <div class="col-md-3">
+            <input type="date" name="date" class="form-control" value="{{ app.request.get('date') }}">
+        </div>
+
+        <!-- Bouton Rechercher -->
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary" style="background-color: #003366; border-color: #003366;">
+                Rechercher
+            </button>
+        </div>
+    </div>
+</form>
+
              <div class="d-flex justify-content-between align-items-center mt-5">
                <div class="text-center">
                   <h4 class="mb-3">Want to organize an amazing event? 🎉</h4>
@@ -130,30 +171,76 @@
                 {% endfor %}
             </div>
         </div>
+        
     </section>
-    <!-- event area end -->
+   
 
-    <!-- Pagination -->
-    <div class="pagination-container">
-        <nav aria-label="Page navigation">
-            <ul class="pagination">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">«</a>
-                </li>
-                <li class="page-item active">
-                    <a class="page-link" href="#">1</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="#">2</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="#">3</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="#">»</a>
-                </li>
-            </ul>
-        </nav>
-    </div>
+
+
+
+{# Affichage de la pagination #}
+<div class="pagination-container">
+    {{ knp_pagination_render(evenements, 'custom_template.html.twig') }}
+</div>
+
+
+
+
+
+ <script>
+    // Intercepter la soumission du formulaire
+    document.getElementById('searchForm').addEventListener('submit', function(event) {
+        event.preventDefault();  // Empêcher la soumission du formulaire classique
+
+        // Récupérer les valeurs des champs du formulaire
+        let search = document.querySelector('input[name="search"]').value;
+        let type = document.querySelector('select[name="type"]').value;
+        let date = document.querySelector('input[name="date"]').value;
+
+        // Construire l'URL de l'API avec les paramètres de la requête
+        let url = `/api/events?search=${search}&type=${type}&date=${date}`;
+
+        // Appeler l'API
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                // Récupérer le conteneur d'événements
+                const eventsContainer = document.querySelector('.row');
+                eventsContainer.innerHTML = '';  // Vider les événements existants
+
+                // Ajouter les événements filtrés dans le conteneur
+                data.forEach(event => {
+                    const eventElement = document.createElement('div');
+                    eventElement.classList.add('col-xxl-12');
+                    eventElement.innerHTML = `
+                        <div class="event__item white-bg mb-10 transition-3 p-relative d-lg-flex align-items-center justify-content-between">
+                            <div class="event__left d-sm-flex align-items-center">
+                                <div class="event__date">
+                                    <h4>${new Date(event.startDate).getDate()}</h4>
+                                    <p>${new Date(event.startDate).toLocaleDateString()}</p>
+                                    ${event.endDate ? `<p><strong>Fin : </strong>${new Date(event.endDate).toLocaleDateString()}</p>` : ''}
+                                </div>
+                                <div class="event__content">
+                                    <h3 class="event__title">
+                                        <a href="/eventdetails/${event.id}">${event.nomEvent}</a>
+                                    </h3>
+                                    <span class="event-type ${event.type === 'closed' ? 'closed-event' : 'open-event'}">
+                                        ${event.type.charAt(0).toUpperCase() + event.type.slice(1)}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="event__right">
+                                <span>${new Date(event.startDate).toLocaleTimeString()} - ${new Date(event.endDate).toLocaleTimeString()}</span>
+                            </div>
+                        </div>
+                    `;
+                    eventsContainer.appendChild(eventElement);
+                });
+            })
+            .catch(error => console.error('Erreur lors de la récupération des événements:', error));
+    });
+</script>
+
+
 </main>
 {% endblock %}

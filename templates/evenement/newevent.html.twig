@@ -167,11 +167,16 @@
 </div>
 
 <!-- Bigger Create Button -->
-<div class="text-center mt-4">
-    <button type="submit" id="submit-btn" class="btn btn-success btn-lg px-5 py-3" style="font-size: 1.2rem;">
-        Create Event
-    </button>
-</div>
+
+<form method="POST" enctype="multipart/form-data">
+    {{ form_widget(form) }}
+    
+    <div style="text-align: center;"> <!-- Centre le contenu -->
+        <button type="submit" id="submit-btn" class="btn btn-success btn-lg px-5 py-3" style="font-size: 1.2rem;">
+            Create Event
+        </button>
+    </div>
+</form>
 
     </section>
     <!-- Event Creation Area End -->
