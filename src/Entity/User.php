@@ -98,9 +98,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->commentaires = new ArrayCollection();
         $this->likes = new ArrayCollection();
         $this->sondages = new ArrayCollection();
+
     }
-
-
     public function getId(): ?int
     {
         return $this->id;

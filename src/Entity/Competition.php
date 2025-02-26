@@ -28,18 +28,19 @@ class Competition
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $endDate = null;
     
-    #[ORM\ManyToMany(targetEntity: Competition::class, mappedBy: "clubs")]
-    private Collection $competitions;
+    #[ORM\ManyToMany(targetEntity: Club::class, inversedBy: "competitions")]
+    private Collection $clubs;
+    #[ORM\ManyToOne(targetEntity: Saison::class, inversedBy: "competitions")]
+#[ORM\JoinColumn(nullable: false)]
+private ?Saison $saison = null;
 
+    
     public function __construct()
     {
-        $this->competitions = new ArrayCollection();
+        $this->clubs = new ArrayCollection();
     }
 
-    public function getCompetitions(): Collection
-    {
-        return $this->competitions;
-    }
+  
 
     public function getId(): ?int
     {

@@ -41,6 +41,14 @@ class Club
 
     #[ORM\OneToMany(targetEntity: ParticipationMembre::class, mappedBy: "club", cascade: ["persist", "remove"])]
     private Collection $participations;
+    #[ORM\ManyToMany(targetEntity: Competition::class, mappedBy: "clubs")]
+private Collection $competitions;
+
+
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+#[ORM\JoinColumn(nullable: false)]
+private ?User $president = null;
 
 
 
@@ -135,4 +143,16 @@ class Club
     {
         return $this->participations;
     }
+
+
+    public function getPresident(): ?User
+{
+    return $this->president;
+}
+
+public function setPresident(User $president): static
+{
+    $this->president = $president;
+    return $this;
+}
 }
