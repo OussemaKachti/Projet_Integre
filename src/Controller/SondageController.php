@@ -425,210 +425,227 @@ public function create(Request $request, EntityManagerInterface $em): Response
  */    
 
 
- //edheya teb3a el mail
+ #[Route('/api/poll/new', name: 'api_poll_new', methods: ['POST'])]
+ public function createPoll(
+     Request $request, 
+     EntityManagerInterface $em, 
+     ValidatorInterface $validator,
+     MailerInterface $mailer,
+     LoggerInterface $logger
+ ): JsonResponse {
+     $data = json_decode($request->getContent(), true);
+     
+     if (!$data) {
+         return new JsonResponse(['status' => 'error', 'message' => 'Invalid JSON data'], 400);
+     }
+     
+     // Pour l'instant, on utilise un utilisateur statique (ID 1)
+     $user = $em->getRepository(User::class)->find(29);
+     if (!$user) {
+         return new JsonResponse(['status' => 'error', 'message' => 'User not found'], 404);
+     }
+     
+     $club = $em->getRepository(Club::class)->findOneBy(['president' => $user->getId()]);
+     if (!$club) {
+         return new JsonResponse(['status' => 'error', 'message' => 'You must be a club president to create polls'], 403);
+     }
+     
+     // Créer et configurer le sondage
+     $sondage = new Sondage();
+     $sondage->setQuestion($data['question'] ?? '');
+     $sondage->setCreatedAt(new \DateTime());
+     $sondage->setUser($user);
+     $sondage->setClub($club);
+     
+     // Ajouter les choix
+     if (isset($data['choix']) && is_array($data['choix'])) {
+         foreach ($data['choix'] as $choixData) {
+             $choix = new ChoixSondage();
+             $choix->setContenu($choixData['contenu'] ?? '');
+             $choix->setSondage($sondage);
+             $sondage->addChoix($choix);
+             $em->persist($choix);
+         }
+     }
+     
+     // Validation
+     $errors = $validator->validate($sondage);
+     if (count($errors) > 0) {
+         $errorMessages = [];
+         foreach ($errors as $error) {
+             $path = $error->getPropertyPath();
+             if (str_contains($path, 'choix')) {
+                 $errorMessages['choices'][] = $error->getMessage();
+             } else {
+                 $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+             }
+         }
+         return new JsonResponse([
+             'status' => 'error',
+             'message' => 'Validation failed',
+             'errors' => $errorMessages
+         ], 400);
+     }
+     
+     try {
+         $em->persist($sondage);
+         $em->flush();
+         
+         // Récupérer tous les membres du club via ParticipationMembre où statut = "acceptée"
+         $clubParticipations = $em->getRepository(ParticipationMembre::class)->findBy([
+             'club' => $club->getId(),
+             'statut' => 'accepte'
+         ]);
+         
+         $emailsSent = 0;
+         $emailErrors = [];
+         
+         // Envoyer une notification par e-mail à chaque membre
+         foreach ($clubParticipations as $participation) {
+             $member = $participation->getUser();
+             
+             if ($member && method_exists($member, 'getEmail') && $member->getEmail()) {
+                 try {
+                     // Log pour le debug
+                     $logger->info('Tentative d\'envoi d\'email à: ' . $member->getEmail());
+                     
+                     // Envoi de l'email à chaque membre
+                     $email = (new Email())
+                         ->from("oussemakachti17@gmail.com")  // Ton adresse Gmail
+                         ->to($member->getEmail())            // Adresse du membre
+                         ->subject('Nouveau sondage dans votre club: ' . $club->getNomC())
+                         ->html($this->renderView(
+                             'emails/new_poll.html.twig',
+                             [
+                                 'club' => $club,
+                                 'sondage' => $sondage,
+                                 'member' => $member
+                             ]
+                         ));
+                     
+                     $mailer->send($email);
+                     $emailsSent++;
+                     
+                 } catch (TransportExceptionInterface $e) {
+                     $logger->error('Échec d\'envoi d\'email à ' . $member->getEmail() . ': ' . $e->getMessage());
+                     $emailErrors[] = 'Échec d\'envoi à ' . $member->getEmail() . ': ' . $e->getMessage();
+                 }
+             } else {
+                 $logger->warning('Membre sans email valide trouvé');
+             }
+         }
+         
+         return new JsonResponse([
+             'status' => 'success',
+             'emailSender' => $user->getEmail(),
+             'message' => 'Poll created successfully',
+             'club_name' => $club->getNomC(),
+             'emails_sent' => $emailsSent,
+             'email_errors' => $emailErrors,
+             'debug_info' => [
+                 'total_members' => count($clubParticipations),
+                 'mailer_dsn' => $_ENV['MAILER_DSN'] ?? 'Non configuré'
+             ]
+         ], 201);
+         
+     } catch (\Exception $e) {
+         $logger->error('Erreur générale: ' . $e->getMessage());
+         return new JsonResponse([
+             'status' => 'error',
+             'message' => 'Error: ' . $e->getMessage()
+         ], 500);
+     }
+ }
+ 
+
+    #[Route('/email', name: 'email', methods: ['POST'])]
+
+    public function sendTestEmail(MailerInterface $mailer): Response
+{
+    $email = (new Email())
+        ->from('oussemakachti17@gmail.com')  // Ton adresse Gmail
+        ->to('kachtioussema@gmail.com')   // Adresse du destinataire
+        ->subject('Test Envoi Mail depuis Gmail')
+        ->text('Ceci est un e-mail de test envoyé depuis mon compte Gmail via Symfony.');
+
+    $mailer->send($email);
+
+    return new Response('E-mail envoyé avec succès !');
+}
+
+
 // #[Route('/api/poll/new', name: 'api_poll_new', methods: ['POST'])]
-//     public function createPoll(
-//         Request $request, 
-//         EntityManagerInterface $em, 
-//         ValidatorInterface $validator,
-//         MailerInterface $mailer,
-//         LoggerInterface $logger
-//     ): JsonResponse {
-//         $data = json_decode($request->getContent(), true);
-        
-//         if (!$data) {
-//             return new JsonResponse(['status' => 'error', 'message' => 'Invalid JSON data'], 400);
-//         }
-        
-//         // Pour l'instant, on utilise un utilisateur statique (ID 1)
-//         $user = $em->getRepository(User::class)->find(1);
-//         if (!$user) {
-//             return new JsonResponse(['status' => 'error', 'message' => 'User not found'], 404);
-//         }
-        
-//         $club = $em->getRepository(Club::class)->findOneBy(['president' => $user->getId()]);
-//         if (!$club) {
-//             return new JsonResponse(['status' => 'error', 'message' => 'You must be a club president to create polls'], 403);
-//         }
-        
-//         // Créer et configurer le sondage
-//         $sondage = new Sondage();
-//         $sondage->setQuestion($data['question'] ?? '');
-//         $sondage->setCreatedAt(new \DateTime());
-//         $sondage->setUser($user);
-//         $sondage->setClub($club);
-        
-//         // Ajouter les choix
-//         if (isset($data['choix']) && is_array($data['choix'])) {
-//             foreach ($data['choix'] as $choixData) {
-//                 $choix = new ChoixSondage();
-//                 $choix->setContenu($choixData['contenu'] ?? '');
-//                 $choix->setSondage($sondage);
-//                 $sondage->addChoix($choix);
-//                 $em->persist($choix);
-//             }
-//         }
-        
-//         // Validation
-//         $errors = $validator->validate($sondage);
-//         if (count($errors) > 0) {
-//             $errorMessages = [];
-//             foreach ($errors as $error) {
-//                 $path = $error->getPropertyPath();
-//                 if (str_contains($path, 'choix')) {
-//                     $errorMessages['choices'][] = $error->getMessage();
-//                 } else {
-//                     $errorMessages[$error->getPropertyPath()] = $error->getMessage();
-//                 }
-//             }
-//             return new JsonResponse([
-//                 'status' => 'error',
-//                 'message' => 'Validation failed',
-//                 'errors' => $errorMessages
-//             ], 400);
-//         }
-        
-//         try {
-//             $em->persist($sondage);
-//             $em->flush();
-            
-//             // Récupérer tous les membres du club via ParticipationMembre où statut = "acceptée"
-//             $clubParticipations = $em->getRepository(ParticipationMembre::class)->findBy([
-//                 'club' => $club->getId(),
-//                 'statut' => 'accepte'
-//             ]);
-            
-//             $emailsSent = 0;
-//             $emailErrors = [];
-            
-//             // Envoyer une notification par e-mail à chaque membre
-//             foreach ($clubParticipations as $participation) {
-//                 $member = $participation->getUser();
-                
-//                 if ($member && method_exists($member, 'getEmail') && $member->getEmail()) {
-//                     try {
-//                         // Log pour le debug
-//                         $logger->info('Tentative d\'envoi d\'email à: ' . $member->getEmail());
-                        
-//                         $email = (new Email())
-//                         ->from($_ENV['MAILER_FROM'])
-//                         ->to($member->getEmail())
-//                             ->subject('Nouveau sondage dans votre club: ' . $club->getNomC())
-//                             ->html($this->renderView(
-//                                 'emails/new_poll.html.twig',
-//                                 [
-//                                     'club' => $club,
-//                                     'sondage' => $sondage,
-//                                     'member' => $member
-//                                 ]
-//                             ));
-                        
-//                         $mailer->send($email);
-//                         $emailsSent++;
-                        
-//                     } catch (TransportExceptionInterface $e) {
-//                         $logger->error('Échec d\'envoi d\'email à ' . $member->getEmail() . ': ' . $e->getMessage());
-//                         $emailErrors[] = 'Échec d\'envoi à ' . $member->getEmail() . ': ' . $e->getMessage();
-//                     }
-//                 } else {
-//                     $logger->warning('Membre sans email valide trouvé');
-//                 }
-//             }
-            
-//             return new JsonResponse([
-//                 'status' => 'success',
-//                 'emailSender' => $user->getEmail(),
-//                 'message' => 'Poll created successfully',
-//                 'club_name' => $club->getNomC(),
-//                 'emails_sent' => $emailsSent,
-//                 'email_errors' => $emailErrors,
-//                 'debug_info' => [
-//                     'total_members' => count($clubParticipations),
-//                     'mailer_dsn' => $_ENV['MAILER_DSN'] ?? 'Non configuré'
-//                 ]
-//             ], 201);
-            
-//         } catch (\Exception $e) {
-//             $logger->error('Erreur générale: ' . $e->getMessage());
-//             return new JsonResponse([
-//                 'status' => 'error',
-//                 'message' => 'Error: ' . $e->getMessage()
-//             ], 500);
-//         }
+// public function createPoll(Request $request, EntityManagerInterface $em, ValidatorInterface $validator,        Security $security,
+// ): JsonResponse
+// {
+//     $data = json_decode($request->getContent(), true);
+
+//     if (!$data) {
+//         return new JsonResponse(['status' => 'error', 'message' => 'Invalid JSON data'], 400);
 //     }
 
-#[Route('/api/poll/new', name: 'api_poll_new', methods: ['POST'])]
-public function createPoll(Request $request, EntityManagerInterface $em, ValidatorInterface $validator,        Security $security,
-): JsonResponse
-{
-    $data = json_decode($request->getContent(), true);
+//     // Récupérer l'utilisateur et le club
+//     $user = $security->getUser();
+//     if (!$user) {
+//         return new JsonResponse(['status' => 'error', 'message' => 'User not found'], 404);
+//     }
 
-    if (!$data) {
-        return new JsonResponse(['status' => 'error', 'message' => 'Invalid JSON data'], 400);
-    }
+//     $club = $em->getRepository(Club::class)->findOneBy(['president' => $user->getId()]);
+//     if (!$club) {
+//         return new JsonResponse(['status' => 'error', 'message' => 'You must be a club president to create polls'], 403);
+//     }
 
-    // Récupérer l'utilisateur et le club
-    $user = $security->getUser();
-    if (!$user) {
-        return new JsonResponse(['status' => 'error', 'message' => 'User not found'], 404);
-    }
+//     // Créer et configurer le sondage
+//     $sondage = new Sondage();
+//     $sondage->setQuestion($data['question'] ?? '');
+//     $sondage->setCreatedAt(new \DateTime());
+//     $sondage->setUser($user);
+//     $sondage->setClub($club);
 
-    $club = $em->getRepository(Club::class)->findOneBy(['president' => $user->getId()]);
-    if (!$club) {
-        return new JsonResponse(['status' => 'error', 'message' => 'You must be a club president to create polls'], 403);
-    }
+//     // Ajouter les choix
+//     if (isset($data['choix']) && is_array($data['choix'])) {
+//         foreach ($data['choix'] as $choixData) {
+//             $choix = new ChoixSondage();
+//             $choix->setContenu($choixData['contenu'] ?? '');
+//             $choix->setSondage($sondage);
+//             $sondage->addChoix($choix);
+//             $em->persist($choix);        }
+//     }
 
-    // Créer et configurer le sondage
-    $sondage = new Sondage();
-    $sondage->setQuestion($data['question'] ?? '');
-    $sondage->setCreatedAt(new \DateTime());
-    $sondage->setUser($user);
-    $sondage->setClub($club);
+//     // Validation
+//     $errors = $validator->validate($sondage);
+//     if (count($errors) > 0) {
+//         $errorMessages = [];
+//         foreach ($errors as $error) {
+//             $path = $error->getPropertyPath();
+//             if (str_contains($path, 'choix')) {
+//                 $errorMessages['choices'][] = $error->getMessage();
+//             } else {
+//                 $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+//             }
+//         }
+//         return new JsonResponse([
+//             'status' => 'error',
+//             'message' => 'Validation failed',
+//             'errors' => $errorMessages
+//         ], 400);
+//     }
 
-    // Ajouter les choix
-    if (isset($data['choix']) && is_array($data['choix'])) {
-        foreach ($data['choix'] as $choixData) {
-            $choix = new ChoixSondage();
-            $choix->setContenu($choixData['contenu'] ?? '');
-            $choix->setSondage($sondage);
-            $sondage->addChoix($choix);
-            $em->persist($choix);        }
-    }
-
-    // Validation
-    $errors = $validator->validate($sondage);
-    if (count($errors) > 0) {
-        $errorMessages = [];
-        foreach ($errors as $error) {
-            $path = $error->getPropertyPath();
-            if (str_contains($path, 'choix')) {
-                $errorMessages['choices'][] = $error->getMessage();
-            } else {
-                $errorMessages[$error->getPropertyPath()] = $error->getMessage();
-            }
-        }
-        return new JsonResponse([
-            'status' => 'error',
-            'message' => 'Validation failed',
-            'errors' => $errorMessages
-        ], 400);
-    }
-
-    try {
-        $em->persist($sondage);
-        $em->flush();
-        return new JsonResponse([
-            'status' => 'success',
-            'message' => 'Poll created successfully',
-            'club_name' => $club->getNomC()
-        ], 201);
-    } catch (\Exception $e) {
-        return new JsonResponse([
-            'status' => 'error',
-            'message' => 'Database error occurred'
-        ], 500);
-    }
-}
+//     try {
+//         $em->persist($sondage);
+//         $em->flush();
+//         return new JsonResponse([
+//             'status' => 'success',
+//             'message' => 'Poll created successfully',
+//             'club_name' => $club->getNomC()
+//         ], 201);
+//     } catch (\Exception $e) {
+//         return new JsonResponse([
+//             'status' => 'error',
+//             'message' => 'Database error occurred'
+//         ], 500);
+//     }
+// }
 
     
 

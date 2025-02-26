@@ -11,3 +11,6 @@ services:
         tags: ['doctrine.repository_service'] # Ensures that repositories are tagged correctly
     App\Security\:
         resource: '../src/Security'
+    App\Service\OpenAIClient:
+        arguments:
+            $apiKey:  '%env(OPENAI_API_KEY)%'

@@ -46,6 +46,26 @@
 													{{ sondage.user.prenom }}</b>
 												|
 												<span>{{ sondage.createdAt|date('d M Y') }}</span>
+												<div class="summary-container">
+													<button class="btn btn-success summary-button open-summary-modal" data-sondage-id="{{ sondage.id }}">
+														View Summary
+													</button>
+												</div>
+												<style>
+													.summary-button {
+														position: absolute;
+														top: 10px;
+														right: 2px;
+														background-color: #3498db; /* Remplacez par la couleur souhaitée */
+														border-color: #2980b9; /* Ajustez la couleur de la bordure */
+														color: white; /* Couleur du texte */
+													}
+
+													.summary-button:hover {
+														background-color: #2980b9; /* Couleur du bouton au survol */
+														border-color: #1c5980; /* Couleur de la bordure au survol */
+													}
+												</style>
 											</div>
 											<div class="poll-title">{{ sondage.question }}</div>
 
@@ -71,6 +91,23 @@
 														</div>
 													</div>
 												{% endfor %}
+												<!-- Modale Bootstrap (ajoutée une seule fois en dehors de la boucle) -->
+												<div class="modal fade" id="summaryModal" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
+													<div class="modal-dialog">
+														<div class="modal-content">
+															<div class="modal-header">
+																<h5 class="modal-title" id="summaryModalLabel">Survey Summary</h5>
+																<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+															</div>
+															<div class="modal-body">
+																<p id="summaryText">Loading...</p>
+															</div>
+															<div class="modal-footer">
+																<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+															</div>
+														</div>
+													</div>
+												</div>
 												<button type="submit" class="btn btn-secondary">Submit Vote</button>
 											</form>
 											<!-- Toast Bootstrap -->
@@ -263,8 +300,8 @@ toast.show();
 						<div
 							class="blog__sidebar pl-70">
 							{# 
-																																																																						    {% if app.user and app.user.role == 'presidentClub' %}
-																																																																						#}
+																																																																																																																																																																															    {% if app.user and app.user.role == 'presidentClub' %}
+																																																																																																																																																																															#}
 							<form id="poll-form" method="POST" action="{{ path('api_poll_new') }}">
 								<div id="toastContainer" class="toast-container position-fixed top-50 start-50 translate-middle" style="z-index: 9999;"></div>
 								<style>
@@ -332,8 +369,8 @@ toast.show();
 							</div>
 
 							{# 
-																																																																						    {% endif %}
-																																																																						#}
+																																																																																																																																																																															    {% endif %}
+																																																																																																																																																																															#}
 							<button style="--clr: #7808d0" class="button" onclick="window.location.href='{{ path('api_user_polls') }}';">
 								<span class="button__icon-wrapper">
 									<svg width="10" class="button__icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 14 15">
@@ -355,7 +392,35 @@ toast.show();
 		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 		<script>
-			// Cibler le formulaire de vote
+
+			document.addEventListener("DOMContentLoaded", function () {
+document.querySelectorAll(".open-summary-modal").forEach(button => {
+button.addEventListener("click", function () {
+let sondageId = this.getAttribute("data-sondage-id");
+let modal = new bootstrap.Modal(document.getElementById('summaryModal'));
+let summaryText = document.getElementById('summaryText');
+
+summaryText.innerText = "Loading...";
+
+fetch (`/api/summarize-comments/${sondageId}`, { // URL dynamique avec l'ID du sondage
+method: 'GET',
+headers: {
+'Content-Type': 'application/json'
+}
+}).then(response => response.json()).then(data => {
+summaryText.innerText = data.summary || "No summary available.";
+}).catch(error => {
+console.error("Erreur lors du chargement du résumé :", error);
+summaryText.innerText = "Erreur lors du chargement du résumé.";
+});
+
+modal.show();
+});
+});
+});
+
+// //----------------------------------------------------------------------------////
+// Cibler le formulaire de vote
 document.querySelectorAll('.poll-vote-form').forEach(form => {
 form.addEventListener('submit', function (event) {
 event.preventDefault();
