@@ -40,8 +40,10 @@
 									<img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="">
 								</div>
 								<div class="profile__basic-content">
-									<h3
-										class="profile__basic-title">{# Welcome Back <span>{{ user.prenom }} {{ user.nom }}</span> #}
+									<h3 class="profile__basic-title">
+										Welcome Back
+										<span>{{ user.prenom ?? '' }}
+											{{ user.nom ?? '' }}</span>
 									</h3>
 
 								</div>
@@ -106,15 +108,15 @@
 										<div
 											class="profile__info-wrapper white-bg">
 											{# {% for message in app.flashes('success') %}
-																																																								<div class="alert alert-success">
-																																																									{{ message }}
-																																																								</div>
-																																																							{% endfor %}
-																																																							{% for message in app.flashes('error') %}
-																																																								<div class="alert alert-danger">
-																																																									{{ message }}
-																																																								</div>
-																																																							{% endfor %} #}
+																																																																			<div class="alert alert-success">
+																																																																				{{ message }}
+																																																																			</div>
+																																																																		{% endfor %}
+																																																																		{% for message in app.flashes('error') %}
+																																																																			<div class="alert alert-danger">
+																																																																				{{ message }}
+																																																																			</div>
+																																																																		{% endfor %} #}
 											<div class="profile__info-item">
 												<p>Name</p>
 												<h4>{{user.nom ?? 'N/A'}}
@@ -149,30 +151,31 @@
 								</div>
 								<div class="tab-pane fade" id="nav-password" role="tabpanel" aria-labelledby="nav-password-tab">
 									<div class="password__change">
-										<div class="password__change-top">
+										<div
+											class="password__change-top">
 											{# {% for message in app.flashes('success') %}
-												<div class="alert alert-success">
-													{{ message }}
-												</div>
-											{% endfor %} #}
+																							<div class="alert alert-success">
+																								{{ message }}
+																							</div>
+																						{% endfor %} #}
 											<h3 class="password__change-title">Change Password</h3>
 											{# {% for message in app.flashes('error') %}
-												<div class="alert alert-danger">
-													{{ message }}
-												</div>
-											{% endfor %} #}
+																							<div class="alert alert-danger">
+																								{{ message }}
+																							</div>
+																						{% endfor %} #}
 										</div>
 										<div class="password__form white-bg">
 
 											<form action="{{ path('app_change_password') }}" method="POST" id="changePasswordForm">
 												<input type="hidden" name="active_tab" value="password">
 												<div class="password__change-top">
-												{% for message in app.flashes('success') %}
-												<div class="alert alert-success">
-													{{ message }}
-												</div>
-											    {% endfor %}
-													
+													{% for message in app.flashes('success') %}
+														<div class="alert alert-success">
+															{{ message }}
+														</div>
+													{% endfor %}
+
 												</div>
 												<div class="password__input">
 													<p>Old Password</p>
@@ -184,7 +187,7 @@
 															{% endif %}
 														{% endfor %}
 													</span>
-												
+
 												</div>
 												<div class="password__input">
 													<p>New Password</p>
@@ -418,17 +421,17 @@ e.preventDefault();
 								<form action="{{ path('app_update_profile') }}" method="POST" id="profileEditForm">
 									<div class="profile__edit-input">
 										<p>Name</p>
-										<input type="text" name="full_name" placeholder="First Name Last Name" value="{{ user.nom ~ ' ' ~ user.prenom }}">
+										<input type="text" name="full_name" placeholder="First Name Last Name" value="{{ (user.nom ?? '') ~ ' ' ~ (user.prenom ?? '') }}">
 										<span class="error-message" id="full_name-error"></span>
 									</div>
 									<div class="profile__edit-input">
 										<p>Email</p>
-										<input type="email" name="email" placeholder="Your Email" value="{{ user.email }}">
+										<input type="email" name="email" placeholder="Your Email" value="{{ user.email ?? ''}}">
 										<span class="error-message" id="email-error"></span>
 									</div>
 									<div class="profile__edit-input">
 										<p>Phone Number</p>
-										<input type="text" name="phone" placeholder="Your Phone" value="{{ user.tel }}">
+										<input type="text" name="phone" placeholder="Your Phone" value="{{ user.tel ?? ''}}">
 										<span class="error-message" id="phone-error"></span>
 									</div>
 
@@ -443,15 +446,14 @@ e.preventDefault();
 			</div>
 		</main>
 		{# <script>
-			document.addEventListener('DOMContentLoaded', function (){
-{% if app.session.get('password_tab_active') %}
-const passwordTab = document.getElementById('nav-password-tab');
-passwordTab.click();{% endif %}
-});
-		</script> #}
+					document.addEventListener('DOMContentLoaded', function (){
+		{% if app.session.get('password_tab_active') %}
+		const passwordTab = document.getElementById('nav-password-tab');
+		passwordTab.click();{% endif %}
+		});
+				</script> #}
 		<script>
-			document.addEventListener('DOMContentLoaded', function (){
-{% if app.session.get('password_tab_active') %}
+			document.addEventListener('DOMContentLoaded', function (){{% if app.session.get('password_tab_active') %}
 const passwordTab = document.getElementById('nav-password-tab');
 passwordTab.click();
 

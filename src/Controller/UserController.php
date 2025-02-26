@@ -26,15 +26,23 @@ class UserController extends AbstractController
     //     return $this->render('admin.html.twig');
     // }
     #[Route('/profile', name: 'app_profile')]
-    public function index(Request $request,SessionInterface $session): Response
+    public function index(Request $request, SessionInterface $session): Response
     {
+        // Check if user is authenticated
+        $user = $this->getUser();
+        if (!$user) {
+            // If not authenticated, redirect to access denied page
+            return $this->redirectToRoute('access_denied');
+        }
+        
         if ($request->query->has('cleanup')) {
             $session->remove('password_tab_active');
             return new Response('', Response::HTTP_NO_CONTENT);
         }
-    
+        
+        // Now it's safe to pass $user to the template
         return $this->render('user/profile.html.twig', [
-            'user' => $this->getUser(),
+            'user' => $user,
         ]);
     }
     #[Route('/sign-up', name: 'app_user_signup')]

@@ -36,8 +36,8 @@
 	</head>
 	<body>
 		<!--[if lte IE 9]>
-								      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
-								      <![endif]-->
+														      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+														      <![endif]-->
 		<style>
 			/* CSS pour aligner les cartes côte à côte et améliorer l'affichage */
 			.course__area {
@@ -188,8 +188,8 @@
 												</a>
 												<div class="user-dropdown-menu">
 													<ul>
-														<li><a href="{{path('app_profile')}}">My Profile</a></li>
-														<li><a href="{{path('app_logout')}}">Log Out</a></li>
+														<li><ahref="{{path('app_profile')}}">My Profile</a></li>
+														<li><ahref="{{path('app_logout')}}">Log Out</a></li>
 													</ul>
 												</div>
 											</div>
@@ -560,9 +560,17 @@ document.removeEventListener('click', closeDropdown);
 				</div>
 			</div>
 		</footer>
+		<script>
+			window.isUserLoggedIn = {% if app.user %}
+true
+{% else %}
+false
+{% endif %};
+		</script>
 		<!-- footer area end -->
 
 		<!-- JS here -->
+		<script src="{{ asset('public/js/auth-check.js') }}"></script>
 		<script src="{{ asset('front_assets/js/vendor/jquery.js') }}"></script>
 		<script src="{{ asset('front_assets/js/vendor/waypoints.js') }}"></script>
 		<script src="{{ asset('front_assets/js/bootstrap-bundle.js') }}"></script>

@@ -29,4 +29,17 @@ class SecurityController extends AbstractController
     {
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
+    #[Route('/access-denied', name: 'access_denied')]
+    public function accessDenied(): Response
+    {
+        // Check if user is logged in
+        if ($this->getUser()) {
+            // If logged in but access denied, it's a permission issue
+            return $this->render('security/insufficient_permissions.html.twig');
+        }
+        
+        // If not logged in, show the login required page
+        return $this->render('security/access_denied.html.twig');
+    }
+
 }
