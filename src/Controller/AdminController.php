@@ -47,4 +47,35 @@ class AdminController extends AbstractController
 
     return $this->redirectToRoute('app_admin_dashboard');
 }
+
+
+// account disabling
+// src/Controller/AdminController.php
+
+// Add this method to your existing AdminController
+#[Route('/admin/user/toggle-status/{id}', name: 'app_admin_toggle_user_status', methods: ['POST', 'GET'])]
+public function toggleUserStatus(int $id): Response 
+{
+    $user = $this->entityManager->getRepository(User::class)->find($id);
+    
+    if (!$user) {
+        throw $this->createNotFoundException('User not found');
+    }
+    
+    // Prevent admins from disabling themselves
+    if ($this->getUser() && $user->getId() === $this->getUser()->getId()) {
+        $this->addFlash('error', 'You cannot disable your own account.');
+        return $this->redirectToRoute('app_admin_dashboard');
+    }
+    
+    $newStatus = $user->isActive() ? User::STATUS_DISABLED : User::STATUS_ACTIVE;
+    $user->setStatus($newStatus);
+    
+    $this->entityManager->flush();
+    
+    $statusText = $user->isActive() ? 'activated' : 'disabled';
+    $this->addFlash('success', 'User account ' . $statusText . ' successfully.');
+    
+    return $this->redirectToRoute('app_admin_dashboard');
+}
 }

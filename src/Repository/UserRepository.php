@@ -20,6 +20,17 @@ class UserRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, User::class);
     }
+    // src/Repository/UserRepository.php
+
+// Add this method to your existing UserRepository class
+public function findByStatus(string $status): array
+{
+    return $this->createQueryBuilder('u')
+        ->where('u.status = :status')
+        ->setParameter('status', $status)
+        ->getQuery()
+        ->getResult();
+}
 
 //    /**
 //     * @return User[] Returns an array of User objects
