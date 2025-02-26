@@ -53,7 +53,9 @@ class SaisonController extends AbstractController
         return $this->render('saison/new.html.twig', [
             'saison' => $saison,
             'form' => $form,
+
         ]);
+        
     }
 
     #[Route('/{id}', name: 'app_saison_show', methods: ['GET'])]

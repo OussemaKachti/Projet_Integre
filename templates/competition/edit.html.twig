@@ -11,7 +11,7 @@
                 <div class="card-body">
                     <h4 class="card-title">Edit Mission</h4>
 
-                   {{ form_start(form , {'method': 'POST'}) }}
+                   {{ form_start(form , {'method': 'POST' , 'attr': {'novalidate': 'novalidate'}}) }}
     <div class="mb-3">{{ form_row(form.nomComp, {'attr': {'class': 'form-control'}}) }}</div>
     <div class="mb-3">{{ form_row(form.descComp, {'attr': {'class': 'form-control'}}) }}</div>
     <div class="mb-3">{{ form_row(form.points, {'attr': {'class': 'form-control'}}) }}</div>

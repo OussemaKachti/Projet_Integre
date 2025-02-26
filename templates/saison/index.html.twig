@@ -69,7 +69,7 @@
                 </div>
                 <div class="modal-body">
                     <!-- Season Form -->
-                    {{ form_start(form, {'action': path('app_saison_new'), 'method': 'POST'}) }}
+                    {{ form_start(form, {'action': path('app_saison_new'), 'method': 'POST', 'attr': {'novalidate': 'novalidate'}}) }}
                         {{ form_row(form.nomSaison, {'attr': {'class': 'form-control'}}) }}
                         {{ form_row(form.descSaison, {'attr': {'class': 'form-control'}}) }}
                         {{ form_row(form.dateFin, {'attr': {'class': 'form-control'}}) }}
@@ -81,4 +81,5 @@
             </div>
         </div>
     </div>
+    
 {% endblock %}
