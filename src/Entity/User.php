@@ -72,7 +72,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 20)]
     private string $status = self::STATUS_ACTIVE;
+    //email confirmation 
+    #[ORM\Column(type: 'boolean')]
+    private bool $isVerified = false;
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    private ?string $confirmationToken = null;
 
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $confirmationTokenExpiresAt = null;
 
 
 
@@ -98,7 +105,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->commentaires = new ArrayCollection();
         $this->likes = new ArrayCollection();
         $this->sondages = new ArrayCollection();
-
     }
     public function getId(): ?int
     {
@@ -255,5 +261,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function isDisabled(): bool
     {
         return $this->status === self::STATUS_DISABLED;
+    }
+    //email confirmation
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setIsVerified(bool $isVerified): self
+    {
+        $this->isVerified = $isVerified;
+        return $this;
+    }
+
+    // Getter and Setter for `confirmationToken`
+    public function getConfirmationToken(): ?string
+    {
+        return $this->confirmationToken;
+    }
+
+    public function setConfirmationToken(?string $confirmationToken): self
+    {
+        $this->confirmationToken = $confirmationToken;
+        return $this;
+    }
+    public function getConfirmationTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->confirmationTokenExpiresAt;
+    }
+
+    public function setConfirmationTokenExpiresAt(?\DateTimeImmutable $confirmationTokenExpiresAt): self
+    {
+        $this->confirmationTokenExpiresAt = $confirmationTokenExpiresAt;
+        return $this;
     }
 }

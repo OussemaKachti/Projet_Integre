@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 /**
  * @extends ServiceEntityRepository<User>
@@ -31,6 +33,22 @@ public function findByStatus(string $status): array
         ->getQuery()
         ->getResult();
 }
+// public function loadVerifiedUserByIdentifier(string $identifier): UserInterface
+// {
+//     $user = $this->createQueryBuilder('u')
+//         ->where('u.email = :email')
+//         ->andWhere('u.isVerified = :verified')
+//         ->setParameter('email', $identifier)
+//         ->setParameter('verified', true)
+//         ->getQuery()
+//         ->getOneOrNullResult();
+
+//     if (!$user) {
+//         throw new UserNotFoundException('User not found or not verified');
+//     }
+
+//     return $user;
+// }
 
 //    /**
 //     * @return User[] Returns an array of User objects

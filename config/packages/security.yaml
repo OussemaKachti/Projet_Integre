@@ -8,6 +8,7 @@ security:
             entity:
                 class: App\Entity\User
                 property: email 
+                # method: loadVerifiedUserByIdentifier 
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
