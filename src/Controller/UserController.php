@@ -17,6 +17,8 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 #[Route(path: '/user')]
 class UserController extends AbstractController
@@ -164,60 +166,80 @@ class UserController extends AbstractController
     }
 
     #[Route('/change-password', name: 'app_change_password', methods: ['POST'])]
-    public function changePassword(
-        Request $request,
-        UserPasswordHasherInterface $passwordHasher,
-        Security $security,
-        EntityManagerInterface $entityManager,
-        SessionInterface $session
-    ): Response {
-        // Set a flag in the session to keep the password tab active
-        $session->set('password_tab_active', true);
-        // Get the logged in user
-        $user = $security->getUser();
+public function changePassword(
+    Request $request,
+    UserPasswordHasherInterface $passwordHasher,
+    Security $security,
+    EntityManagerInterface $entityManager,
+    SessionInterface $session,
+    MailerInterface $mailer,
+    \Twig\Environment $twig // Inject Twig to render the template
+): Response {
+    // Set a flag in the session to keep the password tab active
+    $session->set('password_tab_active', true);
 
-        if (!$user) {
-            $this->addFlash('error', 'You must be logged in to change your password');
-            return $this->redirectToRoute('app_login');
-        }
+    // Get the logged-in user
+    $user = $security->getUser();
 
-        // Get form data
-        $oldPassword = $request->request->get('oldPassword');
-        $newPassword = $request->request->get('newPassword');
-        $confirmPassword = $request->request->get('confirmPassword');
+    if (!$user) {
+        $this->addFlash('error', 'You must be logged in to change your password');
+        return $this->redirectToRoute('app_login');
+    }
 
-        // Verify old password
-        if (!$passwordHasher->isPasswordValid($user, $oldPassword)) {
-            $this->addFlash('error', 'Current password is incorrect');
-            return $this->redirectToRoute('app_profile');
-        }
-        // Check if new password is same as old password
-        if ($passwordHasher->isPasswordValid($user, $newPassword)) {
-            $this->addFlash('error', 'New password must be different from current password');
-            return $this->redirectToRoute('app_profile');
-        }
+    // Get form data
+    $oldPassword = $request->request->get('oldPassword');
+    $newPassword = $request->request->get('newPassword');
+    $confirmPassword = $request->request->get('confirmPassword');
 
-        // Check if new passwords match
-        if ($newPassword !== $confirmPassword) {
-            $this->addFlash('error', 'New passwords do not match');
-            return $this->redirectToRoute('app_profile');
-        }
+    // Verify old password
+    if (!$passwordHasher->isPasswordValid($user, $oldPassword)) {
+        $this->addFlash('error', 'Current password is incorrect');
+        return $this->redirectToRoute('app_profile');
+    }
 
-        // Hash new password
-        $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
-        $user->setPassword($hashedPassword);
+    // Check if new password is the same as the old password
+    if ($passwordHasher->isPasswordValid($user, $newPassword)) {
+        $this->addFlash('error', 'New password must be different from current password');
+        return $this->redirectToRoute('app_profile');
+    }
 
-        // Save to database
+    // Check if new passwords match
+    if ($newPassword !== $confirmPassword) {
+        $this->addFlash('error', 'New passwords do not match');
+        return $this->redirectToRoute('app_profile');
+    }
+
+    // Hash new password
+    $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
+    $user->setPassword($hashedPassword);
+
+    // Save to database
+    try {
         $entityManager->persist($user);
         $entityManager->flush();
 
-        try {
-            $entityManager->persist($user);
-            $entityManager->flush();
-            $this->addFlash('success', 'Password updated successfully');
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'An error occurred while updating your password');
-        }
-        return $this->redirectToRoute('app_profile');
+        // Combine `prenom` and `nom` to create the full name
+        $fullName = $user->getPrenom() . ' ' . $user->getNom();
+
+        // Render the Twig template for the email
+        $emailBody = $twig->render('security/password_change_notification.html.twig', [
+            'fullName' => $fullName, // Pass the combined full name to the template
+        ]);
+
+        // Create and send the email
+        $email = (new Email())
+            ->from('no-reply@yourdomain.com') // Replace with your sender email
+            ->to($user->getEmail()) // Use the user's email
+            ->subject('Password Changed Successfully')
+            ->html($emailBody); // Use ->html() instead of ->text()
+
+        $mailer->send($email);
+
+        $this->addFlash('success', 'Password updated successfully');
+    } catch (\Exception $e) {
+        $this->addFlash('error', 'An error occurred while updating your password');
     }
+
+    return $this->redirectToRoute('app_profile');
+}
 }
