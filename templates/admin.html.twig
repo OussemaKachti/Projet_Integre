@@ -1,101 +1,284 @@
 {% extends 'baseback.html.twig' %}
-{% block title %}Admin's Dashboard{% endblock %}
+{% block title %}Admin's Dashboard
+{% endblock %}
 {% block body %}
-    <div class="content-wrapper p-0">
-        <div class="row m-0">
-            <div class="col-12 p-0">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h4 class="card-title">Admin's Dashboard</h4>
-                        {% for message in app.flashes('success') %}
-                            <div class="alert alert-success">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                        <p class="card-description">List of users</p>
-                        <div class="table-responsive">
-                            <table class="table table-hover w-100">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Phone Number</th>
-                                        <th>Role</th>
-                                        <th>Verification</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for user in pagination %}
-                                        <tr>
-                                            <td>{{ user.prenom }} {{ user.nom }}</td>
-                                            <td>{{ user.email }}</td>
-                                            <td>{{ user.tel }}</td>
-                                            <td>{{ user.role.value }}</td>
-                                            <td>
-                                                {% if user.isverified %}
-                                                    <span class="badge bg-success">Verified</span>
-                                                {% else %}
-                                                    <span class="badge bg-warning">Not Verified</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {% if user.isActive %}
-                                                    <span class="badge bg-success">Active</span>
-                                                {% else %}
-                                                    <span class="badge bg-danger">Disabled</span>
-                                                {% endif %}
-                                            </td>
-                                            <td class="d-flex">
-                                                <form action="{{ path('app_admin_toggle_user_status', {'id': user.id}) }}" method="post" class="me-2">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle-user-' ~ user.id) }}">
-                                                    {% if user.isActive %}
-                                                        <button type="submit" class="btn btn-inverse-warning btn-fw">Disable</button>
-                                                    {% else %}
-                                                        <button type="submit" class="btn btn-inverse-success btn-fw">Enable</button>
-                                                    {% endif %}
-                                                </form>
-                                                <form action="{{ path('app_admin_delete_user', {'id': user.id}) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                                                    <button type="submit" class="btn btn-inverse-danger btn-fw">Delete</button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="7">No users found.</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="content-wrapper p-0">
+		<div class="row m-0">
+			<div class="col-12 p-0">
+				<div class="card h-100">
+					<div class="card-body">
+						<h4 class="card-title">Admin's Dashboard</h4>
+						{% for message in app.flashes('success') %}
+							<div class="alert alert-success">
+								{{ message }}
+							</div>
+						{% endfor %}
 
-    <!-- Pagination Controls -->
-    <div class="mt-4 d-flex justify-content-center">
-        {{ knp_pagination_render(pagination) }}
-    </div>
+						<p class="card-description mb-4">List of users</p>
 
-    <style>
-        .content-wrapper {
-            padding: 0 !important;
-            margin: 0 !important;
-            width: 100% !important;
+						<!-- Search and Filters -->
+						<div class="row mb-4">
+							<div class="col-md-6">
+								<div class="form-group">
+									<div class="input-group">
+										<input type="text" id="search-input" class="form-control" placeholder="Search by name, email or phone..." value="{{ searchQuery }}">
+										<div class="input-group-append">
+											<button id="search-button" class="btn btn-primary" type="button">
+												<i class="mdi mdi-magnify"></i>
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="row">
+									<div
+										class="col-md-4">
+										{# Example filter HTML in admin.html.twig #}
+										<select id="role-filter" class="form-select">
+											<option value="">All Roles</option>
+											{% for role in availableRoles %}
+												<option value="{{ role }}" {% if roleFilter == role %} selected {% endif %}>{{ role }}</option>
+											{% endfor %}
+										</select>
+									</div>
+									<div class="col-md-4">
+										<select id="status-filter" class="form-control">
+											<option value="">All Statuses</option>
+											<option value="active" {% if statusFilter == 'active' %} selected {% endif %}>Active</option>
+											<option value="disabled" {% if statusFilter == 'disabled' %} selected {% endif %}>Disabled</option>
+										</select>
+									</div>
+									<div class="col-md-4">
+										<select id="verification-filter" class="form-control">
+											<option value="">All Verification</option>
+											<option value="verified" {% if verificationFilter == 'verified' %} selected {% endif %}>Verified</option>
+											<option value="not-verified" {% if verificationFilter == 'not-verified' %} selected {% endif %}>Not Verified</option>
+										</select>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Loading Indicator -->
+						<div id="loading-indicator" class="text-center mb-3" style="display: none;">
+							<div class="spinner-border text-primary" role="status">
+								<span class="sr-only">Loading...</span>
+							</div>
+						</div>
+
+						<div class="table-responsive">
+							<table class="table table-hover w-100">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Email</th>
+										<th>Phone Number</th>
+										<th>Role</th>
+										<th>Verification</th>
+										<th>Status</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody id="user-table-body">
+									{% include '_table_body.html.twig' with {'pagination': pagination} %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Pagination Controls -->
+	<div class="mt-4 d-flex justify-content-center">
+		{{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig', {}, {
+        'q': app.request.query.get('q'),
+        'role': app.request.query.get('role'),
+        'status': app.request.query.get('status'),
+        'verification': app.request.query.get('verification')
+    }) }}
+	</div>
+
+	<style>
+		.content-wrapper {
+			padding: 0 !important;
+			margin: 0 !important;
+			width: 100% !important;
+		}
+		.card {
+			margin: 0 !important;
+			border-radius: 0 !important;
+		}
+		.table-responsive {
+			margin: -1rem !important; /* Compensate for card-body padding */
+			padding: 1rem !important;
+		}
+		.table {
+			margin-bottom: 0 !important;
+		}
+	</style>
+
+	<script>
+	document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const roleFilter = document.getElementById('role-filter');
+    const statusFilter = document.getElementById('status-filter');
+    const verificationFilter = document.getElementById('verification-filter');
+    const tableBody = document.getElementById('user-table-body');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const paginationContainer = document.querySelector('.mt-4.d-flex.justify-content-center');
+    
+    let timeoutId;
+    
+    function fetchResults(page = null) {
+        console.log('Fetching results with filters:');
+        console.log('Search:', searchInput ? searchInput.value : 'not found');
+        console.log('Role:', roleFilter ? roleFilter.value : 'not found');
+        console.log('Status:', statusFilter ? statusFilter.value : 'not found');
+        console.log('Verification:', verificationFilter ? verificationFilter.value : 'not found');
+        
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'block';
         }
-        .card {
-            margin: 0 !important;
-            border-radius: 0 !important;
+        
+        const params = new URLSearchParams();
+        
+        if (searchInput && searchInput.value.trim() !== '') {
+            params.append('q', searchInput.value.trim());
         }
-        .table-responsive {
-            margin: -1rem !important; /* Compensate for card-body padding */
-            padding: 1rem !important;
+        
+        if (roleFilter && roleFilter.value !== '') {
+            params.append('role', roleFilter.value);
         }
-        .table {
-            margin-bottom: 0 !important;
+        
+        if (statusFilter && statusFilter.value !== '') {
+            params.append('status', statusFilter.value);
         }
-    </style>
+        
+        if (verificationFilter && verificationFilter.value !== '') {
+            params.append('verification', verificationFilter.value);
+        }
+        
+        if (page) {
+            params.append('page', page);
+        }
+        
+        const url = '/admin?' + params.toString();
+        console.log('Request URL:', url);
+        
+        // Update URL in browser without page reload
+        window.history.replaceState(null, '', url);
+        
+        // Fetch the results via AJAX
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(html => {
+            if (tableBody) {
+                tableBody.innerHTML = html;
+            }
+            
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+            
+            // Get updated pagination from server
+            const paginationUrl = url + '&pagination_only=1';
+            console.log('Pagination URL:', paginationUrl);
+            
+            fetch(paginationUrl, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(paginationHtml => {
+                if (paginationContainer) {
+                    paginationContainer.innerHTML = paginationHtml;
+                    attachPaginationHandlers();
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching pagination:', error);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching results:', error);
+            
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+            
+            if (tableBody) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No results found or an error occurred.</td></tr>';
+            }
+        });
+    }
+    
+    function attachPaginationHandlers() {
+        const paginationLinks = document.querySelectorAll('.pagination a.page-link');
+        console.log('Attaching handlers to pagination links:', paginationLinks.length);
+        
+        paginationLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Pagination link clicked:', this.href);
+                const url = new URL(this.href);
+                const page = url.searchParams.get('page');
+                fetchResults(page);
+            });
+        });
+    }
+    
+    // Initial pagination handlers
+    attachPaginationHandlers();
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            console.log('Search input changed:', this.value);
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => fetchResults(), 300);
+        });
+    }
+    
+    if (roleFilter) {
+        roleFilter.addEventListener('change', function() {
+            console.log('Role filter changed:', this.value);
+            fetchResults();
+        });
+    }
+    
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            console.log('Status filter changed:', this.value);
+            fetchResults();
+        });
+    }
+    
+    if (verificationFilter) {
+        verificationFilter.addEventListener('change', function() {
+            console.log('Verification filter changed:', this.value);
+            fetchResults();
+        });
+    }
+    
+    const searchButton = document.getElementById('search-button');
+    if (searchButton) {
+        searchButton.addEventListener('click', function() {
+            console.log('Search button clicked');
+            fetchResults();
+        });
+    }
+});
+	</script>
 {% endblock %}

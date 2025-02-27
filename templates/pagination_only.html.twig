@@ -1,0 +1,7 @@
+{# In pagination_only.html.twig #}
+{{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig', {}, {
+    'q': searchQuery,
+    'role': roleFilter,
+    'status': statusFilter,
+    'verification': verificationFilter
+}) }}

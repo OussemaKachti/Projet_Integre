@@ -146,6 +146,146 @@
             </li>
            
           </ul>
+          <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // First, check if we're on the admin page
+    if (window.location.pathname.includes('/admin')) {
+        // Try to find the search input - adjust this selector to match your actual search input
+        const searchInput = document.getElementById('navbar-search-input') || 
+                           document.querySelector('input[type="search"]') || 
+                           document.querySelector('.search-input');
+                           
+        const userTableBody = document.getElementById('user-table-body');
+        
+        // Debug: Check if elements are found
+        console.log('Search input found:', searchInput);
+        console.log('Table body found:', userTableBody);
+        
+        if (searchInput && userTableBody) {
+            // Set initial value from URL if exists
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('q')) {
+                searchInput.value = urlParams.get('q');
+            }
+            
+            let timeoutId;
+            
+            searchInput.addEventListener('input', function() {
+                clearTimeout(timeoutId);
+                
+                // Add a small delay to prevent sending too many requests
+                timeoutId = setTimeout(function() {
+                    const query = searchInput.value.trim();
+                    console.log('Searching for:', query);
+                    
+                    // Show loading indicator if available
+                    const searchIcon = document.querySelector('#navbar-search-icon i');
+                    if (searchIcon) {
+                        searchIcon.className = 'mdi mdi-refresh mdi-spin';
+                    }
+                    
+                    // Fetch search results with or without a query
+                    fetchSearchResults(query);
+                }, 300);
+            });
+            
+            console.log('Search event listener added');
+        } else {
+            console.error('Could not find search input or table body');
+            // If the navbar search input doesn't exist, let's create a search form
+            if (!searchInput && userTableBody) {
+                createSearchForm();
+            }
+        }
+    }
+    
+    function createSearchForm() {
+        const tableContainer = document.querySelector('.table-responsive');
+        if (!tableContainer) return;
+        
+        // Create a search form above the table
+        const searchForm = document.createElement('div');
+        searchForm.className = 'mb-3';
+        searchForm.innerHTML = `
+            <div class="input-group">
+                <input type="text" id="custom-search-input" class="form-control" placeholder="Search users...">
+                <button class="btn btn-primary" type="button" id="search-button">
+                    <i class="mdi mdi-magnify"></i>
+                </button>
+            </div>
+        `;
+        
+        tableContainer.parentNode.insertBefore(searchForm, tableContainer);
+        
+        // Add event listeners to the new search input
+        const customSearchInput = document.getElementById('custom-search-input');
+        const searchButton = document.getElementById('search-button');
+        
+        let timeoutId;
+        customSearchInput.addEventListener('input', function() {
+            clearTimeout(timeoutId);
+            
+            timeoutId = setTimeout(function() {
+                const query = customSearchInput.value.trim();
+                console.log('Searching for:', query);
+                fetchSearchResults(query);
+            }, 300);
+        });
+        
+        searchButton.addEventListener('click', function() {
+            const query = customSearchInput.value.trim();
+            fetchSearchResults(query);
+        });
+        
+        console.log('Custom search form created');
+    }
+    
+    function fetchSearchResults(query) {
+        // Build the URL with the search query
+        const url = '/admin' + (query ? `?q=${encodeURIComponent(query)}` : '');
+        console.log('Fetching results from:', url);
+        
+        // Update browser's address bar without triggering page reload
+        window.history.replaceState(null, '', url);
+        
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(html => {
+            console.log('Got HTML response');
+            const userTableBody = document.getElementById('user-table-body');
+            if (userTableBody) {
+                userTableBody.innerHTML = html;
+                console.log('Table body updated');
+            }
+            
+            // Restore search icon
+            const searchIcon = document.querySelector('#navbar-search-icon i');
+            if (searchIcon) {
+                searchIcon.className = 'icon-search';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching search results:', error);
+            
+            // Restore search icon
+            const searchIcon = document.querySelector('#navbar-search-icon i');
+            if (searchIcon) {
+                searchIcon.className = 'icon-search';
+            }
+        });
+    }
+});
+</script>
 </nav>
 
 
