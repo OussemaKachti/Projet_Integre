@@ -7,16 +7,26 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
-
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\HttpFoundation\File\File;
 
 
 #[ORM\Entity(repositoryClass: SaisonRepository::class)]
+#[Vich\Uploadable] // Enables VichUploader for this entity
 class Saison
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
+
+    #[Vich\UploadableField(mapping: "saison", fileNameProperty: "image")]
+    private ?File $imageFile = null;
+
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Season name cannot be empty.")]
@@ -43,8 +53,10 @@ class Saison
 
     #[ORM\OneToMany(mappedBy: "saison", targetEntity: Competition::class, cascade: ["persist", "remove"], orphanRemoval: true)]
     private Collection $competitions;
-
-
+    
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+        
     public function __construct()
     {
         $this->competitions = new ArrayCollection();
@@ -93,6 +105,34 @@ class Saison
         $this->dateFin = $dateFin;
         return $this;
     }
+
+    public function getImage(): ?string { return $this->image; }
+    
+    public function setImage(?string $image): self 
+        {
+            $this->image = $image; 
+            return $this; 
+        }
+    
+    public function setImageFile(?File $imageFile = null): void 
+    {
+        $this->imageFile = $imageFile;
+        if ($imageFile) 
+        {
+            $this->updatedAt = new \DateTimeImmutable(); 
+        }
+    }
+
+    public function getImageFile(): ?File 
+    { 
+        return $this->imageFile; 
+    }
+   
+
+public function getUpdatedAt(): ?\DateTimeImmutable
+{
+    return $this->updatedAt;
+}
 
 
 

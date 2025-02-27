@@ -24,6 +24,13 @@
                                         <i class="fa-solid fa-seedling fa-2x"></i>
                                     </div>
                                     <div class="season-content">
+
+                                        {% if saison.image %}
+                                            <img src="{{ asset('uploads/images/' ~ saison.image) }}" alt="Season Image" class="img-thumbnail" width="120" height="80" style="object-fit: cover;">
+                                        {% else %}
+                                            <span class="text-muted">No Image</span>
+                                        {% endif %}
+
                                         <h3 class="season-title">{{ saison.nomSaison }}</h3>
                                         <p class="season-description">{{ saison.descSaison }}</p>
                                         <!-- Duration Moved Here -->
@@ -69,10 +76,20 @@
                 </div>
                 <div class="modal-body">
                     <!-- Season Form -->
-                    {{ form_start(form, {'action': path('app_saison_new'), 'method': 'POST', 'attr': {'novalidate': 'novalidate'}}) }}
+                    {{ form_start(form, {
+                        'action': path('app_saison_new'), 
+                        'method': 'POST',
+                         'attr': {'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}
+                         }) }}
+                        
                         {{ form_row(form.nomSaison, {'attr': {'class': 'form-control'}}) }}
                         {{ form_row(form.descSaison, {'attr': {'class': 'form-control'}}) }}
                         {{ form_row(form.dateFin, {'attr': {'class': 'form-control'}}) }}
+                        
+                        <div class="mb-3">
+                        {{ form_label(form.imageFile, 'Upload Image') }}
+                        {{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
+                        </div>
 
                         {{ form_row(form._token, {'attr': {'class': 'd-none'}}) }} {# Ensures CSRF token is included #}
                         <button type="submit" class="btn btn-primary w-100">Create Season</button>

@@ -10,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
 class EditSaisonType extends AbstractType
 {
@@ -27,6 +28,12 @@ class EditSaisonType extends AbstractType
                 'label' => 'End Date',
                 'widget' => 'single_text',
                 'required' => false,
+            ])
+            ->add('imageFile', VichImageType::class, [
+                'label' => 'Upload New Image (Optional)',
+                'required' => false,
+                'allow_delete' => false, // Prevent accidental deletion
+                'download_uri' => false, // Hide download link
             ])
             ->add('save', SubmitType::class, [
                 'label' => 'Update Season',

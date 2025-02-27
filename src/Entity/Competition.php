@@ -59,6 +59,11 @@ class Competition
     #[Assert\PositiveOrZero(message: "Points must be a positive number or zero.")]
     private ?int $points = null;
     
+    #[ORM\Column(type: "string", length: 20)]
+    #[Assert\Choice(choices: ["pending", "in_progress", "completed"], message: "Invalid status.")]
+    private ?string $status = "pending";
+    
+
     public function __construct() {
         $this->missionProgresses = new ArrayCollection();
 
@@ -124,6 +129,16 @@ class Competition
     {
          $this->saison = $saison; return $this; 
     }
+    public function getStatus(): ?string
+{
+    return $this->status;
+}
+
+    public function setStatus(string $status): static
+{
+    $this->status = $status;
+    return $this;
+}
 
     public function getMissionProgresses(): Collection 
     {
