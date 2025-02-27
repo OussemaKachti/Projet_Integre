@@ -18,6 +18,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Service\ToxicityDetector;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 
 
@@ -26,6 +29,14 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[Route('/commentaire')]
 class CommentaireController extends AbstractController
 {
+    private $toxicityDetector;
+    private $mailer;
+
+    public function __construct(ToxicityDetector $toxicityDetector, MailerInterface $mailer)
+    {
+        $this->toxicityDetector = $toxicityDetector;
+        $this->mailer = $mailer;
+    }
 
 
 
@@ -43,10 +54,9 @@ class CommentaireController extends AbstractController
                                                 #[Route('/adminComments', name: 'app_commentaire_index', methods: ['GET'])]
                                                 public function afficherCommentairesClub(CommentaireRepository $commentaireRepository, Request $request): Response
                                                 {
-                                                    $clubFilter = $request->query->get('club'); // Récupération du filtre depuis l'URL
+                                                    $clubFilter = $request->query->get('club'); 
                                                 
                                                     if ($clubFilter && $clubFilter !== 'all') {
-                                                        // Filtrer les commentaires en fonction du club sélectionné
                                                         $commentaires = $commentaireRepository->createQueryBuilder('c')
                                                             ->join('c.sondage', 's')
                                                             ->join('s.club', 'cl')
@@ -121,61 +131,61 @@ public function delete($id, EntityManagerInterface $entityManager): RedirectResp
 
 
     
-                                                    #[Route('/comment/add/{id}', name: 'add_comment', methods: ['POST'])]
-                                                    public function addComment(
-                                                        int $id, 
-                                                        Request $request, 
-                                                        SondageRepository $sondageRepository, 
-                                                        EntityManagerInterface $em,
-                                                        Security $security,
+                                                    // #[Route('/comment/add/{id}', name: 'add_comment', methods: ['POST'])]
+                                                    // public function addComment(
+                                                    //     int $id, 
+                                                    //     Request $request, 
+                                                    //     SondageRepository $sondageRepository, 
+                                                    //     EntityManagerInterface $em,
+                                                    //     Security $security,
 
-                                                        ValidatorInterface $validator
-                                                    ): JsonResponse 
-                                                    {
-                                                        // $user = $this->getUser(); // 🔹 Récupérer l'utilisateur connecté
-                                                        $user = $security->getUser();
+                                                    //     ValidatorInterface $validator
+                                                    // ): JsonResponse 
+                                                    // {
+                                                    //     // $user = $this->getUser(); // 🔹 Récupérer l'utilisateur connecté
+                                                    //     $user = $security->getUser();
                                                         
-                                                        if (!$user) {
-                                                            return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
-                                                        }
+                                                    //     if (!$user) {
+                                                    //         return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
+                                                    //     }
                                                 
-                                                        $sondage = $sondageRepository->find($id);
-                                                        if (!$sondage) {
-                                                            return new JsonResponse(['error' => 'Survey not found'], Response::HTTP_NOT_FOUND);
-                                                        }
+                                                    //     $sondage = $sondageRepository->find($id);
+                                                    //     if (!$sondage) {
+                                                    //         return new JsonResponse(['error' => 'Survey not found'], Response::HTTP_NOT_FOUND);
+                                                    //     }
                                                 
-                                                        $data = json_decode($request->getContent(), true);
+                                                    //     $data = json_decode($request->getContent(), true);
                                                         
-                                                        $comment = new Commentaire();
-                                                        $comment->setContenuComment($data['contenuComment'] ?? null);
-                                                        $comment->setDateComment(new \DateTime());
-                                                        $comment->setUser($user);
-                                                        $comment->setSondage($sondage);
+                                                    //     $comment = new Commentaire();
+                                                    //     $comment->setContenuComment($data['contenuComment'] ?? null);
+                                                    //     $comment->setDateComment(new \DateTime());
+                                                    //     $comment->setUser($user);
+                                                    //     $comment->setSondage($sondage);
                                                 
-                                                        // Validation
-                                                        $errors = $validator->validate($comment);
-                                                        if (count($errors) > 0) {
-                                                            $errorMessages = [];
-                                                            foreach ($errors as $error) {
-                                                                $errorMessages[] = $error->getMessage();
-                                                            }
-                                                            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
-                                                        }
+                                                    //     // Validation
+                                                    //     $errors = $validator->validate($comment);
+                                                    //     if (count($errors) > 0) {
+                                                    //         $errorMessages = [];
+                                                    //         foreach ($errors as $error) {
+                                                    //             $errorMessages[] = $error->getMessage();
+                                                    //         }
+                                                    //         return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+                                                    //     }
                                                 
-                                                        $em->persist($comment);
-                                                        $em->flush();
+                                                    //     $em->persist($comment);
+                                                    //     $em->flush();
                                                 
-                                                        return new JsonResponse([
-                                                            'message' => 'Comment successfully added',
-                                                            'comment' => [
-                                                                'id' => $comment->getId(),
-                                                                'contenu' => $comment->getContenuComment(),
-                                                                'date' => $comment->getDateComment()->format('Y-m-d H:i:s'),
-                                                                'user' => $user->getNom() . ' ' . $user->getPrenom(),
-                                                                'sondage_id' => $sondage->getId()
-                                                            ]
-                                                        ], Response::HTTP_CREATED);
-                                                    }
+                                                    //     return new JsonResponse([
+                                                    //         'message' => 'Comment successfully added',
+                                                    //         'comment' => [
+                                                    //             'id' => $comment->getId(),
+                                                    //             'contenu' => $comment->getContenuComment(),
+                                                    //             'date' => $comment->getDateComment()->format('Y-m-d H:i:s'),
+                                                    //             'user' => $user->getNom() . ' ' . $user->getPrenom(),
+                                                    //             'sondage_id' => $sondage->getId()
+                                                    //         ]
+                                                    //     ], Response::HTTP_CREATED);
+                                                    // }
 
     #[Route('/comment/list/{id}', name: 'list_comments', methods: ['GET'])]
     public function listComments(int $id, EntityManagerInterface $em): JsonResponse
@@ -283,4 +293,97 @@ public function editComment(int $id, Request $request, EntityManagerInterface $e
         return $this->redirectToRoute('app_sondage_index'); // Redirection après suppression
     }
     
+
+    #[Route('/comment/add/{id}', name: 'add_comment', methods: ['POST'])]
+public function addComment(
+    int $id, 
+    Request $request, 
+    SondageRepository $sondageRepository, 
+    EntityManagerInterface $em,
+    Security $security,
+    ValidatorInterface $validator
+): JsonResponse 
+{
+   // $user = $security->getUser();
+   $user = $em->getRepository(User::class)->find(30);
+
+    if (!$user) {
+        return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
+    }
+
+    $sondage = $sondageRepository->find($id);
+    if (!$sondage) {
+        return new JsonResponse(['error' => 'Survey not found'], Response::HTTP_NOT_FOUND);
+    }
+
+    $data = json_decode($request->getContent(), true);
+    $commentContent = $data['contenuComment'] ?? null;
+
+    // Analyze comment for toxicity
+    $toxicityAnalysis = $this->toxicityDetector->analyzeToxicity($commentContent);
+
+    if ($toxicityAnalysis['isToxic']) {
+        // Send warning email to user
+        $this->sendWarningEmail(
+            $user->getEmail(),
+            $commentContent,
+            $toxicityAnalysis
+        );
+
+        return new JsonResponse([
+            'error' => 'Your comment contains inappropriate content and has been rejected.',
+            'details' => $toxicityAnalysis['reason']
+        ], Response::HTTP_BAD_REQUEST);
+    }
+    
+    // Si le commentaire n'est pas toxique, continuer avec l'ajout
+    $comment = new Commentaire();
+    $comment->setContenuComment($commentContent);
+    $comment->setDateComment(new \DateTime());
+    $comment->setUser($user);
+    $comment->setSondage($sondage);
+
+    // Validation
+    $errors = $validator->validate($comment);
+    if (count($errors) > 0) {
+        $errorMessages = [];
+        foreach ($errors as $error) {
+            $errorMessages[] = $error->getMessage();
+        }
+        return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+    }
+
+    $em->persist($comment);
+    $em->flush();
+
+    return new JsonResponse([
+        'message' => 'Comment successfully added',
+        'comment' => [
+            'id' => $comment->getId(),
+            'contenu' => $comment->getContenuComment(),
+            'date' => $comment->getDateComment()->format('Y-m-d H:i:s'),
+            'user' => $user->getNom() . ' ' . $user->getPrenom(),
+            'sondage_id' => $sondage->getId()
+        ]
+    ], Response::HTTP_CREATED);
+}
+
+private function sendWarningEmail(string $userEmail, string $commentContent, array $toxicityAnalysis): void
+{
+    $email = (new Email())
+        ->from('oussemakachti17@gmail.com')
+        ->to($userEmail)
+        ->subject('Warning: Inappropriate Comment Detected')
+        ->html($this->renderView('emails/toxic_comment_warning.html.twig', [
+            'commentContent' => $commentContent,
+            'toxicWords' => $toxicityAnalysis['toxicWords'],
+            'reason' => $toxicityAnalysis['reason']
+        ]));
+
+    try {
+        $this->mailer->send($email);
+    } catch (\Exception $e) {
+        // Log l'erreur d'envoi d'email si nécessaire
+    }
+}
 }

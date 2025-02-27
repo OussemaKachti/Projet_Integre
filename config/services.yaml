@@ -14,3 +14,7 @@ services:
     App\Service\OpenAIClient:
         arguments:
             $apiKey:  '%env(OPENAI_API_KEY)%'
+    App\Service\ToxicityDetector:
+        arguments:
+            $client: '@http_client'
+            $apiKey: '%env(OPENAI_API_KEY)%'
