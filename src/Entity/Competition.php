@@ -46,7 +46,6 @@ class Competition
     
     private ?\DateTimeInterface $endDate = null;
     
-<<<<<<< HEAD
     #[ORM\ManyToOne(targetEntity: Saison::class, inversedBy: "competitions")]
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotNull(message: "A season must be selected.")]
@@ -69,21 +68,6 @@ class Competition
         $this->missionProgresses = new ArrayCollection();
 
     }
-=======
-    #[ORM\ManyToMany(targetEntity: Club::class, inversedBy: "competitions")]
-    private Collection $clubs;
-    #[ORM\ManyToOne(targetEntity: Saison::class, inversedBy: "competitions")]
-#[ORM\JoinColumn(nullable: false)]
-private ?Saison $saison = null;
-
-    
-    public function __construct()
-    {
-        $this->clubs = new ArrayCollection();
-    }
-
-  
->>>>>>> 811529806b8f3de734f3434c75be6f3e07e30af7
 
     public function getId(): ?int
     {
