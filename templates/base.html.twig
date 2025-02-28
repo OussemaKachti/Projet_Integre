@@ -560,9 +560,13 @@ document.removeEventListener('click', closeDropdown);
 				</div>
 			</div>
 		</footer>
+		 <script>
+  window.isUserLoggedIn = {% if app.user %}true{% else %}false{% endif %};
+// </script>
 		<!-- footer area end -->
 
 		<!-- JS here -->
+		<script src="{{ asset('public/js/auth-check.js') }}"></script>
 		<script src="{{ asset('front_assets/js/vendor/jquery.js') }}"></script>
 		<script src="{{ asset('front_assets/js/vendor/waypoints.js') }}"></script>
 		<script src="{{ asset('front_assets/js/bootstrap-bundle.js') }}"></script>
@@ -579,6 +583,7 @@ document.removeEventListener('click', closeDropdown);
 		<script src="{{ asset('front_assets/js/imagesloaded-pkgd.js') }}"></script>
 		<script src="{{ asset('front_assets/js/ajax-form.js') }}"></script>
 		<script src="{{ asset('front_assets/js/main.js') }}"></script>
+		{% block javascripts %}{% endblock %}
 	</body>
 
 	<!-- Mirrored from html.storebuild.shop/eduker-html/eduker/about.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 08 Feb 2025 14:50:39 GMT -->

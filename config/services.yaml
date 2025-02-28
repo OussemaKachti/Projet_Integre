@@ -2,7 +2,8 @@ services:
     _defaults:
         autowire: true      # Automatically injects dependencies based on type hints
         autoconfigure: true # Automatically tags services for common interfaces
-
+    App\Service\:
+        resource: '../src/Service'
     App\Controller\:
         resource: '../src/Controller' # Loads all controllers from the Controller directory
         tags: ['controller.service_arguments'] # Ensures that arguments for controller actions are resolved

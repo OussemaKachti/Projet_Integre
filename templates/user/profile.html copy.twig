@@ -106,13 +106,13 @@
 										</div>
 
 										<div class="profile__info-wrapper white-bg">
-											{# {% for label, messages in app.flashes %}
+											{% for label, messages in app.flashes %}
 												{% for message in messages %}
 													<div class="alert alert-{{ label == 'error' ? 'danger' : label }} mb-4">
 														{{ message }}
 													</div>
 												{% endfor %}
-											{% endfor %} #}
+											{% endfor %}
 
 											<div class="profile__info-item">
 												<p>Name</p>
@@ -189,25 +189,20 @@
 										<div
 											class="password__change-top">
 											{# {% for message in app.flashes('success') %}
-																																																																																																																																																<div class="alert alert-success">
-																																																																																																																																																	{{ message }}
-																																																																																																																																																</div>
-																																																																																																																																															{% endfor %} #}
+																																																																																																															<div class="alert alert-success">
+																																																																																																																{{ message }}
+																																																																																																															</div>
+																																																																																																														{% endfor %} #}
 											<h3 class="password__change-title">Change Password</h3>
 											{# {% for message in app.flashes('error') %}
-												<div class="alert alert-danger">
-													{{ message }}
-												</div>
-											{% endfor %}
-											{% for message in app.flashes('success') %}
-												<div class="alert alert-success">
-													{{ message }}
-												</div>
-											{% endfor %}
-										</div> #}
+																																																																																																															<div class="alert alert-danger">
+																																																																																																																{{ message }}
+																																																																																																															</div>
+																																																																																																														{% endfor %} #}
+										</div>
 										<div class="password__form white-bg">
 
-											<form action="{{ path('app_change_password') }}" method="POST" id="changePasswordForm" novalidate>
+											<form action="{{ path('app_change_password') }}" method="POST" id="changePasswordForm">
 												<input type="hidden" name="active_tab" value="password">
 												<div class="password__change-top">
 													{% for message in app.flashes('success') %}
@@ -503,7 +498,87 @@ e.preventDefault();
 					</div>
 				</div>
 			</div>
-
+			{# <div class="profile__edit-modal">
+			    <!-- Modal -->
+			    <div class="modal fade" id="profile_edit_modal" tabindex="-1" aria-hidden="true">
+			        <div class="modal-dialog modal-dialog-centered modal-lg" style="max-height: 90vh; margin: 0 auto;">
+			            <div class="modal-content" style="border-radius: 15px; height: auto; max-height: 90vh;">
+			                <!-- Modal Header -->
+			                <div class="modal-header border-0 py-2">
+			                    <div class="w-100 position-relative">
+			                        <h5 class="modal-title h5">Edit Profile</h5>
+			                        <button type="button" class="btn-close position-absolute top-0 end-0 m-2" data-bs-dismiss="modal">
+			                            <i class="fas fa-times"></i>
+			                        </button>
+			                    </div>
+			                </div>
+			
+			                <!-- Modal Body -->
+			                <div class="modal-body py-2">
+			                    {{ form_start(profileForm, {'attr': {'id': 'profileEditForm', 'novalidate': 'novalidate'}}) }}
+			                    
+			                        <!-- First Name -->
+			                        <div class="mb-3">
+			                            {{ form_label(profileForm.prenom, null, {'label_attr': {'class': 'form-label mb-1'}}) }}
+			                            <div class="input-group">
+			                                <span class="input-group-text bg-light border-end-0">
+			                                    <i class="fas fa-user text-muted"></i>
+			                                </span>
+			                                {{ form_widget(profileForm.prenom, {'attr': {'class': form_errors(profileForm.prenom) ? 'form-control rounded-end is-invalid' : 'form-control rounded-end'}}) }}
+			                            </div>
+			                            {{ form_errors(profileForm.prenom, {'attr': {'class': 'text-danger d-block mt-1 small'}}) }}
+			                        </div>
+			                        
+			                        <!-- Last Name -->
+			                        <div class="mb-3">
+			                            {{ form_label(profileForm.nom, null, {'label_attr': {'class': 'form-label mb-1'}}) }}
+			                            <div class="input-group">
+			                                <span class="input-group-text bg-light border-end-0">
+			                                    <i class="fas fa-user text-muted"></i>
+			                                </span>
+			                                {{ form_widget(profileForm.nom, {'attr': {'class': form_errors(profileForm.nom) ? 'form-control rounded-end is-invalid' : 'form-control rounded-end'}}) }}
+			                            </div>
+			                            {{ form_errors(profileForm.nom, {'attr': {'class': 'text-danger d-block mt-1 small'}}) }}
+			                        </div>
+			
+			                        <!-- Email Address -->
+			                        <div class="mb-3">
+			                            {{ form_label(profileForm.email, null, {'label_attr': {'class': 'form-label mb-1'}}) }}
+			                            <div class="input-group">
+			                                <span class="input-group-text bg-light border-end-0">
+			                                    <i class="fas fa-envelope text-muted"></i>
+			                                </span>
+			                                {{ form_widget(profileForm.email, {'attr': {'class': form_errors(profileForm.email) ? 'form-control rounded-end is-invalid' : 'form-control rounded-end'}}) }}
+			                            </div>
+			                            {{ form_errors(profileForm.email, {'attr': {'class': 'text-danger d-block mt-1 small'}}) }}
+			                        </div>
+			
+			                        <!-- Phone Number -->
+			                        <div class="mb-3">
+			                            {{ form_label(profileForm.tel, null, {'label_attr': {'class': 'form-label mb-1'}}) }}
+			                            <div class="input-group">
+			                                <span class="input-group-text bg-light border-end-0">
+			                                    <i class="fas fa-phone text-muted"></i>
+			                                </span>
+			                                {{ form_widget(profileForm.tel, {'attr': {'class': form_errors(profileForm.tel) ? 'form-control rounded-end is-invalid' : 'form-control rounded-end'}}) }}
+			                            </div>
+			                            {{ form_errors(profileForm.tel, {'attr': {'class': 'text-danger d-block mt-1 small'}}) }}
+			                        </div>
+			
+			                        <!-- Form Footer -->
+			                        <div class="d-flex justify-content-end gap-2 mt-3">
+			                            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+			                            <button type="submit" class="btn btn-primary btn-sm">
+			                                <i class="fas fa-save me-1"></i>Save Changes
+			                            </button>
+			                        </div>
+			                        
+			                    {{ form_end(profileForm) }}
+			                </div>
+			            </div>
+			        </div>
+			    </div>
+			</div> #}
 			<style>
 				.btn-primary {
 					background-color: #6366f1;
@@ -525,18 +600,21 @@ e.preventDefault();
 
 		</script>
 	</main>
-
+	{# <script>
+																				document.addEventListener('DOMContentLoaded', function (){
+																	{% if app.session.get('password_tab_active') %}
+																	const passwordTab = document.getElementById('nav-password-tab');
+																	passwordTab.click();{% endif %}
+																	});
+																			</script> #}
 	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-    {% if app.session.get('password_tab_active') %}
-        const passwordTab = document.getElementById('nav-password-tab');
-        if (passwordTab) {
-            passwordTab.click();
-        }
-        
-        // Tell the server to clean up the session variable
-        fetch('{{ path("app_profile") }}?cleanup=true');
-    {% endif %}
+		document.addEventListener('DOMContentLoaded', function (){
+{% if app.session.get('password_tab_active') %}
+const passwordTab = document.getElementById('nav-password-tab');
+passwordTab.click();
+
+// Tell the server to clean up the session variable
+fetch('{{ path("app_profile") }}?cleanup=true');{% endif %}
 });
 	</script>
 	<script>

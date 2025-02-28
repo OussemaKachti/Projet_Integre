@@ -6,6 +6,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\UserRepository;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+
 
 class SecurityController extends AbstractController
 {
@@ -29,4 +33,62 @@ class SecurityController extends AbstractController
     {
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
+    #[Route('/access-denied', name: 'access_denied')]
+    public function accessDenied(): Response
+    {
+        // Check if user is logged in
+        if ($this->getUser()) {
+            // If logged in but access denied, it's a permission issue
+            return $this->render('security/insufficient_permissions.html.twig');
+        }
+        
+        // If not logged in, show the login required page
+        return $this->render('security/access_denied.html.twig');
+    }
+    #[Route('/confirm-email/{token}', name: 'confirm_email')]
+    public function confirmEmail(
+        string $token,
+        UserRepository $userRepository,
+        EntityManagerInterface $entityManager,
+        UrlGeneratorInterface $urlGenerator
+    ): Response {
+        // Find the user by the confirmation token
+        $user = $userRepository->findOneBy(['confirmationToken' => $token]);
+    
+        if (!$user) {
+            $this->addFlash('error', 'Invalid or expired confirmation link.');
+            return $this->redirectToRoute('app_user_signup');
+        }
+    
+        // Check if user is already verified
+        if ($user->isVerified()) {
+            $this->addFlash('info', 'This email address is already verified.');
+            return $this->redirectToRoute('app_login');
+        }
+    
+        try {
+            // Mark the user as verified and clear the token
+            $user->setIsVerified(true);
+            $user->setConfirmationToken(null);
+            
+            // Update the user entity
+            $entityManager->persist($user);
+            $entityManager->flush();
+    
+            // Add success message
+            $this->addFlash('success', 'Your email has been confirmed! You can now log in.');
+    
+            // Automatically log in the user if needed (optional)
+            // return $this->redirectToRoute('app_home');
+    
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'There was an error confirming your email. Please try again.');
+            return $this->redirectToRoute('app_user_signup');
+        }
+    
+        // Redirect to login page
+        return $this->redirectToRoute('app_login', [], 302);
+    }
+
+
 }
