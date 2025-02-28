@@ -2,20 +2,25 @@
 
 namespace App\Controller;
 
-
 use App\Entity\User;
+
 use App\Entity\Sondage;
 use App\Entity\Commentaire;
 use App\Form\CommentaireType;
-use App\Repository\CommentaireRepository;
+use App\Repository\SondageRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Repository\CommentaireRepository;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use App\Repository\SondageRepository;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Service\ToxicityDetector;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 
 
@@ -24,86 +29,208 @@ use Symfony\Component\Security\Core\Security;
 #[Route('/commentaire')]
 class CommentaireController extends AbstractController
 {
-    #[Route('/', name: 'app_commentaire_index', methods: ['GET'])]
-    public function index(CommentaireRepository $commentaireRepository): Response
+    private $toxicityDetector;
+    private $mailer;
+
+    public function __construct(ToxicityDetector $toxicityDetector, MailerInterface $mailer)
     {
-        return $this->render('commentaire/index.html.twig', [
-            'commentaires' => $commentaireRepository->findAll(),
-        ]);
+        $this->toxicityDetector = $toxicityDetector;
+        $this->mailer = $mailer;
     }
 
-    #[Route('/comment/add/{id}', name: 'add_comment', methods: ['POST'])]
-    public function addComment(int $id, Request $request, SondageRepository $sondageRepository, EntityManagerInterface $em): JsonResponse
-    {
-       // $user = $this->getUser(); // 🔹 Récupérer l'utilisateur connecté
-        $user = $em->getRepository(User::class)->find(1); // Remplace 1 par l'ID d'un utilisateur existant
 
-        if (!$user) {
-            return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
-        }
 
-        $sondage = $sondageRepository->find($id);
-        if (!$sondage) {
-            return new JsonResponse(['error' => 'Survey not found'], Response::HTTP_NOT_FOUND);
-        }
+                                                //Admin
 
-        $data = json_decode($request->getContent(), true);
-        if (!isset($data['contenuComment']) || empty($data['contenuComment'])) {
-            return new JsonResponse(['error' => 'Comment content is required'], Response::HTTP_BAD_REQUEST);
-        }
 
-        // 🔹 Création du commentaire
-        $comment = new Commentaire();
-        $comment->setContenuComment($data['contenuComment']);
-        $comment->setDateComment(new \DateTime());
-        $comment->setUser($user);
-        $comment->setSondage($sondage);
 
-        $em->persist($comment);
-        $em->flush();
 
-        return new JsonResponse([
-            'message' => 'Comment successfully added',
-            'comment' => [
-                'id' => $comment->getId(),
-                'contenu' => $comment->getContenuComment(),
-                'date' => $comment->getDateComment()->format('Y-m-d H:i:s'),
-                'user' => $user->getNom() . ' ' . $user->getPrenom(),
-                'sondage_id' => $sondage->getId()
-            ]
-        ], Response::HTTP_CREATED);
+   
+    
+    
+
+
+
+                                                #[Route('/adminComments', name: 'app_commentaire_index', methods: ['GET'])]
+                                                public function afficherCommentairesClub(CommentaireRepository $commentaireRepository, Request $request): Response
+                                                {
+                                                    $clubFilter = $request->query->get('club'); 
+                                                
+                                                    if ($clubFilter && $clubFilter !== 'all') {
+                                                        $commentaires = $commentaireRepository->createQueryBuilder('c')
+                                                            ->join('c.sondage', 's')
+                                                            ->join('s.club', 'cl')
+                                                            ->where('cl.nomC = :clubName')
+                                                            ->setParameter('clubName', $clubFilter)
+                                                            ->getQuery()
+                                                            ->getResult();
+                                                    } else {
+                                                        // Sinon, récupérer tous les commentaires
+                                                        $commentaires = $commentaireRepository->findAll();
+                                                    }
+                                                
+                                                    // Formater les commentaires
+                                                    $commentairesAvecClub = [];
+                                                    $clubs = []; // Liste pour stocker les noms des clubs disponibles
+                                                
+                                                    foreach ($commentaires as $commentaire) {
+                                                        $sondage = $commentaire->getSondage();
+                                                        $club = $sondage->getClub(); // Assurez-vous que la relation existe
+                                                        $clubName = $club ? $club->getNomC() : 'Non défini'; 
+                                                
+                                                        if ($club) {
+                                                            $clubs[$clubName] = $clubName; // Ajouter à la liste des clubs uniques
+                                                        }
+                                                
+                                                        $commentairesAvecClub[] = [
+                                                            'id' => $commentaire->getId(),
+                                                            'user' => $commentaire->getUser()->getNom() . ' ' . $commentaire->getUser()->getPrenom(),
+                                                            'contenu' => $commentaire->getContenuComment(),
+                                                            'club_name' => $clubName,
+                                                            'created_at' => $commentaire->getDateComment()->format('Y-m-d')
+                                                        ];
+                                                    }
+                                                
+                                                    return $this->render('commentaire/adminComments.html.twig', [
+                                                        'commentaires' => $commentairesAvecClub,
+                                                        'clubs' => $clubs, // Envoyer la liste des clubs pour le filtre
+                                                        'selectedClub' => $clubFilter ?? 'all' // Club actuellement sélectionné
+                                                    ]);
+                                                }
+                                                
+
+    #[Route('/{id}/delete', name: 'app_commentaire_delete', methods: ['POST'])]
+public function delete($id, EntityManagerInterface $entityManager): RedirectResponse
+{
+    // Récupérer le commentaire à supprimer par son ID
+    $commentaire = $entityManager->getRepository(Commentaire::class)->find($id);
+
+    // Vérifier si le commentaire existe
+    if (!$commentaire) {
+        $this->addFlash('error', 'Commentaire non trouvé.');
+        return $this->redirectToRoute('app_commentaire_index'); // Rediriger en cas d'erreur
     }
+
+    // Suppression du commentaire
+    $entityManager->remove($commentaire);
+    $entityManager->flush(); // Appliquer les changements à la base de données
+
+    // Message de succès
+    $this->addFlash('success', 'Comment successfully deleted!');
+
+    // Rediriger vers la page d'index des commentaires après la suppression
+    return $this->redirectToRoute('app_commentaire_index');
+}
+    
+
+
+
+                                                    //Admin
+    
+
+
+
+    
+                                                    // #[Route('/comment/add/{id}', name: 'add_comment', methods: ['POST'])]
+                                                    // public function addComment(
+                                                    //     int $id, 
+                                                    //     Request $request, 
+                                                    //     SondageRepository $sondageRepository, 
+                                                    //     EntityManagerInterface $em,
+                                                    //     Security $security,
+
+                                                    //     ValidatorInterface $validator
+                                                    // ): JsonResponse 
+                                                    // {
+                                                    //     // $user = $this->getUser(); // 🔹 Récupérer l'utilisateur connecté
+                                                    //     $user = $security->getUser();
+                                                        
+                                                    //     if (!$user) {
+                                                    //         return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
+                                                    //     }
+                                                
+                                                    //     $sondage = $sondageRepository->find($id);
+                                                    //     if (!$sondage) {
+                                                    //         return new JsonResponse(['error' => 'Survey not found'], Response::HTTP_NOT_FOUND);
+                                                    //     }
+                                                
+                                                    //     $data = json_decode($request->getContent(), true);
+                                                        
+                                                    //     $comment = new Commentaire();
+                                                    //     $comment->setContenuComment($data['contenuComment'] ?? null);
+                                                    //     $comment->setDateComment(new \DateTime());
+                                                    //     $comment->setUser($user);
+                                                    //     $comment->setSondage($sondage);
+                                                
+                                                    //     // Validation
+                                                    //     $errors = $validator->validate($comment);
+                                                    //     if (count($errors) > 0) {
+                                                    //         $errorMessages = [];
+                                                    //         foreach ($errors as $error) {
+                                                    //             $errorMessages[] = $error->getMessage();
+                                                    //         }
+                                                    //         return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+                                                    //     }
+                                                
+                                                    //     $em->persist($comment);
+                                                    //     $em->flush();
+                                                
+                                                    //     return new JsonResponse([
+                                                    //         'message' => 'Comment successfully added',
+                                                    //         'comment' => [
+                                                    //             'id' => $comment->getId(),
+                                                    //             'contenu' => $comment->getContenuComment(),
+                                                    //             'date' => $comment->getDateComment()->format('Y-m-d H:i:s'),
+                                                    //             'user' => $user->getNom() . ' ' . $user->getPrenom(),
+                                                    //             'sondage_id' => $sondage->getId()
+                                                    //         ]
+                                                    //     ], Response::HTTP_CREATED);
+                                                    // }
 
     #[Route('/comment/list/{id}', name: 'list_comments', methods: ['GET'])]
-public function listComments(int $id, EntityManagerInterface $em): Response
-{
-    // Simuler un utilisateur (remplace par getUser() une fois l'authentification implémentée)
-    $user = $em->getRepository(User::class)->find(1); // Assure-toi que cet utilisateur existe
-
-    // Récupérer le sondage depuis la base de données
-    $sondages = $em->getRepository(Sondage::class)->find($id);
-
-    if (!$sondages) {
-        throw $this->createNotFoundException('Sondage non trouvé');
-    }
-
-    // Récupérer les commentaires associés au sondage
-    $commentaires = $sondages->getCommentaires();
-
-    // Vérifier que la variable est bien transmise
-    return $this->render('sondage/ListPolls.html.twig', [
-        'sondages' => $sondages,
-        'commentaires' => $commentaires,
-        'current_user' => $user, // Passe l'utilisateur simulé à la vue
-    ]);
+    public function listComments(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        // Simuler un utilisateur (remplace par getUser() une fois l'authentification implémentée)
+        $user = $em->getRepository(User::class)->find(1); // Assure-toi que cet utilisateur existe
     
-}
+        // Récupérer le sondage depuis la base de données
+        $sondage = $em->getRepository(Sondage::class)->find($id);
+    
+        if (!$sondage) {
+            throw $this->createNotFoundException('Sondage non trouvé');
+        }
+    
+        // Récupérer les commentaires associés au sondage
+        $commentaires = $sondage->getCommentaires();
+    
+        // Créer un tableau avec les données à envoyer en réponse JSON
+        $commentsData = [];
+        foreach ($commentaires as $commentaire) {
+            $commentsData[] = [
+                'id' => $commentaire->getId(),
+                'user' => $commentaire->getUser()->getNom() . ' ' . $commentaire->getUser()->getPrenom(),
+                'date' => $commentaire->getDateComment()->format('d M Y'),
+                'content' => $commentaire->getContenuComment(),
+            ];
+        }
+    
+        // Retourner une réponse JSON avec les commentaires et les autres informations
+        return new JsonResponse([
+            'comments' => $commentsData,
+            'user' => [
+                'id' => $user->getId(),
+                'name' => $user->getNom() . ' ' . $user->getPrenom(),
+            ]
+        ]);
+    }
+    
 
 
 
 
 #[Route('/comment/edit/{id}', name: 'edit_comment', methods: ['POST', 'PUT'])]
-public function editComment(int $id, Request $request, EntityManagerInterface $em): Response
+public function editComment(int $id, Request $request, EntityManagerInterface $em,        Security $security,
+): Response
 {
     $comment = $em->getRepository(Commentaire::class)->find($id);
 
@@ -112,7 +239,7 @@ public function editComment(int $id, Request $request, EntityManagerInterface $e
     }
 
     // Récupérer l'utilisateur (ici simulé pour le test, remplace par $this->getUser() quand l'authentification est implémentée)
-    $user = $em->getRepository(User::class)->find(1);
+    $user = $security->getUser();
 
     if (!$user) {
         return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
@@ -139,7 +266,8 @@ public function editComment(int $id, Request $request, EntityManagerInterface $e
 
 
     #[Route('/comment/delete/{id}', name: 'delete_comment', methods: ['POST', 'DELETE'])]
-    public function deleteComment(int $id, EntityManagerInterface $em): Response
+    public function deleteComment(int $id, EntityManagerInterface $em,        Security $security,
+    ): Response
     {
         $comment = $em->getRepository(Commentaire::class)->find($id);
     
@@ -148,7 +276,7 @@ public function editComment(int $id, Request $request, EntityManagerInterface $e
         }
     
         // 🔹 Simuler un utilisateur (Remplace par `$this->getUser()` si authentification active)
-        $user = $em->getRepository(User::class)->find(1); // Remplace par l'ID d'un utilisateur existant
+        $user = $security->getUser();
     
         if (!$user) {
             return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
@@ -165,4 +293,97 @@ public function editComment(int $id, Request $request, EntityManagerInterface $e
         return $this->redirectToRoute('app_sondage_index'); // Redirection après suppression
     }
     
+
+    #[Route('/comment/add/{id}', name: 'add_comment', methods: ['POST'])]
+public function addComment(
+    int $id, 
+    Request $request, 
+    SondageRepository $sondageRepository, 
+    EntityManagerInterface $em,
+    Security $security,
+    ValidatorInterface $validator
+): JsonResponse 
+{
+   // $user = $security->getUser();
+   $user = $em->getRepository(User::class)->find(30);
+
+    if (!$user) {
+        return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
+    }
+
+    $sondage = $sondageRepository->find($id);
+    if (!$sondage) {
+        return new JsonResponse(['error' => 'Survey not found'], Response::HTTP_NOT_FOUND);
+    }
+
+    $data = json_decode($request->getContent(), true);
+    $commentContent = $data['contenuComment'] ?? null;
+
+    // Analyze comment for toxicity
+    $toxicityAnalysis = $this->toxicityDetector->analyzeToxicity($commentContent);
+
+    if ($toxicityAnalysis['isToxic']) {
+        // Send warning email to user
+        $this->sendWarningEmail(
+            $user->getEmail(),
+            $commentContent,
+            $toxicityAnalysis
+        );
+
+        return new JsonResponse([
+            'error' => 'Your comment contains inappropriate content and has been rejected.',
+            'details' => $toxicityAnalysis['reason']
+        ], Response::HTTP_BAD_REQUEST);
+    }
+    
+    // Si le commentaire n'est pas toxique, continuer avec l'ajout
+    $comment = new Commentaire();
+    $comment->setContenuComment($commentContent);
+    $comment->setDateComment(new \DateTime());
+    $comment->setUser($user);
+    $comment->setSondage($sondage);
+
+    // Validation
+    $errors = $validator->validate($comment);
+    if (count($errors) > 0) {
+        $errorMessages = [];
+        foreach ($errors as $error) {
+            $errorMessages[] = $error->getMessage();
+        }
+        return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+    }
+
+    $em->persist($comment);
+    $em->flush();
+
+    return new JsonResponse([
+        'message' => 'Comment successfully added',
+        'comment' => [
+            'id' => $comment->getId(),
+            'contenu' => $comment->getContenuComment(),
+            'date' => $comment->getDateComment()->format('Y-m-d H:i:s'),
+            'user' => $user->getNom() . ' ' . $user->getPrenom(),
+            'sondage_id' => $sondage->getId()
+        ]
+    ], Response::HTTP_CREATED);
+}
+
+private function sendWarningEmail(string $userEmail, string $commentContent, array $toxicityAnalysis): void
+{
+    $email = (new Email())
+        ->from('oussemakachti17@gmail.com')
+        ->to($userEmail)
+        ->subject('Warning: Inappropriate Comment Detected')
+        ->html($this->renderView('emails/toxic_comment_warning.html.twig', [
+            'commentContent' => $commentContent,
+            'toxicWords' => $toxicityAnalysis['toxicWords'],
+            'reason' => $toxicityAnalysis['reason']
+        ]));
+
+    try {
+        $this->mailer->send($email);
+    } catch (\Exception $e) {
+        // Log l'erreur d'envoi d'email si nécessaire
+    }
+}
 }

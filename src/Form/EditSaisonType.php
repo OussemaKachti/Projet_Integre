@@ -40,7 +40,7 @@ class EditSaisonType extends AbstractType
                 'attr' => ['class' => 'btn btn-primary']
             ]);
     }
-
+    
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([

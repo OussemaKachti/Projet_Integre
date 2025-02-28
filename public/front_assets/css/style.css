@@ -2051,9 +2051,7 @@ input[type=color] {
 .header__search-3 button svg path {
   stroke: var(--tp-theme-3);
 }
-.header__login {
-  /* header login 2 */
-}
+
 .header__login a {
   color: var(--tp-common-black);
 }
@@ -8350,7 +8348,6 @@ input[type=color] {
 }
 .price__list ul li span {
   float: right;
-  display: inline-block;
   width: 16px;
   height: 16px;
   line-height: 14px;
@@ -10053,7 +10050,6 @@ td.product-thumbnail img {
   background: #252525 none repeat scroll 0 0;
   border: medium none;
   color: #fff;
-  display: inline-block;
   float: left;
   font-size: 12px;
   font-weight: 700;
@@ -10452,9 +10448,13 @@ p.checkout-coupon input[type=text]:focus {
 }
 
 .payment-method .btn-link {
-  -moz-user-select: none;
+  -webkit-user-select: none; /* Safari & Chrome */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* Internet Explorer/Edge */
+  user-select: none;         /* Standard */
+  
   background: no-repeat;
-  border: medium none;
+  border: none;
   border-radius: 0;
   color: #444;
   cursor: pointer;
@@ -10472,6 +10472,7 @@ p.checkout-coupon input[type=text]:focus {
   white-space: nowrap;
   text-decoration: none;
 }
+
 
 .payment-method .card {
   background-color: #ffffff;
