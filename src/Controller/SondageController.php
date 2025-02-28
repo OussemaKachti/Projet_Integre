@@ -3,6 +3,8 @@
 namespace App\Controller;
 use App\Enum\RoleEnum;
 use App\Entity\Club;
+use App\Entity\Commentaire;
+
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Mailer\MailerInterface;
@@ -296,9 +298,62 @@ public function getColorByPercentage(float $percentage): string
 
     
     
+//partie chart admin 
+#[Route('/poll/details/{id}', name: 'app_poll_details')]
+public function pollDetails(int $id, EntityManagerInterface $em): Response
+{
+    $sondage = $em->getRepository(Sondage::class)->find($id);
+    
+    if (!$sondage) {
+        throw $this->createNotFoundException('Poll not found');
+    }
 
+    // Récupérer les commentaires
+    $comments = $em->getRepository(Commentaire::class)
+        ->findBy(['sondage' => $sondage], ['dateComment' => 'DESC']);
 
+    // Préparer les données pour le graphique
+    $pollResults = [];
+    $totalReponses = count($sondage->getReponses());
 
+    // Pour chaque choix du sondage
+    foreach ($sondage->getChoix() as $choix) {
+        // Compter les réponses pour ce choix
+        $nombreReponses = $em->getRepository(Reponse::class)
+            ->count(['sondage' => $sondage, 'choixSondage' => $choix]);
+        
+        // Calculer le pourcentage
+        $percentage = $totalReponses > 0 ? ($nombreReponses / $totalReponses) * 100 : 0;
+        
+        $pollResults[] = [
+            'choix' => $choix->getContenu(),
+            'count' => $nombreReponses,
+            'percentage' => round($percentage, 1),
+            'color' => sprintf('#%06X', mt_rand(0, 0xFFFFFF)) // Couleur aléatoire
+        ];
+    }
+
+    return $this->render('sondage/pollsDetails.html.twig', [
+        'sondage' => $sondage,
+        'comments' => $comments,
+        'poll_results' => $pollResults
+    ]);
+}
+
+private function getColorForPercentage(float $percentage): string
+{
+    if ($percentage <= 20) {
+        return '#e74c3c'; // Rouge
+    } elseif ($percentage <= 40) {
+        return '#f39c12'; // Orange
+    } elseif ($percentage <= 60) {
+        return '#f1c40f'; // Jaune
+    } elseif ($percentage <= 80) {
+        return '#2ecc71'; // Vert
+    } else {
+        return '#3498db'; // Bleu
+    }
+}
 
     
 

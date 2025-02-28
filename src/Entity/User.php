@@ -220,4 +220,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->role === RoleEnum::ADMINISTRATEUR;
     }
+    public function __toString(): string
+{
+    return $this->getFullName();
+}
 }
