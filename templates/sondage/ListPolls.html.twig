@@ -1,0 +1,835 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{% endblock %}
+
+{% block body %}
+	<main>
+
+		<!-- Breadcrumb Area Start -->
+		<section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="{{ asset('front_assets/img/breadcrumb/poll.jpg') }}">
+			<div class="container">
+				<div class="row">
+					<div class="col-xxl-12">
+						<div class="breadcrumb__content text-center p-relative z-index-1">
+							<h3 class="breadcrumb__title">Our Polls</h3>
+							<div class="breadcrumb__list">
+								<span>
+									<a href="index.html">Home</a>
+								</span>
+								<span class="dvdr">
+									<i class="fa-regular fa-angle-right"></i>
+								</span>
+								<span>Polls</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		<!-- Breadcrumb Area End -->
+
+		<!-- Blog Area Start -->
+		<section class="blog__area pt-120 pb-120">
+			<div class="container">
+				<div
+					class="row">
+					<!-- Polls Section -->
+					<div class="col-xxl-8 col-xl-8 col-lg-8">
+						<div class="postbox__wrapper postbox__details pr-20">
+							<div class="postbox__item transition-3 mb-70">
+								<div class="postbox__content">
+									{% for sondage in sondages %}
+										<div class="poll-container" data-sondage-id="{{ sondage.id }}">
+											<div class="user-info">
+												<img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="User">
+												<b>{{ sondage.user.nom }}
+													{{ sondage.user.prenom }}</b>
+												|
+												<span>{{ sondage.createdAt|date('d M Y') }}</span>
+												<div class="summary-container">
+													<button class="btn btn-success summary-button open-summary-modal" data-sondage-id="{{ sondage.id }}">
+														View Summary
+													</button>
+												</div>
+												<style>
+													.summary-button {
+														position: absolute;
+														top: 10px;
+														right: 2px;
+														background-color: #3498db; /* Remplacez par la couleur souhaitée */
+														border-color: #2980b9; /* Ajustez la couleur de la bordure */
+														color: white; /* Couleur du texte */
+													}
+
+													.summary-button:hover {
+														background-color: #2980b9; /* Couleur du bouton au survol */
+														border-color: #1c5980; /* Couleur de la bordure au survol */
+													}
+												</style>
+											</div>
+											<div class="poll-title">{{ sondage.question }}</div>
+
+											<!-- Formulaire de vote -->
+											<form action="{{ path('submit_vote', {'sondageId': sondage.id}) }}" method="POST" class="poll-vote-form">
+												{% for choix in sondage.choix %}
+													<div class="poll-option option-{{ loop.index }}">
+														<input type="radio" name="choix" id="option-{{ loop.index }}" value="{{ choix.id }}" class="poll-option-radio">
+														<label for="option-{{ loop.index }}">{{ choix.contenu }}</label>
+														<div class="progress-bar">
+															{% if sondageResults[sondage.id] is defined and sondageResults[sondage.id] is not empty %}
+																{% for resultat in sondageResults[sondage.id] %}
+																	{% if resultat.choix == choix.contenu %}
+																		<div class="progress" style="width: {{ resultat.percentage }}%; background-color: {{ resultat.color }}">
+																			{{ resultat.percentage }}%
+																		</div>
+																	{% endif %}
+																{% endfor %}
+															{% else %}
+																<p>Aucun résultat disponible pour ce sondage.</p>
+															{% endif %}
+
+														</div>
+													</div>
+												{% endfor %}
+												<!-- Modale Bootstrap (ajoutée une seule fois en dehors de la boucle) -->
+												<div class="modal fade" id="summaryModal" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
+													<div class="modal-dialog">
+														<div class="modal-content">
+															<div class="modal-header">
+																<h5 class="modal-title" id="summaryModalLabel">Survey Summary</h5>
+																<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+															</div>
+															<div class="modal-body">
+																<p id="summaryText">Loading...</p>
+															</div>
+															<div class="modal-footer">
+																<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+															</div>
+														</div>
+													</div>
+												</div>
+												<button type="submit" class="btn btn-secondary">Submit Vote</button>
+											</form>
+											<!-- Toast Bootstrap -->
+											<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3">
+												<div id="vote-toast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+													<div class="d-flex">
+														<div class="toast-body"></div>
+														<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+													</div>
+												</div>
+											</div>
+
+											<!-- Button to Delete Vote -->
+
+
+											<!-- Comments Section -->
+											<div
+												class="latest-comment mb-3">
+												<!-- Rendre le h3 cliquable avec un style pointer -->
+												<div
+													style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+													<!-- Nombre de commentaires -->
+													<h3 class="openModal" style="cursor: pointer;" data-sondage-id="{{ sondage.id }}">
+														{{ sondage.commentaires|length }}
+														Comments
+													</h3>
+
+													<!-- Affichage du choix de l'utilisateur -->
+													<p class="user-response" style="margin: 0; padding-right: 10px;">
+														<strong>Votre choix :</strong>
+														{% if reponses[sondage.id] is defined %}
+															{{ reponses[sondage.id] }}
+														{% else %}
+															No vote
+														{% endif %}
+													</p>
+
+													<!-- Formulaire pour supprimer le vote -->
+													{% if reponses[sondage.id] is defined and reponses[sondage.id] is not empty %}
+														<form action="{{ path('delRep', {'sondageId': sondage.id}) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your vote?');">
+															<input type="hidden" name="_method" value="DELETE">
+															<button type="submit" class="vote-btn">Delete Vote</button>
+														</form>
+													{% endif %}
+												</div>
+
+												<style>
+													.openModal {
+														font-size: 14px !important; /* Taille de police plus petite avec priorité */
+														font-weight: normal !important; /* Enlever le gras avec priorité */
+														color: #555 !important; /* Couleur plus douce avec priorité */
+														margin: 0 !important; /* Enlever la marge si nécessaire avec priorité */
+													}
+												</style>
+												<!-- Modal -->
+												<div class="modal fade" id="commentsModal{{ sondage.id }}" tabindex="-1" aria-labelledby="commentsModalLabel{{ sondage.id }}" aria-hidden="true">
+													<div class="modal-dialog modal-lg" role="document">
+														<div class="modal-content">
+															<div class="modal-header">
+																<h5 class="modal-title" id="commentsModalLabel{{ sondage.id }}">All Comments</h5>
+																<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+															</div>
+															<div class="modal-body">
+																<div class="comments-list">
+																	{% for commentaire in sondage.commentaires %}
+																		<div class="comment-box" id="comment-{{ commentaire.id }}">
+																			<div class="comment-info d-flex">
+																				<div class="comment-avatar mr-20">
+																					<img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="">
+																				</div>
+																				<br>
+																				<div class="avatar-name">
+																					<h5>{{ commentaire.user.nom }}
+																						{{ commentaire.user.prenom }}</h5>
+																					<span class="post-meta">{{ commentaire.dateComment|date('d M Y') }}</span>
+																				</div>
+																			</div>
+																			<div class="comment-info d-flex">
+																				<p>{{ commentaire.contenuComment }}</p>
+																			</div>
+																			<style>
+																				.comment-info p {
+																					font-weight: bold; /* Texte en gras */
+																					text-align: left; /* Aligner totalement le texte à droite */
+																				}
+
+																				textarea {
+																					width: 50%; /* Assurer qu'il prend toute la largeur disponible */
+																					height: 28px; /* Taille plus petite pour le champ de texte */
+																					font-size: 14px; /* Réduire la taille du texte à l'intérieur */
+																					padding: 8px;
+																					border-radius: 5px;
+																					border: 1px solid #ddd;
+																					resize: none; /* Empêche le redimensionnement de la zone de texte */
+																				}
+																			</style>
+
+																			<div class="comment-actions" style="display: flex; align-items: center; gap: 10px;">
+																				<!-- Edit Button -->
+																				{#  {% if app.user and app.user.id == commentaire.user.id %}#}
+																					<form action="{{ path('edit_comment', {'id': commentaire.id}) }}" method="POST" id="editCommentForm"> <input
+																					type="hidden" name="_method" value="PUT">
+																					<!-- Cela simule une requête PUT -->
+																					<textarea name="content" placeholder="Edit your comment">{{ commentaire.contenuComment }}</textarea>
+																					<button type="submit" class="btn btn-success">Update Comment</button>
+																				</form>
+																				<br>
+																				{#  {% endif %}#}
+
+																				<!-- Delete Button -->
+																				{#    {% if app.user and (app.user.id == commentaire.user.id or app.user.role == 'presidentClub' and commentaire.sondage.club.president.id == app.user.id) %}#}
+																					<form action="{{ path('delete_comment', {'id': commentaire.id}) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this comment?');" id="deleteCommentForm"> <input type="hidden" name="_method" value="DELETE">
+																					<button type="submit" class="btn btn-danger">Delete</button>
+																				</form>
+																				{#    {% endif %}#}
+
+																				<!-- Toast Notification -->
+																				<div id="toast" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+																					<div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" style="display: none;">
+																						<div class="d-flex">
+																							<div class="toast-body">
+																								Comment updated successfully!
+																							</div>
+																							<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+																						</div>
+																					</div>
+																				</div>
+																			</div>
+
+																			<script>
+																				document.getElementById('editCommentForm').addEventListener('submit', function (event) { // Affiche le toast pour la mise à jour du commentaire
+let toast = new bootstrap.Toast(document.getElementById('toastMessage'));
+toast.show();
+});
+
+document.getElementById('deleteCommentForm').addEventListener('submit', function (event) { // Affiche le toast pour la suppression du commentaire
+let toast = new bootstrap.Toast(document.getElementById('toastMessage'));
+toast.show();
+});
+																			</script>
+
+
+																		</div>
+																	{% else %}
+																		<p>No comments yet.</p>
+																	{% endfor %}
+
+																</div>
+															</div>
+															<div class="modal-footer">
+																<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+
+											<!-- Conteneur pour les toasts -->
+											<div class="toast-container position-fixed top-0 end-0 p-3" id="toast-container"></div>
+
+											<!-- Comment Form -->
+											<div class="postbox__comment">
+												<h3>Write a comment</h3>
+												<br>
+												<form id="comment-form-{{ sondage.id }}" data-sondage-id="{{ sondage.id }}">
+													<div class="row">
+														<div class="col-xxl-12">
+															<div class="postbox__comment-input">
+																<textarea placeholder="Enter your comment ..." class="comment-textarea"></textarea>
+															</div>
+														</div>
+														<div class="col-xxl-12">
+															<div class="postbox__comment-btn">
+																<button type="submit" class="tp-btn">Post Comment</button>
+															</div>
+														</div>
+													</div>
+												</form>
+												<br>
+											</div>
+										</div>
+									{% endfor %}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Sidebar Section -->
+					<div class="col-xxl-4 col-xl-4 col-lg-4">
+						<div
+							class="blog__sidebar pl-70">
+							{# 
+																																																																																																																																																																																						    {% if app.user and app.user.role == 'presidentClub' %}
+																																																																																																																																																																																						#}
+							<form id="poll-form" method="POST" action="{{ path('api_poll_new') }}">
+								<div id="toastContainer" class="toast-container position-fixed top-50 start-50 translate-middle" style="z-index: 9999;"></div>
+								<style>
+									.toast-container {
+										z-index: 9999;
+
+									}
+
+									.toast {
+										margin-top: 20px;
+										margin-right: 20px;
+										min-width: 800px;
+									}
+								</style>
+								<div class="poll-creation-container">
+									<h2>Create a Poll</h2>
+									<input type="text" class="input-box" placeholder="Type your question here" name="question">
+									<h2>Options</h2>
+									<div id="options-container">
+										<input type="text" class="input-box" placeholder="Option 1" name="choix[0][contenu]">
+										<input type="text" class="input-box" placeholder="Option 2" name="choix[1][contenu]">
+									</div>
+									<button type="button" class="add-option" onclick="addOption()">+ Add option</button>
+									<div class="admin-message">
+										<p>
+											<strong>Note:</strong>
+											Ensure the question and options follow club rules.</p>
+									</div>
+									<button type="submit" class="create-btn">Create Poll</button>
+								</div>
+								<style>
+									.error-message {
+										font-size: 0.875rem;
+										margin-top: 0.25rem;
+										color: #dc3545;
+									}
+
+									.input-box {
+										margin-bottom: 1rem;
+									}
+
+									.poll-creation-container {
+										padding: 1.5rem;
+										background: #fff;
+										border-radius: 0.5rem;
+										box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+									}
+
+									.toast-container {
+										z-index: 9999;
+									}
+								</style>
+							</form>
+
+							<!-- Toast Notification -->
+							<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+								<div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+									<div class="d-flex">
+										<div class="toast-body">
+											Action completed successfully!
+										</div>
+										<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+									</div>
+								</div>
+							</div>
+
+							{# 
+																																																																																																																																																																																						    {% endif %}
+																																																																																																																																																																																						#}
+							<button style="--clr: #7808d0" class="button" onclick="window.location.href='{{ path('api_user_polls') }}';">
+								<span class="button__icon-wrapper">
+									<svg width="10" class="button__icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 14 15">
+										<path fill="currentColor" d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z"></path>
+									</svg>
+
+									<svg class="button__icon-svg button__icon-svg--copy" xmlns="http://www.w3.org/2000/svg" width="10" fill="none" viewbox="0 0 14 15">
+										<path fill="currentColor" d="M13.376 11.552l-.264-10.44-10.44-.24.024 2.28 6.96-.048L.2 12.56l1.488 1.488 9.432-9.432-.048 6.912 2.304.024z"></path>
+									</svg>
+								</span>
+								View all polls
+							</button>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</section>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+		<script>
+
+			document.addEventListener("DOMContentLoaded", function () {
+document.querySelectorAll(".open-summary-modal").forEach(button => {
+button.addEventListener("click", function () {
+let sondageId = this.getAttribute("data-sondage-id");
+let modal = new bootstrap.Modal(document.getElementById('summaryModal'));
+let summaryText = document.getElementById('summaryText');
+
+summaryText.innerText = "Loading...";
+
+fetch (`/api/summarize-comments/${sondageId}`, { // URL dynamique avec l'ID du sondage
+method: 'GET',
+headers: {
+'Content-Type': 'application/json'
+}
+}).then(response => response.json()).then(data => {
+summaryText.innerText = data.summary || "No summary available.";
+}).catch(error => {
+console.error("Erreur lors du chargement du résumé :", error);
+summaryText.innerText = "Erreur lors du chargement du résumé.";
+});
+
+modal.show();
+});
+});
+});
+
+// //----------------------------------------------------------------------------////
+// Cibler le formulaire de vote
+document.querySelectorAll('.poll-vote-form').forEach(form => {
+form.addEventListener('submit', function (event) {
+event.preventDefault();
+// Empêcher le comportement par défaut du formulaire
+
+// Soumettre le formulaire via AJAX
+fetch(form.action, {
+method: form.method,
+body: new FormData(form)
+}).then(response => response.json()).then(data => {
+if (data.status === 'success') { // Si la réponse est succès, rafraîchir la page
+location.reload(); // Cela actualisera la page
+} else {
+alert(data.message); // Afficher le message d'erreur si nécessaire
+}
+}).catch(error => console.error('Error:', error));
+});
+});
+
+document.querySelectorAll('form[id^="delete-vote-form"]').forEach(function (form) {
+form.addEventListener('submit', function (e) {
+e.preventDefault();
+
+const formData = new FormData(form);
+
+fetch(form.action, {
+method: 'POST',
+body: formData
+}).then(response => response.json()).then(data => {
+if (data.status === 'success') { // Afficher un toast de succès
+showToast("success", "Your vote has been deleted successfully.");
+
+// On enlève la réponse de l'interface sans recharger la page
+form.closest('.poll-container').remove();
+} else { // Afficher un toast d'erreur si nécessaire
+showToast("danger", 'Erreur lors de la suppression de votre vote.');
+}
+}).catch(err => {
+console.error('Erreur:', err);
+showToast("danger", "An error occurred during the deletion process.");
+});
+});
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+const pollForm = document.getElementById('poll-form');
+
+function showToast(message, type = "success") {
+const toastElement = document.getElementById("toastMessage");
+const toastBody = toastElement.querySelector(".toast-body");
+
+toastBody.textContent = message;
+toastElement.classList.remove("bg-success", "bg-danger");
+toastElement.classList.add(type === "error" ? "bg-danger" : "bg-success");
+
+const toast = new bootstrap.Toast(toastElement);
+toast.show();
+}
+
+function displayValidationErrors(errors) { // Supprimer les messages d'erreur existants
+document.querySelectorAll('.error-message').forEach(el => el.remove());
+
+// Afficher les nouvelles erreurs
+if (errors.question) {
+const questionInput = document.querySelector('input[name="question"]');
+const errorDiv = createErrorElement(errors.question);
+questionInput.parentNode.insertBefore(errorDiv, questionInput.nextSibling);
+}
+
+if (errors.choices) {
+const optionsContainer = document.getElementById('options-container');
+const errorDiv = createErrorElement(errors.choices.join(', '));
+optionsContainer.parentNode.insertBefore(errorDiv, optionsContainer.nextSibling);
+}
+}
+
+function createErrorElement(message) {
+const div = document.createElement('div');
+div.className = 'error-message text-danger mt-1';
+div.textContent = message;
+return div;
+}
+
+window.addOption = function () {
+const container = document.getElementById('options-container');
+const optionCount = container.children.length;
+const newInput = document.createElement('input');
+newInput.type = 'text';
+newInput.className = 'input-box';
+newInput.placeholder = `Option ${
+optionCount + 1
+}`;
+newInput.name = `choix[${optionCount}][contenu]`;
+container.appendChild(newInput);
+};
+
+if (pollForm) {
+pollForm.addEventListener('submit', function (e) {
+e.preventDefault();
+
+const question = document.querySelector('input[name="question"]').value.trim();
+const choixInputs = document.querySelectorAll('#options-container input');
+const choix = Array.from(choixInputs).map(input => ({contenu: input.value.trim()})).filter(option => option.contenu !== '');
+
+const data = {
+question,
+choix
+};
+function showToast(message, type) { // Créer le toast
+const toast = document.createElement('div');
+toast.className = `toast align-items-center text-white bg-${
+type === 'success' ? 'success' : 'danger'
+} border-0 show`;
+toast.setAttribute('role', 'alert');
+toast.setAttribute('aria-live', 'assertive');
+toast.setAttribute('aria-atomic', 'true');
+
+toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+
+// Ajouter le toast au conteneur
+const toastContainer = document.getElementById('toastContainer');
+toastContainer.appendChild(toast);
+
+// Supprimer le toast après 3 secondes
+setTimeout(() => {
+toast.remove();
+}, 1000);
+}
+
+// Modification de la partie du fetch qui gère le toast
+fetch('/sondage/api/poll/new', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(data)
+}).then(response => response.json()).then(data => {
+if (data.status === 'success') {
+showToast('Poll created successfully!', 'success');
+pollForm.reset();
+document.getElementById('options-container').innerHTML = `
+            <input type="text" class="input-box" placeholder="Option 1" name="choix[0][contenu]">
+            <input type="text" class="input-box" placeholder="Option 2" name="choix[1][contenu]">
+        `;
+setTimeout(() => window.location.reload(), 2000);
+} else {
+if (data.errors) {
+displayValidationErrors(data.errors);
+}
+showToast(data.message || 'Error creating poll', 'danger');
+}
+}).catch(error => {
+console.error('Error:', error);
+showToast('An error occurred while creating the poll', 'danger');
+});
+});
+}
+});
+
+// Écoutez le submit du formulaire de vote
+document.addEventListener("DOMContentLoaded", function () {
+document.querySelectorAll('.poll-vote-form').forEach(function (form) {
+form.addEventListener('submit', function (e) {
+e.preventDefault(); // Empêche le formulaire de se soumettre de manière classique
+
+const formData = new FormData(form); // Récupère les données du formulaire
+const sondageId = form.closest('.poll-container').getAttribute('data-sondage-id');
+const choixId = formData.get('choix');
+// Récupère l'ID du choix sélectionné
+
+// Vérifier qu'un choix est sélectionné
+if (! choixId) {
+showToast("danger", "You should select an option!!");
+return;
+}
+
+// Faire la requête AJAX
+fetch('{{ path("app_reponse_ajouter", {id: "SONDAGE_ID"}) }}'.replace('SONDAGE_ID', sondageId), {
+method: 'POST',
+body: new URLSearchParams(
+{'choixSondage': choixId}
+),
+headers: {
+'Content-Type': 'application/x-www-form-urlencoded'
+}
+}).then(response => response.json()).then(data => { // Traitement de la réponse du serveur
+if (data.status === 'success') {
+showToast("success", data.message);
+
+// Rafraîchir la page après un court délai
+setTimeout(() => {
+location.reload();
+}, 1500); // 1.5 seconde pour laisser le temps d'afficher le toast
+} else {
+showToast("danger", data.message);
+}
+}).catch(error => {
+console.error('Erreur:', error);
+showToast("danger", "An error occurred.");
+});
+});
+});
+
+function showToast(type, message) {
+const toastEl = document.getElementById("vote-toast");
+const toastBody = toastEl.querySelector(".toast-body");
+
+toastBody.textContent = message;
+toastEl.classList.remove("bg-success", "bg-danger");
+toastEl.classList.add(type === "success" ? "bg-success" : "bg-danger");
+
+new bootstrap.Toast(toastEl).show();
+}
+});
+
+
+document.addEventListener("DOMContentLoaded", function () { // Cibler tous les h3 avec la classe .openModal
+const openModalButtons = document.querySelectorAll('.openModal');
+
+openModalButtons.forEach(button => {
+button.addEventListener('click', function (event) {
+const sondageId = this.getAttribute("data-sondage-id");
+
+// Vérifier si l'ID du sondage existe
+if (sondageId) { // Trouver le modal correspondant à cet ID
+const modal = new bootstrap.Modal(document.getElementById('commentsModal' + sondageId));
+modal.show();
+}
+});
+});
+});
+
+
+document.addEventListener("DOMContentLoaded", function () { // Select all poll containers
+const pollContainers = document.querySelectorAll('.poll-container');
+
+pollContainers.forEach(pollContainer => {
+const sondageId = pollContainer.getAttribute('data-sondage-id');
+
+// Fetch comments for the specific poll
+fetch (`/commentaire/comment/list/${sondageId}`).then(response => response.json()).then(data => {
+const commentList = document.getElementById (`comment-list-${sondageId}`);
+commentList.innerHTML = '';
+// Clear any existing comments
+
+// If there are comments, append them to the list
+if (data.length > 0) {
+data.forEach(comment => {
+const li = document.createElement('li');
+li.innerHTML = `
+                                                <div class="comments-box grey-bg-2">
+                                                <div class="comments-info d-flex">
+                                                        <div class="comments-avatar mr-20">
+                                                            <img src="front_assets/img/blog/comments/user.png" alt="">
+                                                        </div>
+                                                        <div class="avatar-name">
+                                                            <h5>${
+comment.user
+}</h5>
+                                                            <span class="post-meta">${
+comment.date
+}</span>
+                                                        </div>
+                                                        <div class="comments-replay">
+                                                            <a href="#">delete</a>
+                                                        </div>
+                                                </div>
+                                                <div class="comments-text ml-65">
+                                                        <p>${
+comment.content
+}</p>
+                                                </div>
+                                                </div>
+                                            `;
+commentList.appendChild(li);
+});
+} else { // If no comments, display a message
+commentList.innerHTML = '<li>No comments yet.</li>';
+}
+}).catch(error => console.error('Error fetching comments:', error));
+});
+});
+document.addEventListener("DOMContentLoaded", function () { // Sélectionner tous les formulaires de commentaires
+document.querySelectorAll("form[id^='comment-form-']").forEach(form => {
+form.addEventListener("submit", function (event) {
+event.preventDefault(); // Empêcher le rechargement de la page
+
+let sondageId = this.getAttribute("data-sondage-id");
+let commentText = this.querySelector(".comment-textarea").value.trim();
+
+if (! commentText) {
+alert("Comment can't be empty.");
+return;
+}
+
+// Envoyer la requête au serveur
+fetch (`/commentaire/comment/add/${sondageId}`, {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify(
+{contenuComment: commentText}
+)
+}).then(response => response.json()).then(data => {
+if (data.error) {
+alert(data.error);
+} else { // Afficher un toast avec le message de succès
+showToast(data.message, 'success');
+this.querySelector(".comment-textarea").value = "";
+// Vider le champ
+
+// Recharger la liste des commentaires après l'ajout
+loadComments(sondageId);
+
+// Rafraîchir la page après une courte pause
+setTimeout(() => {
+location.reload();
+}, 1500); // 2 secondes pour que le toast soit visible avant le rafraîchissement
+}
+}).catch(error => console.error("Erreur lors de l'ajout du commentaire:", error));
+});
+});
+
+// Fonction pour afficher un toast
+function showToast(message, type) {
+let toast = document.createElement('div');
+toast.classList.add('toast', 'align-items-center', 'text-white', 'bg-' + type, 'border-0');
+toast.setAttribute('role', 'alert');
+toast.setAttribute('aria-live', 'assertive');
+toast.setAttribute('aria-atomic', 'true');
+
+toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+
+// Ajouter le toast au conteneur
+document.getElementById('toast-container').appendChild(toast);
+
+// Afficher le toast
+let toastInstance = new bootstrap.Toast(toast);
+toastInstance.show();
+}
+});
+
+
+// Fonction pour rafraîchir les commentaires après ajout
+function loadComments(sondageId) {
+fetch (`/commentaire/comment/list/${sondageId}`).then(response => response.json()).then(data => {
+const commentList = document.querySelector (`#commentsModal${sondageId} .comments-list`);
+
+if (! commentList) {
+console.error (`La liste de commentaires n'a pas été trouvée pour le sondage ${sondageId}`);
+return;
+}
+
+commentList.innerHTML = ""; // Vider la liste actuelle
+
+if (data.length > 0) {
+data.forEach(comment => {
+const commentBox = document.createElement("div");
+commentBox.classList.add("comment-box");
+commentBox.innerHTML = `
+                                <div class="comment-info d-flex">
+                                    <div class="comment-avatar mr-20">
+                                        <img src="front_assets/img/blog/comments/user.png" alt="">
+                                    </div>
+                                    <div class="avatar-name">
+                                        <h5>${
+comment.user
+}</h5>
+                                        <span class="post-meta">${
+comment.date
+}</span>
+                                    </div>
+                                </div>
+                                <div class="comment-text">
+                                    <p>${
+comment.content
+}</p>
+                                </div>
+                            `;
+commentList.appendChild(commentBox);
+});
+} else {
+commentList.innerHTML = "<p>Aucun commentaire pour l'instant.</p>";
+}
+}).catch(error => console.error("Erreur lors du chargement des commentaires:", error));
+}
+		</script>
+		<!-- jQuery et Bootstrap JS -->
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+		<!-- Blog Area End -->
+	</main>
+
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Log in!
+{% endblock %}
+
+{% block body %}
+	<section class="signup__area p-relative z-index-1 pt-100 pb-145">
+		<div class="sign__shape">
+			<img class="man-1" src="{{ asset('front_assets//img/icon/sign/man-1.png') }}" alt="">
+			<img class="man-2" src="{{ asset('front_assets//img/icon/sign/man-2.png') }}" alt="">
+			<img class="circle" src="{{ asset('front_assets//img/icon/sign/circle.png') }}" alt="">
+			<img class="zigzag" src="{{ asset('front_assets//img/icon/sign/zigzag.png') }}" alt="">
+			<img class="dot" src="{{ asset('front_assets//img/icon/sign/dot.png') }}" alt="">
+			<img class="bg" src="{{ asset('front_assets//img/icon/sign/sign-up.png') }}" alt="">
+		</div>
+		<div class="container">
+			<div class="row">
+				<div class="col-xxl-8 offset-xxl-2 col-xl-8 offset-xl-2">
+					<div class="section__title-wrapper text-center mb-55">
+						<h2 class="section__title">"Welcome Back – Sign In to Your Account!"
+							<br>
+						</h2>
+						<p>if you don't have an account you can
+							<a href="{{ path('app_user_signup') }}">Register here!</a>
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xxl-6 offset-xxl-3 col-xl-6 offset-xl-3 col-lg-8 offset-lg-2">
+					<div class="sign__wrapper white-bg">
+
+						<div class="sign__form">
+							<form method="post">
+								{% if error %}
+									<div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+								{% endif %}
+
+								{% if app.user %}
+									<div class="mb-3">
+										You are logged in as
+										{{ app.user.userIdentifier }},
+										<a href="{{ path('app_logout') }}">Logout</a>
+									</div>
+								{% endif %}
+
+								<div class="sign__input-wrapper mb-25">
+									<h5>Email</h5>
+									<div class="sign__input">
+										<input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
+										<i class="fal fa-envelope"></i>
+									</div>
+								</div>
+								<div class="sign__input-wrapper mb-10">
+									<h5>Password</h5>
+									<div class="sign__input position-relative">
+										<input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
+										<i class="fal fa-lock"></i>
+										<span toggle="#inputPassword" class="fa fa-fw fa-eye field-icon toggle-password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></span>
+									</div>
+								</div>
+								<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+								<button type="submit" class="tp-btn w-100">Sign In</button>
+								<a href="{{ path('app_forgot_password_request') }}">Forgot password ?</a>
+								<style>
+									.sign__input {
+										position: relative;
+									}
+
+									.toggle-password {
+										position: absolute;
+										right: 10px;
+										top: 50%;
+										transform: translateY(-50%);
+										cursor: pointer;
+									}
+								</style>
+								<script>
+									document.addEventListener('DOMContentLoaded', function () {
+const togglePasswordIcons = document.querySelectorAll('.toggle-password');
+
+togglePasswordIcons.forEach(icon => {
+icon.addEventListener('click', function () {
+console.log('Toggle icon clicked');
+const toggleAttr = icon.getAttribute('toggle');
+console.log('toggle attribute:', toggleAttr);
+if (toggleAttr) {
+const input = document.querySelector(toggleAttr);
+if (input) {
+const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+input.setAttribute('type', type);
+this.classList.toggle('fa-eye-slash');
+} else {
+console.error('Password input not found');
+}
+} else {
+console.error('toggle attribute not found');
+}
+});
+});
+});
+								</script>
+
+							</form>
+
+
+						{% endblock %}

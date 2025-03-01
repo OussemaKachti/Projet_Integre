@@ -6,6 +6,7 @@ use App\Repository\ChoixSondageRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 
 #[ORM\Entity(repositoryClass: ChoixSondageRepository::class)]
@@ -17,10 +18,12 @@ class ChoixSondage
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "The content of the choice cannot be empty.")]
+
     private ?string $contenu = null;
 
-    #[ORM\ManyToOne(targetEntity: Sondage::class, inversedBy: "choix")]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Sondage::class, inversedBy: "choix", cascade: ["persist"])]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private Sondage $sondage;
 
     #[ORM\OneToMany(targetEntity: Reponse::class, mappedBy: "choixSondage", cascade: ["persist", "remove"])]
@@ -53,5 +56,21 @@ class ChoixSondage
         return $this;
     }
 
-    
+    public function setSondage(Sondage $sondage): self
+{
+    $this->sondage = $sondage;
+
+    return $this;  // Return $this for method chaining
+}
+
+public function getSondage(): ?Sondage
+{
+    return $this->sondage;
+}
+
+public function __toString(): string
+{
+    return $this->contenu; // Remplacez "contenu" par le champ approprié
+}
+
 }
