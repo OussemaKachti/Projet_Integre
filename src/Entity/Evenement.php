@@ -1,4 +1,5 @@
-<?php
+<?php 
+// src/Entity/Evenement.php
 
 namespace App\Entity;
 
@@ -7,6 +8,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: EvenementRepository::class)]
 class Evenement
@@ -17,29 +20,45 @@ class Evenement
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom de l'événement ne peut pas être vide.")]
+    #[Assert\Regex(
+        pattern: "/^(?!\d+$).+$/",
+        message: "Le nom de l'événement ne peut pas être uniquement un numéro."
+    )]
     private ?string $nomEvent = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "La description de l'événement ne peut être vide.")]
     private ?string $descEvent = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le type de l'événement est obligatoire.")]
+    #[Assert\Choice(choices: ['open', 'closed'], message: "Choisissez un type d'événement valide : open ou closed.")]
     private ?string $type = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $imageEvent = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageDescription = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull(message: "La date de début est obligatoire.")]
+    #[Assert\GreaterThanOrEqual("today", message: "La date de début ne peut être dans le passé.")]
     private ?\DateTimeInterface $startDate = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $endDate = null;
+
     #[ORM\Column(length: 255)]
-private ?string $lieux = null;
+    #[Assert\NotBlank(message: "Le lieu de l'événement est obligatoire.")]
+    private ?string $lieux = null;
 
     #[ORM\ManyToOne(targetEntity: Club::class, inversedBy: "evenements")]
     #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
+    #[Assert\NotNull(message: "Le club est obligatoire.")]
     private Club $club;
 
     #[ORM\ManyToOne(targetEntity: Categorie::class, inversedBy: "evenements")]
-    #[ORM\JoinColumn(nullable: false)]
-    private Categorie $categorie;
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Categorie $categorie = null;
 
     #[ORM\OneToMany(targetEntity: Like::class, mappedBy: "evenement", cascade: ["persist", "remove"])]
     private Collection $likes;
@@ -48,6 +67,8 @@ private ?string $lieux = null;
     {
         $this->likes = new ArrayCollection();
     }
+
+    // Getters et setters
 
     public function getId(): ?int
     {
@@ -62,7 +83,6 @@ private ?string $lieux = null;
     public function setNomEvent(string $nomEvent): static
     {
         $this->nomEvent = $nomEvent;
-
         return $this;
     }
 
@@ -74,20 +94,8 @@ private ?string $lieux = null;
     public function setDescEvent(string $descEvent): static
     {
         $this->descEvent = $descEvent;
-
         return $this;
     }
-
-    public function getLieux(): ?string
-{
-    return $this->lieux;
-}
-
-public function setLieux(string $lieux): static
-{
-    $this->lieux = $lieux;
-    return $this;
-}
 
     public function getType(): ?string
     {
@@ -97,19 +105,17 @@ public function setLieux(string $lieux): static
     public function setType(string $type): static
     {
         $this->type = $type;
-
         return $this;
     }
 
-    public function getImageEvent(): ?string
+    public function getImageDescription(): ?string
     {
-        return $this->imageEvent;
+        return $this->imageDescription;
     }
 
-    public function setImageEvent(string $imageEvent): static
+    public function setImageDescription(?string $imageDescription): self
     {
-        $this->imageEvent = $imageEvent;
-
+        $this->imageDescription = $imageDescription;
         return $this;
     }
 
@@ -121,17 +127,28 @@ public function setLieux(string $lieux): static
     public function setStartDate(\DateTimeInterface $startDate): static
     {
         $this->startDate = $startDate;
-
         return $this;
     }
-    public function getCategorie(): Categorie
+
+    public function getEndDate(): ?\DateTimeInterface
     {
-        return $this->categorie;
+        return $this->endDate;
     }
 
-    public function setCategorie(Categorie $categorie): self
+    public function setEndDate(?\DateTimeInterface $endDate): static
     {
-        $this->categorie = $categorie;
+        $this->endDate = $endDate;
+        return $this;
+    }
+
+    public function getLieux(): ?string
+    {
+        return $this->lieux;
+    }
+
+    public function setLieux(string $lieux): static
+    {
+        $this->lieux = $lieux;
         return $this;
     }
 
@@ -146,8 +163,30 @@ public function setLieux(string $lieux): static
         return $this;
     }
 
+    public function getCategorie(): ?Categorie
+    {
+        return $this->categorie;
+    }
+
+    public function setCategorie(?Categorie $categorie): self
+    {
+        $this->categorie = $categorie;
+        return $this;
+    }
+
     public function getLikes(): Collection
     {
         return $this->likes;
+    }
+
+    // Méthode de validation pour comparer startDate et endDate
+    #[Assert\Callback]
+    public function validateDates(ExecutionContextInterface $context, $payload)
+    {
+        if ($this->endDate !== null && $this->startDate !== null && $this->endDate <= $this->startDate) {
+            $context->buildViolation("La date de fin doit être postérieure à la date de début.")
+                ->atPath('endDate')
+                ->addViolation();
+        }
     }
 }

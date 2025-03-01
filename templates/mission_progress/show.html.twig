@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}MissionProgress{% endblock %}
+
+{% block body %}
+    <h1>MissionProgress</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ mission_progress.id }}</td>
+            </tr>
+            <tr>
+                <th>Progress</th>
+                <td>{{ mission_progress.progress }}</td>
+            </tr>
+            <tr>
+                <th>IsCompleted</th>
+                <td>{{ mission_progress.isCompleted ? 'Yes' : 'No' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_mission_progress_index') }}">back to list</a>
+
+    <a href="{{ path('app_mission_progress_edit', {'id': mission_progress.id}) }}">edit</a>
+
+    {{ include('mission_progress/_delete_form.html.twig') }}
+{% endblock %}

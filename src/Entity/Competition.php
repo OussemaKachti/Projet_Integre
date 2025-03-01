@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Entity;
-
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\CompetitionRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -17,28 +17,56 @@ class Competition
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Competition name cannot be empty.")]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: "Competition name must be at least {{ limit }} characters long.",
+        maxMessage: "Competition name cannot be longer than {{ limit }} characters."
+    )]
     private ?string $nomComp = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: "Competition description cannot be empty.")]
+    #[Assert\Length(
+        min: 10,
+        minMessage: "Description must be at least {{ limit }} characters long."
+    )]
     private ?string $descComp = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull(message: "Start date is required.")]
+    #[Assert\Type("\DateTimeInterface")]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull(message: "End date is required.")]
+    #[Assert\Type("\DateTimeInterface")]
+    #[Assert\GreaterThan(propertyPath: "startDate", message: "End date must be after the start date.")]
+    
     private ?\DateTimeInterface $endDate = null;
     
-    #[ORM\ManyToMany(targetEntity: Competition::class, mappedBy: "clubs")]
-    private Collection $competitions;
+    #[ORM\ManyToOne(targetEntity: Saison::class, inversedBy: "competitions")]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "A season must be selected.")]
+    private ?Saison $saison = null;
 
-    public function __construct()
-    {
-        $this->competitions = new ArrayCollection();
-    }
+    #[ORM\OneToMany(mappedBy: "competition", targetEntity: MissionProgress::class)]
+    private Collection $missionProgresses;
+    
+    #[ORM\Column(type: Types::INTEGER)]
+    #[Assert\NotNull(message: "Points are required.")]
+    #[Assert\PositiveOrZero(message: "Points must be a positive number or zero.")]
+    private ?int $points = null;
+    
+    #[ORM\Column(type: "string", length: 20)]
+    #[Assert\Choice(choices: ["pending", "in_progress", "completed"], message: "Invalid status.")]
+    private ?string $status = "pending";
+    
 
-    public function getCompetitions(): Collection
-    {
-        return $this->competitions;
+    public function __construct() {
+        $this->missionProgresses = new ArrayCollection();
+
     }
 
     public function getId(): ?int
@@ -51,7 +79,7 @@ class Competition
         return $this->nomComp;
     }
 
-    public function setNomComp(string $nomComp): static
+    public function setNomComp(?string $nomComp): static
     {
         $this->nomComp = $nomComp;
 
@@ -63,7 +91,7 @@ class Competition
         return $this->descComp;
     }
 
-    public function setDescComp(string $descComp): static
+    public function setDescComp(?string $descComp): static
     {
         $this->descComp = $descComp;
 
@@ -75,7 +103,7 @@ class Competition
         return $this->startDate;
     }
 
-    public function setStartDate(\DateTimeInterface $startDate): static
+    public function setStartDate(?\DateTimeInterface $startDate): static
     {
         $this->startDate = $startDate;
 
@@ -87,10 +115,63 @@ class Competition
         return $this->endDate;
     }
 
-    public function setEndDate(\DateTimeInterface $endDate): static
+    public function setEndDate(?\DateTimeInterface $endDate): static
     {
         $this->endDate = $endDate;
 
         return $this;
     }
+    public function getSaison(): ?Saison 
+    { 
+        return $this->saison; 
+    }
+    public function setSaison(?Saison $saison): static 
+    {
+         $this->saison = $saison; return $this; 
+    }
+    public function getStatus(): ?string
+{
+    return $this->status;
+}
+
+    public function setStatus(string $status): static
+{
+    $this->status = $status;
+    return $this;
+}
+
+    public function getMissionProgresses(): Collection 
+    {
+        return $this->missionProgresses;
+    }
+    public function addMissionProgress(MissionProgress $progress): static 
+    {
+        if (!$this->missionProgresses->contains($progress)) {
+            $this->missionProgresses->add($progress);
+            $progress->setCompetition($this);
+        }
+        return $this;
+    }
+    public function removeMissionProgress(MissionProgress $progress): static 
+{
+    if ($this->missionProgresses->removeElement($progress)) {
+        if ($progress->getCompetition() === $this) { // Fix here
+            $progress->setCompetition(null);
+        }
+    }
+    return $this;
+}
+
+
+public function getPoints(): ?int
+{
+    return $this->points;
+}
+
+public function setPoints(int $points): static
+{
+    $this->points = $points;
+    return $this;
+}
+
 }

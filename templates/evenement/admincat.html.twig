@@ -1,0 +1,97 @@
+{% extends 'baseAdmin.html.twig' %}
+
+{% block body %}
+<main>
+    <!-- Inclusion de Font Awesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* Style pour le titre */
+        .card-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: rgb(4, 5, 89);
+            margin-bottom: 20px;
+        }
+        /* Style amélioré pour le tableau */
+        .table-improved {
+            margin: auto; /* Centre le tableau horizontalement */
+            width: 80%;
+            border-collapse: collapse;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(149, 17, 17, 0.1);
+            background-color: white; /* Fond blanc */
+        }
+        .table-improved th, 
+        .table-improved td {
+            border: 2px solid #004080; /* Bordure bleue */
+            padding: 12px 15px;
+            text-align: center;
+        }
+        /* En-tête bleu avec texte blanc */
+        .table-improved thead th {
+            background-color:rgb(31, 16, 143); /* Bleu */
+            color: white; /* Texte blanc */
+        }
+        /* Lignes du tableau en blanc */
+        .table-improved tbody tr {
+            background-color: white; /* Fond blanc */
+        }
+        .table-improved tbody tr:hover {
+            background-color:rgb(237, 240, 237);
+        }
+        /* Centrage du conteneur de la carte */
+        .stretch-card {
+            margin: 20px auto;
+            max-width: 90%;
+        }
+        /* Bouton personnalisé */
+        .btn-danger {
+            background-color: #e74c3c;
+            border: none;
+        }
+    </style>
+
+    <!-- Category Table -->
+    <div class="col-lg-12 stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title" style="text-align: center; font-size: 32px; font-weight: bold; color:rgb(24, 5, 83); margin-bottom: 20px;">
+    Category Table
+</h4>
+
+                <table class="table-improved">
+                    <thead>
+                        <tr>
+                            <th style="width: 150px;font-size: 18px;">ID</th>
+                            <th style="width: 250px;font-size: 18px;">Category</th>
+                            <th style="width: 200px;font-size: 18px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for categorie in categories %}
+                            <tr>
+                                <td>{{ categorie.id }}</td>
+                                <td>{{ categorie.nomCat }}</td>
+                                <td>
+                                    <form method="post" action="{{ path('app_categorie_delete', {'id': categorie.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer cette catégorie ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ categorie.id) }}">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash-alt" style="color: white;"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="3">No categories found</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

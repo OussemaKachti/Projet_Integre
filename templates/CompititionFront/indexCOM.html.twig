@@ -1,0 +1,95 @@
+{# templates/competition/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+    <!-- Seasons Section -->
+    <section class="season__area pt-115 season__bg">
+        <div class="container">
+            <div class="row">
+                <div class="col-xxl-12">
+                    <div class="section__title-wrapper-2 text-center mb-60">
+                        <span class="section__title-pre-2">Competition Timeline</span>
+                        <h3 class="section__title-2">Seasons</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="row d-flex justify-content-center flex-wrap">
+                <!-- Season Cards -->
+                {% for saison in saisons %}
+                    <div class="col-xxl-2 col-xl-3 col-lg-4 col-md-6 mb-4 px-3">
+                        <div class="season-card white-bg transition-3 text-center p-3 h-100">
+
+                            
+
+                             <div class="season-icon mb-2">
+                                <img src="{{ asset('images/seasons/default.png') }}" alt="Season Image" class="img-fluid" style="max-width: 50px;">
+                            </div>
+
+                            <h3 class="season-title mb-2" style="font-size: 1.2rem;">{{ saison.nomSaison }}</h3>
+                            <p class="season-description mb-2" style="font-size: 0.9rem;">{{ saison.descSaison }}</p>
+                            <div class="season-duration">
+                                <span class="badge bg-primary" style="font-size: 0.8rem;">{{ saison.dateFin|date('d M Y') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Missions and Leaderboard Section -->
+    <section class="missions__area pt-115">
+        <div class="container">
+            <div class="row">
+                <!-- Missions Section -->
+                <div class="col-xxl-8 col-xl-8 col-lg-8">
+                    <div class="section__title-wrapper-2 mb-60">
+                        <span class="section__title-pre-2">Current Season</span>
+                        <h3 class="section__title-2">Missions</h3>
+                    </div>
+                    {% for mission in missions %}
+                        <div class="mission__item white-bg mb-10 transition-3 p-relative d-lg-flex align-items-center justify-content-between">
+                            <div class="mission__left d-sm-flex align-items-center">
+                                <div class="mission__content">
+                                    <h3 class="mission__title">{{ mission.nomComp }}</h3>
+                                    <p class="mission__description">{{ mission.descComp }}</p>
+                                </div>
+                            </div>
+                            <div class="mission__right d-sm-flex align-items-center">
+                                <div class="mission__points">
+                                    <span>{{ mission.points }} Points</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Leaderboard Section -->
+                <div class="col-xxl-4 col-xl-4 col-lg-4">
+                    <div class="leaderboard__sidebar white-bg p-4" style="margin-top: 20px;">
+                        <h3 class="leaderboard__title mb-4">Leaderboard</h3>
+                        <table class="leaderboard__table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Club</th>
+                                    <th>Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for leader in leaderboard %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ leader.club }}</td>
+                                        <td>{{ leader.points }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

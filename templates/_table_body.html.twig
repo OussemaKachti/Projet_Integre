@@ -1,0 +1,40 @@
+{# templates/admin/_table_body.html.twig #}
+{% for user in pagination %}
+    <tr>
+        <td>{{ user.prenom }} {{ user.nom }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.tel }}</td>
+        <td>{{ user.role.value }}</td>
+        <td>
+            {% if user.isVerified %}
+                <span class="badge bg-success">Verified</span>
+            {% else %}
+                <span class="badge bg-warning">Not Verified</span>
+            {% endif %}
+        </td>
+        <td>
+            {% if user.isActive %}
+                <span class="badge bg-success">Active</span>
+            {% else %}
+                <span class="badge bg-danger">Disabled</span>
+            {% endif %}
+        </td>
+        <td class="d-flex">
+            <form action="{{ path('app_admin_toggle_user_status', {'id': user.id}) }}" method="post" class="me-2">
+                <input type="hidden" name="_token" value="{{ csrf_token('toggle-user-' ~ user.id) }}">
+                {% if user.isActive %}
+                    <button type="submit" class="btn btn-inverse-warning btn-fw">Disable</button>
+                {% else %}
+                    <button type="submit" class="btn btn-inverse-success btn-fw">Enable</button>
+                {% endif %}
+            </form>
+            <form action="{{ path('app_admin_delete_user', {'id': user.id}) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                <button type="submit" class="btn btn-inverse-danger btn-fw">Delete</button>
+            </form>
+        </td>
+    </tr>
+{% else %}
+    <tr>
+        <td colspan="7">No users found.</td>
+    </tr>
+{% endfor %}

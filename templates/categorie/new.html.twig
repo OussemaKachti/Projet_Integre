@@ -1,11 +1,27 @@
+{# templates/categorie/index.html.twig #}
+
 {% extends 'base.html.twig' %}
 
-{% block title %}New Categorie{% endblock %}
+{% block title %}Liste des catégories{% endblock %}
 
 {% block body %}
-    <h1>Create new Categorie</h1>
+    <h1>Liste des catégories</h1>
 
-    {{ include('categorie/_form.html.twig') }}
+    <ul>
+        {# Affichage de la liste des catégories #}
+        {% for categorie in categories %}
+            <li>{{ categorie.nomCat }}</li>
+        {% endfor %}
+    </ul>
 
-    <a href="{{ path('app_categorie_index') }}">back to list</a>
+    <h2>Ajouter une nouvelle catégorie</h2>
+
+    {{ form_start(form) }}
+        {{ form_row(form.nomCat) }} {# Champ pour le nom de la catégorie #}
+
+        <div>
+            <button class="btn btn-primary">Ajouter la catégorie</button>
+        </div>
+    {{ form_end(form) }}
+
 {% endblock %}

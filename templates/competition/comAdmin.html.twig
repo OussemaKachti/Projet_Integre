@@ -1,0 +1,125 @@
+{% extends 'baseAdmin.html.twig' %}
+
+{% block title %}Missions{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Missions Title and Add Mission Button -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="card-title">Missions</h4>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMissionModal">
+                            <i class="mdi mdi-plus"></i> Add Mission
+                        </button>
+                    </div>
+
+                    <!-- Mission Cards (Listed Vertically) -->
+                    <div class="mission-list">
+                        <!-- Mission 1 -->
+                        <div class="card mb-4" style="background-color: #f8f9fa;">
+                            <div class="card-body">
+                                <h5 class="card-title">Organize a Campus Cleanup</h5>
+                                <p class="card-text">
+                                    Organize and execute a campus cleanup event. Earn points for participation and impact.
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge badge-success">50 Points</span>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editMissionModal">
+                                            <i class="mdi mdi-pencil"></i> Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="mdi mdi-delete"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mission 2 -->
+                        <div class="card mb-4" style="background-color: #f8f9fa;">
+                            <div class="card-body">
+                                <h5 class="card-title">Host a Workshop</h5>
+                                <p class="card-text">
+                                    Host a workshop on a topic of your choice. Earn points based on attendance and feedback.
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge badge-success">75 Points</span>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editMissionModal">
+                                            <i class="mdi mdi-pencil"></i> Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="mdi mdi-delete"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Add more mission cards as needed -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Mission Modal -->
+    <div class="modal fade" id="addMissionModal" tabindex="-1" aria-labelledby="addMissionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addMissionModalLabel">Add Mission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="missionTitle" class="form-label">Mission Title</label>
+                            <input type="text" class="form-control" id="missionTitle" placeholder="Enter mission title">
+                        </div>
+                        <div class="mb-3">
+                            <label for="missionDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="missionDescription" rows="3" placeholder="Enter mission description"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="missionPoints" class="form-label">Points</label>
+                            <input type="number" class="form-control" id="missionPoints" placeholder="Enter points">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Mission</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Mission Modal -->
+    <div class="modal fade" id="editMissionModal" tabindex="-1" aria-labelledby="editMissionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editMissionModalLabel">Edit Mission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="editMissionTitle" class="form-label">Mission Title</label>
+                            <input type="text" class="form-control" id="editMissionTitle" placeholder="Enter mission title">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editMissionDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editMissionDescription" rows="3" placeholder="Enter mission description"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editMissionPoints" class="form-label">Points</label>
+                            <input type="number" class="form-control" id="editMissionPoints" placeholder="Enter points">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Club Events {{ club.nomClub }}{% endblock %}
+
+{% block body %}
+<main>
+    <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay"
+        data-background="{{ asset('front_assets/img/event/eventpage.png') }}">
+        <div class="container">
+            <div class="row">
+                <div class="col-xxl-12">
+                    <div class="breadcrumb__content text-center p-relative z-index-1">
+                        <h3 class="breadcrumb__title">Events of  {{ club.nomClub }}</h3>
+                        <div class="breadcrumb__list">
+                            <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
+                            <span>Events</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="event__area pt-115">
+        <div class="container">
+            <div class="row">
+                <div class="col-xxl-12">
+                    <div class="section__title-wrapper-2 text-center mb-60">
+                        <span class="section__title-pre-2">Upcoming Events</span>
+                        <h3 class="section__title-2">Events organized by {{ club.nomClub }}</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                {% for evenement in evenements %}
+                    <div class="col-xxl-12">
+                        <div class="event__item white-bg mb-10 transition-3 p-relative d-lg-flex align-items-center justify-content-between">
+                            <div class="event__left d-sm-flex align-items-center">
+                                <div class="event__date">
+                                    <h4>{{ evenement.startDate|date('d') }}</h4>
+                                    <p>{{ evenement.startDate|date('F, Y') }}</p>
+                                </div>
+
+                                <div class="event__content">
+                                    <h3 class="event__title">
+                                        <a href="{{ path('eventdetails', {'id': evenement.id}) }}">{{ evenement.nomEvent }}</a>
+                                    </h3>
+                                    <div class="event__meta">
+                                        <ul>
+                                            <li><a href="#"><i class="fas fa-map-marker-alt"></i>{{ evenement.lieux }}</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="event__right d-sm-flex align-items-center">
+                                <div class="event__time">
+                                    <span>{{ evenement.startDate|date('h:i A') }} - {{ evenement.endDate|date('h:i A') }}</span>
+                                </div>
+                                <div class="event__more ml-30">
+                                    <a href="{{ path('eventdetails', {'id': evenement.id}) }}" class="tp-btn-5 tp-btn-7">See Event</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <p>No events found for this club.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

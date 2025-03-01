@@ -20,6 +20,25 @@ class EvenementRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Evenement::class);
     }
+    // src/Repository/EvenementRepository.php
+
+public function searchEvents(?string $nomEvent, ?int $categorieId)
+{
+    $queryBuilder = $this->createQueryBuilder('e');
+
+    if ($nomEvent) {
+        $queryBuilder->andWhere('e.nomEvent LIKE :nomEvent')
+                     ->setParameter('nomEvent', '%' . $nomEvent . '%');
+    }
+
+    if ($categorieId) {
+        $queryBuilder->andWhere('e.categorie = :categorieId')
+                     ->setParameter('categorieId', $categorieId);
+    }
+
+    return $queryBuilder->getQuery()->getResult();
+}
+
 
 //    /**
 //     * @return Evenement[] Returns an array of Evenement objects

@@ -1,0 +1,218 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create a New Event{% endblock %}
+
+{% block body %}
+<main>
+
+    <!-- breadcrumb area start -->
+    <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" 
+             data-background="{{ asset('front_assets/img/breadcrumb/event.png') }}">
+        <div class="container">
+            <div class="row">
+                <div class="col-xxl-12">
+                    <div class="breadcrumb__content text-center p-relative z-index-1">
+                        <h3 class="breadcrumb__title">Event</h3>
+                        <div class="breadcrumb__list">
+                       
+                            <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
+                            <span>Create Event</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- breadcrumb area end -->
+
+    <!-- Event Creation Area Start -->
+    <section class="event__area pt-115">
+        <div class="container">
+            <div class="row">
+                <div class="col-xxl-12">
+                    <div class="section__title-wrapper-2 text-center mb-60">
+                        <span class="section__title-pre-2">Create New Event</span>
+                        <h3 class="section__title-2">Organize Your Event</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xxl-12">
+
+                    <!-- Affichage des messages flash -->
+                    {% for label, messages in app.flashes %}
+                        <div class="alert alert-{{ label }}">
+                            {% for message in messages %}
+                                <p>{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+
+                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'novalidate': 'novalidate'}}) }}
+                    <div class="event__form white-bg p-30 transition-3">
+
+                        <div class="row">
+    <!-- Event Name - Full Width -->
+    <div class="col-md-12">
+        <div class="form-group mb-3">
+            {{ form_label(form.nomEvent, 'Event Name') }}
+            {{ form_widget(form.nomEvent, {'attr': {'class': 'form-control', 'placeholder': 'Enter event name'}}) }}
+            <div class="form-error-message">
+                {{ form_errors(form.nomEvent) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Event Description -->
+    <div class="col-md-12">
+        <div class="form-group mb-3">
+            {{ form_label(form.descEvent, 'Event Description') }}
+            {{ form_widget(form.descEvent, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+            <div class="form-error-message">
+                {{ form_errors(form.descEvent) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Event Location -->
+    <div class="col-md-6">
+        <div class="form-group mb-3">
+            {{ form_label(form.lieux, 'Event Location') }}
+            {{ form_widget(form.lieux, {'attr': {'class': 'form-control'}}) }}
+            <div class="form-error-message">
+                {{ form_errors(form.lieux) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Type -->
+    <div class="col-md-6">
+        <div class="form-group mb-3">
+            {{ form_label(form.type, 'Event Type') }}
+            {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
+            <div class="form-error-message">
+                {{ form_errors(form.type) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Start Date -->
+    <div class="col-md-6">
+        <div class="form-group mb-3">
+            {{ form_label(form.startDate, 'Start Date') }}
+            {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+            <div class="form-error-message">
+                {{ form_errors(form.startDate) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- End Date -->
+    <div class="col-md-6">
+        <div class="form-group mb-3">
+            {{ form_label(form.endDate, 'End Date') }}
+            {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
+            <div class="form-error-message">
+                {{ form_errors(form.endDate) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Event Image -->
+    <div class="col-md-12">
+        <div class="form-group mb-3">
+            {{ form_label(form.imageDescription, 'Event Image') }}
+            {{ form_widget(form.imageDescription, {'attr': {'class': 'form-control'}}) }}
+            <div class="form-error-message">
+                {{ form_errors(form.imageDescription) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Category -->
+    <div class="col-md-6">
+        <div class="form-group mb-3">
+            {{ form_label(form.categorie, 'Category') }}
+            {{ form_widget(form.categorie, {'attr': {'class': 'form-control'}}) }}
+            <div class="form-error-message">
+                {{ form_errors(form.categorie) }}
+            </div>
+            <a href="{{ path('app_categorie_index') }}" class="btn btn-success mt-2" target="_blank">
+                Add Another Category
+            </a>
+        </div>
+    </div>
+
+    <!-- Club -->
+    <div class="col-md-6">
+        <div class="form-group mb-3">
+            {{ form_label(form.club, 'Organizing Club') }}
+            {{ form_widget(form.club, {'attr': {'class': 'form-control'}}) }}
+            <div class="form-error-message">
+                {{ form_errors(form.club) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bigger Create Button -->
+
+<form method="POST" enctype="multipart/form-data">
+    {{ form_widget(form) }}
+    
+    <div style="text-align: center;"> <!-- Centre le contenu -->
+        <button type="submit" id="submit-btn" class="btn btn-success btn-lg px-5 py-3" style="font-size: 1.2rem;">
+            Create Event
+        </button>
+    </div>
+</form>
+
+    </section>
+    <!-- Event Creation Area End -->
+
+</main>
+
+{% block stylesheets %}
+    <style>
+        /* Espacement horizontal entre les options de type */
+        .form-group .form-check {
+            display: inline-block;
+            margin-right: 20px;
+        }
+        .form-group .form-check input[type="radio"] {
+            margin-right: 5px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-control {
+            width: 100%;
+        }
+        /* Les messages d'erreur sont affichés sous chaque champ */
+        .form-error-message {
+            color: red;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        // Ici, aucun script n'est nécessaire pour déplacer les erreurs.
+        // La validation côté serveur affecte directement chaque champ,
+        // et les erreurs s'affichent sous le champ concerné via form_errors().
+    </script>
+{% endblock %}
+
+{% endblock %}

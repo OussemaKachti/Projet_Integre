@@ -1,0 +1,120 @@
+{# templates/competition/admin.html.twig #}
+{% extends 'missions_admin.html.twig' %}
+
+{% block title %}Competition - Missions Admin{% endblock %}
+
+{% block body %}
+    <div class="container-scroller">
+        <!-- Include the navbar partial -->
+        {% include 'partials/_navbar.html.twig' %}
+
+        <div class="container-fluid page-body-wrapper">
+            <!-- Include the sidebar partial -->
+            {% include 'partials/_sidebar.html.twig' %}
+
+            <!-- Main content -->
+            <div class="main-panel">
+                <div class="content-wrapper">
+                    <div class="row">
+                        <div class="col-12 grid-margin stretch-card">
+                            <div class="card">
+                                <div class="card-body">
+                                    <!-- Missions Title and Add Mission Button -->
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <h4 class="card-title">Missions</h4>
+                                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMissionModal">
+                                            <i class="mdi mdi-plus"></i> Add Mission
+                                        </button>
+                                    </div>
+
+                                    <!-- Mission Cards (Listed Vertically) -->
+                                    <div class="mission-list">
+                                        {% for mission in missions %}
+                                            <div class="card mb-4" style="background-color: #f8f9fa;">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">{{ mission.name }}</h5>
+                                                    <p class="card-text">{{ mission.description }}</p>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span class="badge badge-success">{{ mission.points }} Points</span>
+                                                        <div>
+                                                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editMissionModal">
+                                                                <i class="mdi mdi-pencil"></i> Edit
+                                                            </button>
+                                                            <button class="btn btn-sm btn-outline-danger">
+                                                                <i class="mdi mdi-delete"></i> Delete
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Include the footer partial -->
+                {% include 'partials/_footer.html.twig' %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Mission Modal -->
+    <div class="modal fade" id="addMissionModal" tabindex="-1" aria-labelledby="addMissionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addMissionModalLabel">Add Mission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="missionTitle" class="form-label">Mission Title</label>
+                            <input type="text" class="form-control" id="missionTitle" placeholder="Enter mission title">
+                        </div>
+                        <div class="mb-3">
+                            <label for="missionDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="missionDescription" rows="3" placeholder="Enter mission description"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="missionPoints" class="form-label">Points</label>
+                            <input type="number" class="form-control" id="missionPoints" placeholder="Enter points">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Mission</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Mission Modal -->
+    <div class="modal fade" id="editMissionModal" tabindex="-1" aria-labelledby="editMissionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editMissionModalLabel">Edit Mission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="editMissionTitle" class="form-label">Mission Title</label>
+                            <input type="text" class="form-control" id="editMissionTitle" placeholder="Enter mission title">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editMissionDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editMissionDescription" rows="3" placeholder="Enter mission description"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editMissionPoints" class="form-label">Points</label>
+                            <input type="number" class="form-control" id="editMissionPoints" placeholder="Enter points">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

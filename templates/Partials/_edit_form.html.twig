@@ -1,0 +1,12 @@
+{{ form_start(form, {'action': path('app_competition_edit', {'id': mission.id}), 'method': 'POST'}) }}
+    {{ form_row(form.nomComp, {'attr': {'class': 'form-control'}}) }}
+    {{ form_row(form.descComp, {'attr': {'class': 'form-control'}}) }}
+    {{ form_row(form.points, {'attr': {'class': 'form-control'}}) }}
+    {{ form_row(form.startDate, {'attr': {'class': 'form-control'}}) }}
+    {{ form_row(form.endDate, {'attr': {'class': 'form-control'}}) }}
+    {{ form_row(form.saison, {'attr': {'class': 'form-select'}}) }}
+
+    {{ form_row(form._token, {'attr': {'class': 'd-none'}}) }} {# CSRF Token for security #}
+
+    <button type="submit" class="btn btn-primary w-100">Update Mission</button>
+{{ form_end(form, {'render_rest': false}) }}

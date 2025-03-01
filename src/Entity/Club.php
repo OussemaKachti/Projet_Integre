@@ -41,11 +41,18 @@ class Club
 
     #[ORM\OneToMany(targetEntity: ParticipationMembre::class, mappedBy: "club", cascade: ["persist", "remove"])]
     private Collection $participations;
+    #[ORM\ManyToMany(targetEntity: Competition::class, mappedBy: "clubs")]
+private Collection $competitions;
+
+
+    #[ORM\OneToMany(mappedBy: "club", targetEntity: MissionProgress::class, cascade: ["persist", "remove"])]
+    private Collection $missionProgresses;
+
 
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-#[ORM\JoinColumn(nullable: false)]
-private ?User $president = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $president = null;
 
 
 
@@ -54,6 +61,7 @@ private ?User $president = null;
         $this->evenements = new ArrayCollection();
         $this->produits = new ArrayCollection();
         $this->participations = new ArrayCollection();
+        $this->missionProgresses = new ArrayCollection();
 
 
     }
@@ -79,6 +87,17 @@ private ?User $president = null;
     {
         $this->nomC = $nomC;
 
+        return $this;
+    }
+
+    public function getNomClub(): ?string // Getter pour la propriété nomClub
+    {
+        return $this->nomC;
+    }
+
+    public function setNomClub(string $nomClub): self // Setter pour la propriété nomClub
+    {
+        $this->nomC = $nomClub;
         return $this;
     }
 
@@ -140,16 +159,4 @@ private ?User $president = null;
     {
         return $this->participations;
     }
-
-
-    public function getPresident(): ?User
-{
-    return $this->president;
-}
-
-public function setPresident(User $president): static
-{
-    $this->president = $president;
-    return $this;
-}
 }
