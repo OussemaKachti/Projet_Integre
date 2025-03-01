@@ -63,7 +63,7 @@
                                 <select class="custom-select" onchange="if(this.value) window.location.href=this.value">
                                     <option value="">{{ 'Choose a club' }}</option>
                                     {% for club in clubs %}
-                                        <option value="{{ path('app_club_new', { id: club.id }) }}">{{ club.nomC }}</option>
+                                        <option value="{{ path('app_produits_par_club', { id: club.id }) }}">{{ club.nomC }}</option>
                                     {% endfor %}
                                 </select>
                             </div>

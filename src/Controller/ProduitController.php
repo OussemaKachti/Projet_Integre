@@ -195,6 +195,29 @@ public function delete(Request $request, int $id, ProduitRepository $produitRepo
 
     return $this->redirect($request->headers->get('referer') ?: $this->generateUrl('produit_index'));
 }
+
+    #[Route('/produits/{id}', name: 'app_produits_par_club', methods: ['GET'])]
+    public function produitsParClub(int $id, EntityManagerInterface $entityManager): Response
+    {
+        // Récupérer le club par son ID
+        $club = $entityManager->getRepository(Club::class)->find($id);
+        
+        if (!$club) {
+            throw $this->createNotFoundException('Club non trouvé');
+        }
+
+        // Récupérer les produits associés au club
+        $produits = $entityManager->getRepository(Produit::class)->findBy(['club' => $club]);
+        var_dump($club, $produits);
+exit;
+
+        return $this->render('produit/show_id.html.twig', [
+            'club' => $club,
+            'produits' => $produits,
+        ]);
+    }
+
+
 //cart
     #[Route('/cart', name: 'cart_index')]
     public function cart(SessionInterface $session, ProduitRepository $produitRepository): Response
@@ -277,23 +300,23 @@ public function delete(Request $request, int $id, ProduitRepository $produitRepo
     }
 
     #[Route('/increase/{id}', name: 'cart_increase')]
-    public function increase(Produit $produit, SessionInterface $session): Response
-    {
-        $cart = $session->get('cart', []);
-        $id = $produit->getId();
+public function increase(Produit $produit, SessionInterface $session): Response
+{
+    $cart = $session->get('cart', []);
+    $id = $produit->getId();
 
-        if (isset($cart[$id])) {
-            $cart[$id]['quantity']++;
-            // Recalcul du total pour ce produit
-    $cart[$id]['total'] = $produit->getPrix() * $cart[$id]['quantity'];
-        }
-
-        $session->set('cart', $cart);
-
-        return $this->redirectToRoute('cart_index');
+    if (isset($cart[$id])) {
+        $cart[$id]['quantity']++;
+        // Recalcul du total pour ce produit
+        $cart[$id]['total'] = $produit->getPrix() * $cart[$id]['quantity'];
     }
 
-    #[Route('/decrease/{id}', name: 'cart_decrease')]
+    $session->set('cart', $cart);
+
+    return $this->redirectToRoute('cart_index');
+}
+
+#[Route('/decrease/{id}', name: 'cart_decrease')]
 public function decrease(Produit $produit, SessionInterface $session): Response
 {
     $cart = $session->get('cart', []);
@@ -308,6 +331,9 @@ public function decrease(Produit $produit, SessionInterface $session): Response
             unset($cart[$id]);
         }
     }
+    var_dump($cart);
+
+    
 
     $session->set('cart', $cart);
 
@@ -329,6 +355,27 @@ public function clearCart(Request $request, SessionInterface $session): Response
         $request->headers->get('referer') ?: $this->generateUrl('cart_index')
     );
 }
+
+
+    #[Route('/search', name: 'produit_search')]
+    public function search(Request $request, ProduitRepository $produitRepository, ClubRepository $clubRepository)
+    {
+        $keyword = $request->query->get('q', ''); // Récupérer le mot-clé de l'URL
+        $produits = [];
+        $clubs = $clubRepository->findAll(); // Récupérer tous les clubs
+
+        if (!empty($keyword)) {
+            $produits = $produitRepository->searchByKeyword($keyword);
+        }
+
+        return $this->render('produit/show.html.twig', [
+            'produits' => $produits,
+            'keyword' => $keyword,
+            'clubs' => $clubs, // Ajout de la variable clubs
+        ]);
+    }
+
+
 
 }
  

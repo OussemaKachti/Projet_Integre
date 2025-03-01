@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use App\Enum\StatutCommandeEnum;
+use App\Services\OrderValidationService;
 
 #[Route('/commande')]
 class CommandeController extends AbstractController
@@ -110,6 +111,21 @@ class CommandeController extends AbstractController
             'data' => $data,
         ]);
     }
+
+    #[Route('/commande/valider/{id}', name: 'commande_validate', methods: ['GET'])]
+    public function validateCommande(Commande $commande, OrderValidationService $orderValidationService): Response
+    {
+        try {
+            $orderValidationService->validateOrder($commande);
+            $this->addFlash('success', 'Commande validée et e-mail envoyé avec succès.');
+        } catch (\Exception $e) {
+            $this->addFlash('danger', 'Erreur lors de la validation de la commande : ' . $e->getMessage());
+        }
+        
+        // Redirige vers la liste des commandes ou une page de confirmation
+        return $this->redirectToRoute('presi_commandes');
+    }
+    
 
     #[Route('/admin/supprimer/{id}', name: 'admin_commande_supprimer', methods: ['POST', 'GET'])]
     public function supprimerCommande(int $id, EntityManagerInterface $entityManager): Response

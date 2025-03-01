@@ -42,11 +42,13 @@
          <!-- course area start -->
          <section class="course__area pt-115 pb-90 grey-bg-3">
             <div class="container">
+            {% include 'produit/_form.html.twig' %}
                <div class="course__tab-inner white-bg mb-50">
                   <div class="row align-items-center">
                      <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6">
                         <div class="course__tab-wrapper d-flex align-items-center">
                            <div class="course__tab-btn">
+                           
                               <ul class="nav nav-tabs" id="courseTab" role="tablist">
                                  <li class="nav-item" role="presentation">
                                    <button class="nav-link active" id="grid-tab" data-bs-toggle="tab" data-bs-target="#grid" type="button" role="tab" aria-controls="grid" aria-selected="true">
@@ -80,12 +82,13 @@
                         </div>
                      </div>
                      <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6">
+                     
                         <div class="course__sort d-flex justify-content-sm-end">
                            <div class="course__sort-inner">
                               <select class="custom-select" onchange="if(this.value) window.location.href=this.value">
              <option value="">{{ 'Choose a club' }}</option>
              {% for club in clubs %}
-                <option value="{{ path('app_club_new', { id: club.id }) }}">{{ club.nomC }}</option>
+                <option value="{{ path('app_produits_par_club', { id: club.id }) }}">{{ club.nomC }}</option>
              {% endfor %}
           </select>
                            </div>

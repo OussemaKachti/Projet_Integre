@@ -3,62 +3,6 @@
 {% block title %}New Club{% endblock %}
 
 {% block body %}
-    {{form_start(form) }}
-                       <div class="row">
-                           <div class="col-lg-6">
-                               <div class="checkbox-form">
-                                   <h3>Create Product</h3>
-                                   <div class="row">
-                                       <div class="col-md-12">
-                                           
-                                       </div>
-                                       <div class="col-md-12">
-                                           <div class="checkout-form-list">
-                                               <label>Name of product <span class="required">*</span></label>
-                                               {{form_widget(f.nomProd,{attr':{'class':'form-control'}})}}
-                                           </div>
-                                       </div>
-                                       <div class="col-md-12">
-                                           <div class="checkout-form-list">
-                                               <label>Discription <span class="required">*</span></label>
-                                               <input type="text" placeholder="">
-                                           </div>
-                                       </div>
-                                       <div class="col-md-12">
-                                           <div class="checkout-form-list">
-                                               <label>Price</label>
-                                               <input type="text" placeholder="">
-                                           </div>
-                                       </div>
-                                       <div class="col-md-12">
-                                           <div class="checkout-form-list">
-                                               <label>Qauntity <span class="required">*</span></label>
-                                               <input type="number" placeholder="">
-                                           </div>
-                                       </div>
-                                       
-                                       </div>
-                                       
-                                       </div>
-                                       <div class="col-md-6">
-                                           <div class="checkout-form-list">
-                                               <label>Image <span class="required">*</span></label>
-                                        
-                                               <input type="file" id="image" name="image" accept="image/*" required><br><br>
-                                           </div>
-                                       </div>
-                                       <div class="order-button-payment mt-20">
-                                        <button type="submit" class="tp-btn">Create</button>
-                                        </div>
-                                       
-                                      
-                                  
-                               </div>
-                           </div>
-                       </div>
-    {{form_end(form)}}
-
     
 
-    <a href="{{ path('app_club_index') }}">back to list</a>
 {% endblock %}

@@ -84,6 +84,10 @@
                                                     </svg>
                                                 </button>
                                             </form>
+                                            {# Nouveau bouton de validation pour envoyer l'email et mettre à jour le statut #}
+        <a href="{{ path('commande_validate', {'id': item.commande.id}) }}" class="btn btn-success" onclick="return confirm('Valider la commande et envoyer l\'e-mail de confirmation ?');">
+            Validate
+        </a>
                                         </div>
                                     </td>
                                 </tr>
