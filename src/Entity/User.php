@@ -104,12 +104,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: ParticipationEvent::class, mappedBy: 'user_id')]
     private Collection $no;
 
-    /**
-     * @var Collection<int, ParticipationEvent>
-     */
-    #[ORM\OneToMany(targetEntity: ParticipationEvent::class, mappedBy: 'user_id')]
-    private Collection $no;
-
+   
 
     public function __construct()
     {
@@ -320,26 +315,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->no;
     }
+    //IMEN //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public function addNo(ParticipationEvent $no): static
-    {
-        if (!$this->no->contains($no)) {
-            $this->no->add($no);
-            $no->setUserId($this);
-        }
+    // public function addNo(ParticipationEvent $no): static
+    // {
+    //     if (!$this->no->contains($no)) {
+    //         $this->no->add($no);
+    //         $no->setId($this);
+    //     }
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
-    public function removeNo(ParticipationEvent $no): static
-    {
-        if ($this->no->removeElement($no)) {
-            // set the owning side to null (unless already changed)
-            if ($no->getUserId() === $this) {
-                $no->setUserId(null);
-            }
-        }
+    // public function removeNo(ParticipationEvent $no): static
+    // {
+    //     if ($this->no->removeElement($no)) {
+    //         // set the owning side to null (unless already changed)
+    //         if ($no->getId() === $this) {
+    //             $no->setId(null);
+    //         }
+    //     }
 
-        return $this;
-    }
+    //     return $this;
+    // }
 }
