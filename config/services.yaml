@@ -6,7 +6,7 @@
 
 parameters:
     uploads_directory: '%kernel.project_dir%/public/uploads'
-        event_images_directory: '%kernel.project_dir%/public/uploads/events'
+    event_images_directory: '%kernel.project_dir%/public/uploads/events'
 
 
 services:
