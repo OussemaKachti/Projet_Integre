@@ -30,226 +30,166 @@
 										</tr>
 									</thead>
 									<tbody id="sondageTableBody">
-            {% for sondage in sondages %}
-                <tr>
-                    <td>{{ sondage.id }}</td>
-                    <td>{{ sondage.question }}</td>
-                    <td>{{ sondage.choix|join(', ') }}</td>
-                    <td>{{ sondage.club_name }}</td>
-                    <td>{{ sondage.created_at }}</td>
-                    <td class="actions-column">
-                        <div class="action-buttons">
-                            <button onclick="window.location.href='{{ path('app_poll_details', {'id': sondage.id}) }}'" type="button" class="btn btn-primary btn-sm">see details</button>
-                            <button class="bin-button" data-id="{{ sondage.id }}">
-                                <svg class="bin-top" viewbox="0 0 39 7" fill="none">
-                                    <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
-                                    <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
-                                </svg>
-                                <svg class="bin-bottom" viewbox="0 0 33 39" fill="none">
-                                    <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
-                                    <path d="M21 6V29" stroke="white" stroke-width="4"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
+										{% for sondage in sondages %}
+											<tr>
+												<td>{{ sondage.id }}</td>
+												<td>{{ sondage.question }}</td>
+												<td>{{ sondage.choix|join(', ') }}</td>
+												<td>{{ sondage.club_name }}</td>
+												<td>{{ sondage.created_at }}</td>
+												<td class="actions-column">
+													<div class="action-buttons">
+														<button onclick="window.location.href='{{ path('app_poll_details', {'id': sondage.id}) }}'" type="button" class="btn btn-primary btn-sm">see details</button>
+														<button class="bin-button" data-id="{{ sondage.id }}">
+															<svg class="bin-top" viewbox="0 0 39 7" fill="none">
+																<line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+																<line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
+															</svg>
+															<svg class="bin-bottom" viewbox="0 0 33 39" fill="none">
+																<path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+																<path d="M21 6V29" stroke="white" stroke-width="4"></path>
+															</svg>
+														</button>
+													</div>
+												</td>
+											</tr>
+										{% endfor %}
 
 										<div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
 
 									</tbody>
 
-									<script>
-										function updateResults(searchValue) {
-fetch (`/sondage/adminPolls?q=${
-encodeURIComponent(searchValue)
-}`, {
-headers: {
-'X-Requested-With': 'XMLHttpRequest'
-}
-}).then(response => response.json()).then(data => {
-tableBody.innerHTML = '';
+																		<script>
+									document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById('searchInput');
+    const tableBody = document.getElementById('sondageTableBody');
+    let debounceTimer;
 
-data.sondages.forEach(sondage => {
-const row = `
-                <tr>
-                    <td>${
-sondage.id
-}</td>
-                    <td>${
-sondage.question
-}</td>
-                    <td>${
-sondage.choix.join(', ')
-}</td>
-                    <td>${
-sondage.club_name
-}</td>
-                    <td>${
-sondage.created_at
-}</td>
-                    <td class="actions-column">
-                        <div class="action-buttons">
-                            <button onclick="window.location.href='/sondage/poll/details/${
-sondage.id
-}'" type="button" class="btn btn-primary btn-sm">see details</button>
-                            <button class="bin-button" data-id="${
-sondage.id
-}">
-                                <svg class="bin-top" viewbox="0 0 39 7" fill="none">
-                                    <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
-                                    <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
-                                </svg>
-                                <svg class="bin-bottom" viewbox="0 0 33 39" fill="none">
-                                    <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
-                                    <path d="M21 6V29" stroke="white" stroke-width="4"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-tableBody.insertAdjacentHTML('beforeend', row);
-})
-);
-}
-/* */
-document.addEventListener("DOMContentLoaded", function () {
-const searchInput = document.getElementById('searchInput');
-const tableBody = document.getElementById('sondageTableBody');
-let debounceTimer;
+    function attachDeleteEventListeners() {
+        // Sélectionner tous les boutons de suppression
+        document.querySelectorAll(".bin-button").forEach(button => {
+            button.addEventListener("click", function () {
+                const sondageId = this.getAttribute("data-id");
+                console.log("Button clicked for sondage ID:", sondageId);  // Log pour vérifier si l'événement est déclenché
 
-function attachDeleteEventListeners() { // Sélectionner tous les boutons de suppression
-document.querySelectorAll(".bin-button").forEach(button => {
-button.addEventListener("click", function () {
-const sondageId = this.getAttribute("data-id");
-console.log("Button clicked for sondage ID:", sondageId); // Log pour vérifier si l'événement est déclenché
+                if (!sondageId) {
+                    console.error("ID du sondage non trouvé !");
+                    showToast("Erreur : ID du sondage introuvable.", "danger");
+                    return;
+                }
 
-if (! sondageId) {
-console.error("ID du sondage non trouvé !");
-showToast("Erreur : ID du sondage introuvable.", "danger");
-return;
-}
+                if (confirm("Are you sure you want to delete this poll?")) {
+                    console.log(`Deleting poll with ID: ${sondageId}`);  // Log pour vérifier si la suppression est lancée
 
-if (confirm("Are you sure you want to delete this poll?")) {
-console.log (`Deleting poll with ID: ${sondageId}`); // Log pour vérifier si la suppression est lancée
+                    fetch(`/sondage/deleteAdmin/${sondageId}`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message) {
+                            showToast("Poll successfully deleted!", "success");
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            showToast(data.error || "Erreur lors de la suppression", "danger");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Erreur:", error);
+                        showToast("Une erreur est survenue", "danger");
+                    });
+                }
+            });
+        });
+    }
 
-fetch (`/sondage/deleteAdmin/${sondageId}`, {
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-}
-}).then(response => response.json()).then(data => {
-if (data.message) {
-showToast("Poll successfully deleted!", "success");
-setTimeout(() => location.reload(), 1000);
-} else {
-showToast(data.error || "Erreur lors de la suppression", "danger");
-}
-}).catch(error => {
-console.error("Erreur:", error);
-showToast("Une erreur est survenue", "danger");
-});
-}
-});
-});
-}
+    function updateResults(searchValue) {
+        fetch(`/sondage/adminPolls?q=${encodeURIComponent(searchValue)}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(response => response.json()).then(data => {
+            tableBody.innerHTML = '';
 
-function updateResults(searchValue) {
-fetch (`/sondage/adminPolls?q=${
-encodeURIComponent(searchValue)
-}`, {
-headers: {
-'X-Requested-With': 'XMLHttpRequest'
-}
-}).then(response => response.json()).then(data => {
-tableBody.innerHTML = '';
-// Vider le tableau
+            // Ajouter les nouveaux résultats
+            data.sondages.forEach(sondage => {
+                const row = `
+                    <tr>
+                        <td>${parseInt(sondage.id)}</td>
+                        <td>${sondage.question}</td>
+                        <td>${sondage.choix.join(', ')}</td>
+                        <td>${sondage.club_name}</td>
+                        <td>${sondage.created_at}</td>
+                        <td class="actions-column">
+                            <div class="action-buttons">
+                                <button onclick="window.location.href='/sondage/poll/details/${parseInt(sondage.id)}'" 
+                                        type="button" 
+                                        class="btn btn-primary btn-sm">see details</button>
+                                <button class="bin-button" data-id="${parseInt(sondage.id)}">
+                                    <svg class="bin-top" viewbox="0 0 39 7" fill="none">
+                                        <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+                                        <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
+                                    </svg>
+                                    <svg class="bin-bottom" viewbox="0 0 33 39" fill="none">
+                                        <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+                                        <path d="M21 6V29" stroke="white" stroke-width="4"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', row);
+            });
 
-// Ajouter les nouveaux résultats
-data.sondages.forEach(sondage => {
-const row = `
-									                    <tr>
-									                        <td>${
-sondage.id
-}</td>
-									                        <td>${
-sondage.question
-}</td>
-									                        <td>${
-sondage.choix.join(', ')
-}</td>
-									                        <td>${
-sondage.club_name
-}</td>
-									                        <td>${
-sondage.created_at
-}</td>
-									                        <td class="actions-column">
-									                            <button class="bin-button" data-id="${
-sondage.id
-}">
-									                                <svg class="bin-top" viewbox="0 0 39 7" fill="none">
-									                                    <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
-									                                    <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
-									                                </svg>
-									                                <svg class="bin-bottom" viewbox="0 0 33 39" fill="none">
-									                                    <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
-									                                    <path d="M21 6V29" stroke="white" stroke-width="4"></path>
-									                                </svg>
-									                            </button>
-									                        </td>
-									                    </tr>
-									                `;
-tableBody.insertAdjacentHTML('beforeend', row);
-});
+            // Réattacher les événements de suppression
+            attachDeleteEventListeners();
+        }).catch(error => console.error('Erreur:', error));
+    }
 
-// Réattacher les événements de suppression
-attachDeleteEventListeners();
-}).catch(error => console.error('Erreur:', error));
-}
+    // Écouter les changements dans l'input de recherche
+    searchInput.addEventListener('input', function (e) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            updateResults(e.target.value);
+        }, 300); // Délai de 300ms pour éviter trop de requêtes
+    });
 
-// Écouter les changements dans l'input de recherche
-searchInput.addEventListener('input', function (e) {
-clearTimeout(debounceTimer);
-debounceTimer = setTimeout(() => {
-updateResults(e.target.value);
-}, 300); // Délai de 300ms pour éviter trop de requêtes
-});
+    // Charger tous les résultats au début
+    updateResults('');
 
-// Charger tous les résultats au début
-updateResults('');
-
-// Réattacher les événements de suppression après le chargement initial des sondages
-attachDeleteEventListeners();
+    // Réattacher les événements de suppression après le chargement initial des sondages
+    attachDeleteEventListeners();
 });
 
 // Fonction pour afficher un toast
 function showToast(message, type = "success") {
-const toastContainer = document.getElementById("toastContainer");
-const toast = document.createElement("div");
+    const toastContainer = document.getElementById("toastContainer");
+    const toast = document.createElement("div");
 
-toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
-toast.setAttribute("role", "alert");
-toast.setAttribute("aria-live", "assertive");
-toast.setAttribute("aria-atomic", "true");
+    toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
+    toast.setAttribute("role", "alert");
+    toast.setAttribute("aria-live", "assertive");
+    toast.setAttribute("aria-atomic", "true");
 
-toast.innerHTML = `
-									        <div class="d-flex">
-									            <div class="toast-body">${message}</div>
-									            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-									        </div>
-									    `;
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
 
-toastContainer.appendChild(toast);
+    toastContainer.appendChild(toast);
 
-setTimeout(() => {
-toast.classList.remove("show");
-toast.addEventListener("transitionend", () => toast.remove());
-}, 2000);
+    setTimeout(() => {
+        toast.classList.remove("show");
+        toast.addEventListener("transitionend", () => toast.remove());
+    }, 2000);
 }
-</script>
 
+									</script>
 
 											<style>
 
@@ -411,7 +351,7 @@ toast.addEventListener("transitionend", () => toast.remove());
 										</table>
 									</table>
 								</table>
-							</div>
+							</table>
 						</div>
 					</div>
 				</div>

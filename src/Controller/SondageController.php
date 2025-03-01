@@ -32,6 +32,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Security\Core\Security;
+use Knp\Component\Pager\PaginatorInterface;
 
 
 
@@ -300,16 +301,16 @@ public function getColorByPercentage(float $percentage): string
     
 //partie chart admin 
 #[Route('/poll/details/{id}', name: 'app_poll_details')]
-public function pollDetails(int $id, EntityManagerInterface $em): Response
+public function pollDetails(int $id): Response
 {
-    $sondage = $em->getRepository(Sondage::class)->find($id);
+    $sondage = $this->entityManager->getRepository(Sondage::class)->find($id);
     
     if (!$sondage) {
         throw $this->createNotFoundException('Poll not found');
     }
 
     // Récupérer les commentaires
-    $comments = $em->getRepository(Commentaire::class)
+    $comments = $this->entityManager->getRepository(Commentaire::class)
         ->findBy(['sondage' => $sondage], ['dateComment' => 'DESC']);
 
     // Préparer les données pour le graphique
@@ -319,7 +320,7 @@ public function pollDetails(int $id, EntityManagerInterface $em): Response
     // Pour chaque choix du sondage
     foreach ($sondage->getChoix() as $choix) {
         // Compter les réponses pour ce choix
-        $nombreReponses = $em->getRepository(Reponse::class)
+        $nombreReponses = $this->entityManager->getRepository(Reponse::class)
             ->count(['sondage' => $sondage, 'choixSondage' => $choix]);
         
         // Calculer le pourcentage
