@@ -1,6 +1,5 @@
 {% extends 'base.admin.html.twig' %}
 
-{% block title %}Table des commandes{% endblock %}
 
 {% block body %}
 <style>
@@ -15,6 +14,10 @@
 
 <section class="cart-area pt-120 pb-120">
     <div class="container">
+    <form method="get" action="{{ path('admin_commandes') }}" class="d-flex mb-4">
+    <input type="text" name="q" value="{{ keyword|default('') }}" placeholder="Research for ..." class="form-control me-2" style="width: 300px;">
+    <button type="submit" class="btn btn-primary">Research</button>
+</form>
         <div class="row">
             <h1>Table des commandes</h1>
             <div class="col-12">
@@ -106,6 +109,10 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    <div class="row mt-4">
+  <div class="col-xxl-20">
+     {{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig') }}
+  </div>
                 </div>
             </div>
         </div>

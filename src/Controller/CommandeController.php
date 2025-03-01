@@ -18,6 +18,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use App\Enum\StatutCommandeEnum;
 use App\Services\OrderValidationService;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/commande')]
 class CommandeController extends AbstractController
@@ -25,52 +26,102 @@ class CommandeController extends AbstractController
     
 
     #[Route('/admin', name: 'admin_commandes')]
-    public function index(EntityManagerInterface $entityManager): Response
-    { 
-        // Récupérer toutes les commandes
-        $commandes = $entityManager->getRepository(Commande::class)->findAll();
+public function index(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    PaginatorInterface $paginator
+): Response
+{
+    // Get search query if present
+    $keyword = $request->query->get('q', '');
     
-        $data = [];
-        foreach ($commandes as $commande) {
-            $user = $commande->getUser();
-            if (!$user) {
-                $user = null; // Correction ici pour éviter l'erreur
-            }
+    // Create query for commands
+    $commandeRepository = $entityManager->getRepository(Commande::class);
     
-            $orderDetails = $commande->getOrderDetails(); // Collection d'OrderDetails
-            if ($orderDetails->isEmpty()) {
+    if (!empty($keyword)) {
+        // Search query - you need to implement this in your repository
+        $query = $commandeRepository->searchByKeyword($keyword);
+    } else {
+        // Basic query to get all commands
+        $query = $commandeRepository->createQueryBuilder('c')
+            ->orderBy('c.dateComm', 'DESC')
+            ->getQuery();
+    }
+    
+    // Paginate the raw commands (we'll process them after pagination)
+    $pagination = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        2 // Number of items per page
+    );
+    
+    // Process the paginated commands
+    $data = [];
+    foreach ($pagination->getItems() as $commande) {
+        $user = $commande->getUser();
+        if (!$user) {
+            $user = null;
+        }
+        
+        $orderDetails = $commande->getOrderDetails();
+        if ($orderDetails->isEmpty()) {
+            $data[] = [
+                'user' => $user ? $user : 'Utilisateur inconnu',
+                'commande' => $commande,
+                'produit' => null,
+                'club' => null,
+                'dateComm' => $commande->getDateComm(),
+                'orderDetails' => $orderDetails,
+            ];
+        } else {
+            foreach ($orderDetails as $orderDetail) {
+                $produit = $orderDetail->getProduit();
+                $club = $produit ? $produit->getClub() : null;
+                
                 $data[] = [
                     'user' => $user ? $user : 'Utilisateur inconnu',
                     'commande' => $commande,
-                    'produit' => null, // Pas de produit
-                    'club' => null,
+                    'produit' => $produit,
+                    'club' => $club,
                     'dateComm' => $commande->getDateComm(),
-                    'orderDetails' => $orderDetails,
                 ];
-            } else {
-                foreach ($orderDetails as $orderDetail) {
-                    $produit = $orderDetail->getProduit();
-                    $club = $produit ? $produit->getClub() : null;
-    
-                    $data[] = [
-                        'user' => $user ? $user : 'Utilisateur inconnu',
-                        'commande' => $commande,
-                        'produit' => $produit,
-                        'club' => $club,
-                        'dateComm' => $commande->getDateComm(),
-                    ];
-                }
             }
         }
-        
-        return $this->render('produit/commande_admin.html.twig', [
-            'data' => $data,
-        ]);
     }
+    
+    return $this->render('produit/commande_admin.html.twig', [
+        'data' => $data,
+        'pagination' => $pagination,
+        'keyword' => $keyword
+    ]);
+}
 
     #[Route('/president', name: 'presi_commandes')]
-    public function commande(EntityManagerInterface $entityManager): Response
+    public function commande(EntityManagerInterface $entityManager,
+    PaginatorInterface $paginator,Request $request,): Response
     { 
+        // Get search query if present
+    $keyword = $request->query->get('q', '');
+    
+    // Create query for commands
+    $commandeRepository = $entityManager->getRepository(Commande::class);
+    
+    if (!empty($keyword)) {
+        // Search query - you need to implement this in your repository
+        $query = $commandeRepository->searchByKeyword($keyword);
+    } else {
+        // Basic query to get all commands
+        $query = $commandeRepository->createQueryBuilder('c')
+            ->orderBy('c.dateComm', 'DESC')
+            ->getQuery();
+    }
+    
+    // Paginate the raw commands (we'll process them after pagination)
+    $pagination = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        2 // Number of items per page
+    );
         // Récupérer toutes les commandes
         $commandes = $entityManager->getRepository(Commande::class)->findAll();
     
@@ -109,6 +160,8 @@ class CommandeController extends AbstractController
         
         return $this->render('produit/index2.html.twig', [
             'data' => $data,
+            'pagination' => $pagination,
+            'keyword' => $keyword
         ]);
     }
 

@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Produit;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query;
 
 /**
  * @extends ServiceEntityRepository<Produit>
@@ -45,7 +46,7 @@ class ProduitRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
-public function searchByKeyword(string $keyword): array
+public function searchByKeyword(string $keyword): query
 {
     return $this->createQueryBuilder('p')
         ->leftJoin('p.club', 'c')  // Joindre la table Club
@@ -53,7 +54,7 @@ public function searchByKeyword(string $keyword): array
         ->orWhere('c.nomC LIKE :keyword')  // Ajouter la recherche par nom du club
         ->setParameter('keyword', '%' . $keyword . '%')
         ->orderBy('p.id', 'ASC') // Optionnel : trier par ID
-        ->getQuery()
-        ->getResult();
+        ->getQuery();
+        
 }
 }

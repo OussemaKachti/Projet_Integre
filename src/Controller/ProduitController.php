@@ -15,33 +15,98 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Entity\Club;
 use App\Repository\ClubRepository;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Knp\Component\Pager\PaginatorInterface;
+
 #[Route('/produit')]
 class ProduitController extends AbstractController
 {
-    #[Route('/', name: 'app_produit_index', methods: ['GET'])] //show form
-    public function index(ProduitRepository $produitRepository,ClubRepository $clubRepository): Response
-    {
-        return $this->render('produit/show.html.twig', [
-            'produits' => $produitRepository->findAll(),
-            'clubs' => $clubRepository->findAll(), // Fetch all clubs
-        ]);
+    #[Route('/', name: 'app_produit_index', methods: ['GET'])]
+public function index(
+    ProduitRepository $produitRepository,
+    ClubRepository $clubRepository,
+    PaginatorInterface $paginator, // Utilisation correcte de la pagination
+    Request $request
+): Response {
+    $query = $produitRepository->createQueryBuilder('p')->getQuery(); // Récupérer une requête valide
+
+    $pagination = $paginator->paginate(
+        $query, 
+        $request->query->getInt('page', 1), // Récupération du numéro de page
+        2 // Nombre d'éléments par page
+    );
+
+    return $this->render('produit/show.html.twig', [
+        'pagination' => $pagination,
+        'clubs' => $clubRepository->findAll(),
+        'produits' => $pagination->getItems(), // Extraction des produits paginés
+    ]);
+}
+
+#[Route('/presi', name: 'produit_index', methods: ['GET'])]
+public function inde(
+    Request $request,
+    ProduitRepository $produitRepository,
+    ClubRepository $clubRepository,
+    PaginatorInterface $paginator
+): Response
+{
+    // Get search query if present
+    $keyword = $request->query->get('q', '');
+    
+    // Create base query
+    if (!empty($keyword)) {
+        $query = $produitRepository->searchByKeyword($keyword);
+    } else {
+        $query = $produitRepository->createQueryBuilder('p')->getQuery();
     }
-    #[Route('/presi', name: 'produit_index', methods: ['GET'])] //show tab produit de  president 
-    public function inde(ProduitRepository $produitRepository,ClubRepository $clubRepository): Response
-    {
-        return $this->render('produit/index.html.twig', [
-            'produits' => $produitRepository->findAll(),
-            'clubs' => $clubRepository->findAll(),
-        ]);
+    
+    // Paginate results
+    $pagination = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        2 // Number of items per page
+    );
+    
+    return $this->render('produit/index.html.twig', [
+        'produits' => $pagination->getItems(),
+        'clubs' => $clubRepository->findAll(),
+        'pagination' => $pagination,
+        'keyword' => $keyword
+    ]);
+
     }
-    #[Route('/admin', name: 'produit_admin', methods: ['GET'])] //show tab produit d admin 
-    public function proadmin(ProduitRepository $produitRepository,ClubRepository $clubRepository): Response
-    {
-        return $this->render('produit/produit.admin.html.twig', [
-            'produits' => $produitRepository->findAll(),
-            'clubs' => $clubRepository->findAll(),
-        ]);
+    #[Route('/admin', name: 'produit_admin', methods: ['GET'])]
+public function proadmin(
+    Request $request,
+    ProduitRepository $produitRepository,
+    ClubRepository $clubRepository,
+    PaginatorInterface $paginator
+): Response
+{
+    // Get search query if present
+    $keyword = $request->query->get('q', '');
+    
+    // Create base query
+    if (!empty($keyword)) {
+        $query = $produitRepository->searchByKeyword($keyword);
+    } else {
+        $query = $produitRepository->createQueryBuilder('p')->getQuery();
     }
+    
+    // Paginate results
+    $pagination = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        2 // Number of items per page - adjust as needed
+    );
+    
+    return $this->render('produit/produit.admin.html.twig', [
+        'produits' => $pagination->getItems(),
+        'clubs' => $clubRepository->findAll(),
+        'pagination' => $pagination,
+        'keyword' => $keyword
+    ]);
+}
     #[Route('/{id}/delete', name: 'produit.admin_delete', methods: ['POST'])]
 public function deletee(Request $request, int $id, ProduitRepository $produitRepository, EntityManagerInterface $entityManager): Response
 {
@@ -196,7 +261,7 @@ public function delete(Request $request, int $id, ProduitRepository $produitRepo
     return $this->redirect($request->headers->get('referer') ?: $this->generateUrl('produit_index'));
 }
 
-    #[Route('/produits/{id}', name: 'app_produits_par_club', methods: ['GET'])]
+      #[Route('/produits/{id}', name: 'app_produits_par_club', methods: ['GET'])]
     public function produitsParClub(int $id, EntityManagerInterface $entityManager): Response
     {
         // Récupérer le club par son ID
@@ -357,23 +422,31 @@ public function clearCart(Request $request, SessionInterface $session): Response
 }
 
 
-    #[Route('/search', name: 'produit_search')]
-    public function search(Request $request, ProduitRepository $produitRepository, ClubRepository $clubRepository)
-    {
-        $keyword = $request->query->get('q', ''); // Récupérer le mot-clé de l'URL
-        $produits = [];
-        $clubs = $clubRepository->findAll(); // Récupérer tous les clubs
+#[Route('/search', name: 'produit_search', methods: ['GET'])]
+public function search(
+    Request $request,
+    ProduitRepository $produitRepository,
+    ClubRepository $clubRepository,
+    PaginatorInterface $paginator
+): Response {
+    $keyword = $request->query->get('q', ''); // Récupérer le mot-clé de recherche
+    $query = $produitRepository->searchByKeyword($keyword);
 
-        if (!empty($keyword)) {
-            $produits = $produitRepository->searchByKeyword($keyword);
-        }
+    $pagination = $paginator->paginate(
+        $query, 
+        $request->query->getInt('page', 1), 
+        2 // Nombre d'éléments par page
+    );
 
-        return $this->render('produit/show.html.twig', [
-            'produits' => $produits,
-            'keyword' => $keyword,
-            'clubs' => $clubs, // Ajout de la variable clubs
-        ]);
-    }
+    return $this->render('produit/show.html.twig', [
+        'pagination' => $pagination,
+        'keyword' => $keyword,
+        'clubs' => $clubRepository->findAll(),
+        'produits' => $pagination->getItems(),
+    ]);
+}
+
+    
 
 
 
