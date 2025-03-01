@@ -1,37 +1,194 @@
-{% extends 'base.html.twig' %}
+{% extends 'baseAdmin.html.twig' %}
 
 {% block title %}Commentaire index{% endblock %}
 
 {% block body %}
-    <h1>Commentaire index</h1>
+<div class="main-panel" style="width: 100%; max-width: 1300px; margin: 0 auto 0 20px;">
+  <div class="content-wrapper">
+    <div class="row">
+      <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title">Comments Management</h4>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>ContenuComment</th>
-                <th>DateComment</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for commentaire in commentaires %}
-            <tr>
-                <td>{{ commentaire.id }}</td>
-                <td>{{ commentaire.contenuComment }}</td>
-                <td>{{ commentaire.dateComment ? commentaire.dateComment|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_commentaire_show', {'id': commentaire.id}) }}">show</a>
-                    <a href="{{ path('app_commentaire_edit', {'id': commentaire.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            <!-- FILTRE PAR CLUB -->
+            <form method="GET" action="{{ path('app_commentaire_index') }}" class="filter-form">
+              <label for="clubFilter">Filter by Club:</label>
+              <select id="clubFilter" name="club" class="filter-select" onchange="this.form.submit()">
+                <option value="all" {% if selectedClub == 'all' %}selected{% endif %}>All Clubs</option>
+                {% for club in clubs %}
+                  <option value="{{ club }}" {% if selectedClub == club %}selected{% endif %}>{{ club }}</option>
+                {% endfor %}
+              </select>
+            </form>
 
-    <a href="{{ path('app_commentaire_new') }}">Create new</a>
+            <div class="table-responsive">
+              <table class="table table-striped table-sm">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Comment</th>
+                    <th>Club Name</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for commentaire in commentaires %}
+                    <tr>
+                      <td>{{ commentaire.id }}</td>
+                      <td>{{ commentaire.user }}</td>
+                      <td>{{ commentaire.contenu }}</td>
+                      <td>{{ commentaire.club_name }}</td>
+                      <td>{{ commentaire.created_at }}</td>
+                      <td class="actions-column">
+                        <div class="action-buttons">
+                          <button class="bin-button">
+                            <svg class="bin-top" viewBox="0 0 39 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+                              <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
+                            </svg>
+                            <svg class="bin-bottom" viewBox="0 0 33 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+                              <path d="M21 6V29" stroke="white" stroke-width="4"></path>
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="6" class="text-center">No comments found for this club.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <style>
+
+
+           
+                         
+                         .bin-button {
+                          display: flex;
+                          flex-direction: column;
+                          align-items: center;
+                          justify-content: center;
+                          width: 25px;
+                          height: 25px;
+                          border-radius: 5px;
+                          background-color: rgb(255, 95, 95);
+                          cursor: pointer;
+                          border: 3px solid rgb(255, 201, 201);
+                          transition-duration: 0.3s;
+                        }
+                        .bin-bottom {
+                          width: 15px;
+                        }
+                        .bin-top {
+                          width: 17px;
+                          transform-origin: right;
+                          transition-duration: 0.3s;
+                        }
+                        .bin-button:hover .bin-top {
+                          transform: rotate(45deg);
+                        }
+                        .bin-button:hover {
+                          background-color: rgb(255, 0, 0);
+                        }
+                        .bin-button:active {
+                          transform: scale(0.9);
+                        }
+                        
+
+            </style>
+          </div>
+        </div>
+      </div>
+    </div> <!-- Fermeture de la div .row pour les commentaires -->
+
+    <div class="row">
+      <div class="col-lg-6 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title">Area chart for Responses to polls</h4>
+            <canvas id="areaChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title">Bar chart for Responses to polls</h4>
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <style>
+              /* Style du formulaire de filtre */
+              .filter-form {
+                display: flex;
+                justify-content: flex-end;
+                margin-bottom: 15px;
+              }
+
+              .filter-form label {
+                font-weight: bold;
+                margin-right: 10px;
+                font-size: 14px;
+              }
+
+              .filter-select {
+                padding: 5px 10px;
+                font-size: 14px;
+                border-radius: 5px;
+                border: 1px solid #ddd;
+                cursor: pointer;
+              }
+
+              /* Style du bouton poubelle */
+              .bin-button {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 25px;
+                height: 25px;
+                border-radius: 5px;
+                background-color: rgb(255, 95, 95);
+                cursor: pointer;
+                border: 3px solid rgb(255, 201, 201);
+                transition-duration: 0.3s;
+              }
+
+              .bin-bottom {
+                width: 15px;
+              }
+
+              .bin-top {
+                width: 17px;
+                transform-origin: right;
+                transition-duration: 0.3s;
+              }
+
+              .bin-button:hover .bin-top {
+                transform: rotate(45deg);
+              }
+
+              .bin-button:hover {
+                background-color: rgb(255, 0, 0);
+              }
+
+              .bin-button:active {
+                transform: scale(0.9);
+              }
+  </style>
+</div>
+</div>
+</div>
+
 {% endblock %}

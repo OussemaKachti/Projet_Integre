@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .toxic-content {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .toxic-words {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>Warning: Inappropriate Content Detected</h2>
+    
+    <div class="warning-box">
+        <p>Dear user,</p>
+        <p>We have detected inappropriate content in your recent comment. This type of content violates our community guidelines.</p>
+    </div>
+
+    <h3>Your Comment:</h3>
+    <div class="toxic-content">
+        {{ commentContent }}
+    </div>
+
+    <h3>Detected Issues:</h3>
+    <ul>
+        {% for word in toxicWords %}
+            <li class="toxic-words">{{ word }}</li>
+        {% endfor %}
+    </ul>
+
+    <p><strong>Reason:</strong> {{ reason }}</p>
+
+    <p>Please review our community guidelines and ensure your future comments adhere to our standards. Repeated violations may result in account restrictions.</p>
+
+    <p>Best regards,<br>Your Site Team</p>
+</body>
+</html> 

@@ -3,7 +3,9 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
-clubdetails:
+confirm_email:
+    path: /confirm-email/{token}
+    controller: App\Controller\SecurityController::confirmEmailclubdetails:
     path: /club/{id}
     controller: App\Controller\ClubController::details
     methods: GET

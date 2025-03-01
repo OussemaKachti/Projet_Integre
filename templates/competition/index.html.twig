@@ -1,41 +1,83 @@
-{% extends 'base.html.twig' %}
+{% extends 'baseAdmin.html.twig' %}
 
-{% block title %}Competition index{% endblock %}
+{% block title %}Missions{% endblock %}
 
 {% block body %}
-    <h1>Competition index</h1>
+    <div class="row">
+        <div class="col-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Missions Title and Add Mission Button -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="card-title">Missions</h4>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMissionModal">
+                            <i class="mdi mdi-plus"></i> Add Mission
+                        </button>
+                    </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>NomComp</th>
-                <th>DescComp</th>
-                <th>StartDate</th>
-                <th>EndDate</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for competition in competitions %}
-            <tr>
-                <td>{{ competition.id }}</td>
-                <td>{{ competition.nomComp }}</td>
-                <td>{{ competition.descComp }}</td>
-                <td>{{ competition.startDate ? competition.startDate|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ competition.endDate ? competition.endDate|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_competition_show', {'id': competition.id}) }}">show</a>
-                    <a href="{{ path('app_competition_edit', {'id': competition.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="6">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                    <!-- Mission Cards (Listed Vertically) -->
+                    <div class="mission-list">
+                        <!-- Loop through missions -->
+                        {% for mission in missions %}
+                            <div class="card mb-4" style="background-color: #f8f9fa;">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ mission.nomComp }}</h5>
+                                    <p class="card-text">{{ mission.descComp }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge badge-success">{{ mission.points }} Points</span>
+                                        <div>
 
-    <a href="{{ path('app_competition_new') }}">Create new</a>
+                                            <!--  Edit Button  -->
+                                            <a href="{{ path('app_competition_edit', {'id': mission.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="mdi mdi-pencil"></i> Edit
+                                            </a>
+
+                                            <!-- Delete Form -->
+                                            <form method="POST" action="{{ path('app_competition_delete', {'id': mission.id}) }}" onsubmit="return confirm('Are you sure you want to delete this mission?');" class="d-inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ mission.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="mdi mdi-delete"></i> Delete
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p>No missions found.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Mission Modal -->
+<div class="modal fade" id="addMissionModal" tabindex="-1" aria-labelledby="addMissionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMissionModalLabel">Add Mission</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Mission Form -->
+                {{ form_start(form, {'action': path('app_competition_new'), 'method': 'POST'}) }}
+                    {{ form_row(form.nomComp, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_row(form.descComp, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_row(form.points, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_row(form.startDate, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_row(form.endDate, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_row(form.saison, {'attr': {'class': 'form-select'}}) }}
+
+                    {{ form_row(form._token, {'attr': {'class': 'd-none'}}) }} {# Ensures CSRF token is included #}
+                    <button type="submit" class="btn btn-primary w-100">Create Mission</button>
+                    
+                {{ form_end(form,{'render_rest': false}) }}
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

@@ -19,9 +19,25 @@ class Reponse
     #[ORM\JoinColumn(nullable: false)]
     private User $user;
 
-    #[ORM\ManyToOne(targetEntity: ChoixSondage::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: ChoixSondage::class, inversedBy: "reponses")]
+    #[ORM\JoinColumn(nullable: true)]
     private ChoixSondage $choixSondage;
+    
+
+    #[ORM\ManyToOne(targetEntity: Sondage::class, inversedBy: "reponses")]
+#[ORM\JoinColumn(nullable: false)]
+private Sondage $sondage;
+
+public function getSondage(): ?Sondage
+{
+    return $this->sondage;
+}
+
+public function setSondage(?Sondage $sondage): self
+{
+    $this->sondage = $sondage;
+    return $this;
+}
 
     public function getUser(): User
     {
@@ -54,5 +70,47 @@ class Reponse
     {
         $this->dateReponse = $dateReponse;
         return $this;
+    }
+
+    
+    public function getPollResults(Sondage $sondage): array
+    {
+        $totalVotes = count($sondage->getReponses()); // Remplacement de getVotes() par getReponses()
+        $results = [];
+    
+        foreach ($sondage->getChoix() as $choix) {
+            // Filtrer les réponses correspondant à ce choix
+            $choixVotes = count(array_filter($sondage->getReponses()->toArray(), function ($reponse) use ($choix) {
+                return $reponse->getChoix() === $choix;
+            }));
+    
+            $percentage = $totalVotes > 0 ? ($choixVotes / $totalVotes) * 100 : 0;
+    
+            // Déterminer la couleur en fonction du pourcentage
+            $color = $this->getColorByPercentage($percentage);
+    
+            $results[] = [
+                'choix' => $choix->getContenu(),
+                'percentage' => round($percentage, 2),
+                'color' => $color
+            ];
+        }
+    
+        return $results;
+    }
+    
+    private function getColorByPercentage(float $percentage): string
+    {
+        if ($percentage <= 20) {
+            return '#e74c3c'; // Rouge
+        } elseif ($percentage <= 40) {
+            return '#f39c12'; // Orange
+        } elseif ($percentage <= 60) {
+            return '#f1c40f'; // Jaune
+        } elseif ($percentage <= 80) {
+            return '#2ecc71'; // Vert
+        } else {
+            return '#3498db'; // Bleu
+        }
     }
 }

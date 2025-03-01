@@ -3,25 +3,32 @@
 
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+
 parameters:
+    event_images_directory: '%kernel.project_dir%/public/uploads/events'
+
     club_images_directory: '%kernel.project_dir%/public/uploads/clubs'
     uploads_directory: '%kernel.project_dir%/public/uploads'
 
 
 services:
-    # default configuration for services in *this* file
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
-
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
-    App\:
-        resource: '../src/'
-        exclude:
-            - '../src/DependencyInjection/'
-            - '../src/Entity/'
-            - '../src/Kernel.php'
-
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+        autowire: true      # Automatically injects dependencies based on type hints
+        autoconfigure: true # Automatically tags services for common interfaces
+    App\Service\:
+        resource: '../src/Service'
+    App\Controller\:
+        resource: '../src/Controller' # Loads all controllers from the Controller directory
+        tags: ['controller.service_arguments'] # Ensures that arguments for controller actions are resolved
+    App\Repository\:
+        resource: '../src/Repository' # Loads all repositories from the Repository directory
+        tags: ['doctrine.repository_service'] # Ensures that repositories are tagged correctly
+    App\Security\:
+        resource: '../src/Security'
+    App\Service\OpenAIClient:
+        arguments:
+            $apiKey:  '%env(OPENAI_API_KEY)%'
+    App\Service\ToxicityDetector:
+        arguments:
+            $client: '@http_client'
+            $apiKey: '%env(OPENAI_API_KEY)%'

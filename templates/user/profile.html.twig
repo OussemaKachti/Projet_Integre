@@ -1,0 +1,599 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New User
+{% endblock %}
+
+{% block body %}
+	<main>
+
+		<!-- breadcrumb area start -->
+		<section class="breadcrumb_area include-bg pt-150 pb-150 breadcrumb_overlay" data-background="{{ asset('front_assets/img/breadcrumb/breadcrumb-bg-1.jpg') }}">
+			<div class="container">
+				<div class="row">
+					<div class="col-xxl-12">
+						<div class="breadcrumb__content text-center p-relative z-index-1">
+							<h3 class="breadcrumb__title">My Profile</h3>
+							<div class="breadcrumb__list">
+								<span>
+									<a href="index.html">Home</a>
+								</span>
+								<span class="dvdr">
+									<i class="fa-regular fa-angle-right"></i>
+								</span>
+								<span>My Profile</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		<!-- breadcrumb area end -->
+
+		<!-- profile area start -->
+		<section class="profile__area pt-120 pb-50 grey-bg-2">
+			<div class="container">
+				<div class="profile__basic-inner pb-20 white-bg">
+					<div class="row align-items-center">
+						<div class="col-xxl-6 col-md-6">
+							<div class="profile__basic d-md-flex align-items-center">
+								<div class="profile__basic-thumb mr-30">
+									<img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="">
+								</div>
+								<div class="profile__basic-content">
+									<h3 class="profile__basic-title">
+										Welcome Back
+										<span>{{ user.prenom ?? '' }}
+											{{ user.nom ?? '' }}</span>
+									</h3>
+
+								</div>
+							</div>
+						</div>
+						<div class="col-xxl-6 col-md-6">
+							<div class="profile__basic-cart d-flex align-items-center justify-content-md-end">
+								<div class="cart-info mr-10">
+									<a href="cart.html">View cart</a>
+								</div>
+								<div class="cart-item">
+									<a href="cart.html">
+										<i class="fa-regular fa-basket-shopping"></i>
+										<span class="cart-quantity">2</span>
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		<!-- profile area end -->
+
+		<!-- profile menu area start -->
+		<section class="profile__menu pb-70 grey-bg-2">
+			<div class="container">
+				<div class="row">
+					<div class="col-xxl-4 col-md-4">
+						<div class="profile__menu-left white-bg mb-50">
+							<h3 class="profile__menu-title" style="color: black;">
+								<i class="fa-regular fa-square-list"></i>
+								Your Menu</h3>
+							<div class="profile__menu-tab">
+								<div class="nav nav-tabs flex-column justify-content-start text-start" id="nav-tab" role="tablist">
+									<button class="nav-link active" id="nav-account-tab" data-bs-toggle="tab" data-bs-target="#nav-account" type="button" role="tab" aria-controls="nav-account" aria-selected="true">
+										<i class="fa-regular fa-user"></i>
+										My Account</button>
+
+									<button class="nav-link" id="nav-password-tab" data-bs-toggle="tab" data-bs-target="#nav-password" type="button" role="tab" aria-controls="nav-password" aria-selected="false">
+										<i class="fa-regular fa-lock"></i>Change Password</button>
+									<a href="{{path('app_logout')}}" class="nav-link">
+										<i class="fa-regular fa-arrow-right-from-bracket"></i>
+										Logout</a>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-xxl-8 col-md-8">
+						<div class="profile__menu-right">
+							<div class="tab-content" id="nav-tabContent">
+								<div class="tab-pane fade show active" id="nav-account" role="tabpanel" aria-labelledby="nav-account-tab">
+									<div class="profile__info">
+										<div class="profile__info-top d-flex justify-content-between align-items-center">
+											<h3 class="profile__info-title">Profile Information</h3>
+											<button class="profile__info-btn" type="button" data-bs-toggle="modal" data-bs-target="#profile_edit_modal">
+												<i class="fa-regular fa-pen-to-square"></i>
+												Edit Profile
+											</button>
+										</div>
+
+										<div class="profile__info-wrapper white-bg">
+											{# {% for label, messages in app.flashes %}
+												{% for message in messages %}
+													<div class="alert alert-{{ label == 'error' ? 'danger' : label }} mb-4">
+														{{ message }}
+													</div>
+												{% endfor %}
+											{% endfor %} #}
+
+											<div class="profile__info-item">
+												<p>Name</p>
+												<h4>
+													{% if app.user.prenom is defined and app.user.prenom and app.user.nom is defined and app.user.nom %}
+														{{ app.user.prenom }}
+														{{ app.user.nom }}
+													{% else %}
+														<span class="text-muted">Not provided</span>
+													{% endif %}
+												</h4>
+											</div>
+
+											<div class="profile__info-item">
+												<p>Email</p>
+												<h4>
+													{% if app.user.email is defined and app.user.email %}
+														{{ app.user.email }}
+													{% else %}
+														<span class="text-muted">Not provided</span>
+													{% endif %}
+												</h4>
+											</div>
+
+											<div class="profile__info-item">
+												<p>Phone</p>
+												<h4>
+													{% if app.user.tel is defined and app.user.tel %}
+														{{ app.user.tel }}
+													{% else %}
+														<span class="text-muted">Not provided</span>
+													{% endif %}
+												</h4>
+											</div>
+
+											<div class="profile__info-item">
+												<p>Role</p>
+												<h4>
+													{% if app.user.roles is defined and app.user.roles %}
+														{% set roleLabels = {
+                        'ROLE_USER': 'User',
+                        'ROLE_ADMIN': 'Administrator',
+                        'ROLE_SUPER_ADMIN': 'Super Administrator'
+                    } %}
+														{% for role in app.user.roles %}
+															{% if role in roleLabels|keys %}
+																<span class="badge bg-primary">{{ roleLabels[role] }}</span>
+															{% else %}
+																<span class="badge bg-secondary">{{ role }}</span>
+															{% endif %}
+														{% endfor %}
+													{% else %}
+														<span class="text-muted">Not assigned</span>
+													{% endif %}
+												</h4>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="tab-pane fade" id="nav-order" role="tabpanel" aria-labelledby="nav-order-tab">
+									<div class="order__info">
+										<div class="order__info-top d-flex justify-content-between align-items-center">
+											<h3 class="order__info-title">My Orders</h3>
+											<button type="button" class="order__info-btn">
+												<i class="fa-regular fa-trash-can"></i>
+												Clear</button>
+										</div>
+
+
+									</div>
+								</div>
+								<div class="tab-pane fade" id="nav-password" role="tabpanel" aria-labelledby="nav-password-tab">
+									<div class="password__change">
+										<div
+											class="password__change-top">
+											{# {% for message in app.flashes('success') %}
+																																																																																																																																																<div class="alert alert-success">
+																																																																																																																																																	{{ message }}
+																																																																																																																																																</div>
+																																																																																																																																															{% endfor %} #}
+											<h3 class="password__change-title">Change Password</h3>
+											{# {% for message in app.flashes('error') %}
+												<div class="alert alert-danger">
+													{{ message }}
+												</div>
+											{% endfor %}
+											{% for message in app.flashes('success') %}
+												<div class="alert alert-success">
+													{{ message }}
+												</div>
+											{% endfor %}
+										</div> #}
+										<div class="password__form white-bg">
+
+											<form action="{{ path('app_change_password') }}" method="POST" id="changePasswordForm" novalidate>
+												<input type="hidden" name="active_tab" value="password">
+												<div class="password__change-top">
+													{% for message in app.flashes('success') %}
+														<div class="alert alert-success">
+															{{ message }}
+														</div>
+													{% endfor %}
+
+												</div>
+												<div class="password__input">
+													<p>Old Password</p>
+													<input type="password" name="oldPassword" id="oldPassword" required placeholder="Enter Old Password">
+													<span class="error-message" id="oldPasswordError">
+														{% for message in app.flashes('error') %}
+															{% if message == 'Current password is incorrect' %}
+																{{ message }}
+															{% endif %}
+														{% endfor %}
+													</span>
+
+												</div>
+												<div class="password__input">
+													<p>New Password</p>
+													<input type="password" name="newPassword" id="newPassword" required placeholder="Enter New Password">
+													<span class="error-message" id="newPasswordError"></span>
+													<div class="password-requirements" id="passwordRequirements">
+														<p class="requirements-title">Password must include:</p>
+														<ul>
+															<li id="length-check">At least 8 characters</li>
+															<li id="uppercase-check">At least one uppercase letter</li>
+															<li id="lowercase-check">At least one lowercase letter</li>
+															<li id="number-check">At least one number</li>
+															<li id="special-check">At least one special character (#?!@$%^&*-)</li>
+														</ul>
+													</div>
+												</div>
+												<div class="password__input">
+													<p>Confirm Password</p>
+													<input type="password" name="confirmPassword" id="confirmPassword" required placeholder="Confirm Password">
+													<span class="error-message" id="confirmPasswordError"></span>
+												</div>
+												<div class="password__input">
+													<button type="submit" class="tp-btn" id="submitButton">Update password</button>
+												</div>
+											</form>
+
+											<style>
+												.error-message {
+													color: #dc3545;
+													font-size: 14px;
+													margin-top: 5px;
+													display: block;
+												}
+
+												.password-requirements {
+													font-size: 14px;
+													margin-top: 10px;
+													padding: 10px;
+													border: 1px solid #ddd;
+													border-radius: 4px;
+													display: none;
+												}
+
+												.password-requirements ul {
+													margin: 5px 0 0 20px;
+													padding: 0;
+												}
+
+												.requirements-title {
+													margin: 0;
+													font-weight: bold;
+												}
+
+												.requirement-met {
+													color: #28a745;
+												}
+
+												.requirement-unmet {
+													color: #dc3545;
+												}
+											</style>
+
+											<script>
+												document.addEventListener('DOMContentLoaded', function () {
+const form = document.getElementById('changePasswordForm');
+const oldPassword = document.getElementById('oldPassword');
+const newPassword = document.getElementById('newPassword');
+const confirmPassword = document.getElementById('confirmPassword');
+const oldPasswordError = document.getElementById('oldPasswordError');
+const newPasswordError = document.getElementById('newPasswordError');
+const confirmPasswordError = document.getElementById('confirmPasswordError');
+const passwordRequirements = document.getElementById('passwordRequirements');
+
+// Password requirement elements
+const lengthCheck = document.getElementById('length-check');
+const uppercaseCheck = document.getElementById('uppercase-check');
+const lowercaseCheck = document.getElementById('lowercase-check');
+const numberCheck = document.getElementById('number-check');
+const specialCheck = document.getElementById('special-check');
+
+// Show password requirements when the new password field is focused
+newPassword.addEventListener('focus', function () {
+passwordRequirements.style.display = 'block';
+});
+
+// Hide password requirements when clicked outside
+document.addEventListener('click', function (event) {
+if (event.target !== newPassword && ! passwordRequirements.contains(event.target)) {
+passwordRequirements.style.display = 'none';
+}
+});
+
+// Real-time validation for new password
+newPassword.addEventListener('input', validateNewPassword);
+
+function validateNewPassword() {
+const value = newPassword.value;
+let valid = true;
+
+// Check length
+if (value.length >= 8) {
+lengthCheck.classList.add('requirement-met');
+lengthCheck.classList.remove('requirement-unmet');
+} else {
+lengthCheck.classList.add('requirement-unmet');
+lengthCheck.classList.remove('requirement-met');
+valid = false;
+}
+
+// Check uppercase
+if (/[A-Z]/.test(value)) {
+uppercaseCheck.classList.add('requirement-met');
+uppercaseCheck.classList.remove('requirement-unmet');
+} else {
+uppercaseCheck.classList.add('requirement-unmet');
+uppercaseCheck.classList.remove('requirement-met');
+valid = false;
+}
+
+// Check lowercase
+if (/[a-z]/.test(value)) {
+lowercaseCheck.classList.add('requirement-met');
+lowercaseCheck.classList.remove('requirement-unmet');
+} else {
+lowercaseCheck.classList.add('requirement-unmet');
+lowercaseCheck.classList.remove('requirement-met');
+valid = false;
+}
+
+// Check number
+if (/[0-9]/.test(value)) {
+numberCheck.classList.add('requirement-met');
+numberCheck.classList.remove('requirement-unmet');
+} else {
+numberCheck.classList.add('requirement-unmet');
+numberCheck.classList.remove('requirement-met');
+valid = false;
+}
+
+// Check special character
+if (/[#?!@$%^&*-]/.test(value)) {
+specialCheck.classList.add('requirement-met');
+specialCheck.classList.remove('requirement-unmet');
+} else {
+specialCheck.classList.add('requirement-unmet');
+specialCheck.classList.remove('requirement-met');
+valid = false;
+}
+
+// Clear previous error
+newPasswordError.textContent = '';
+
+return valid;
+}
+
+// Real-time validation for password confirmation
+confirmPassword.addEventListener('input', function () {
+validateConfirmPassword();
+});
+
+function validateConfirmPassword() {
+if (confirmPassword.value !== newPassword.value) {
+confirmPasswordError.textContent = 'Passwords do not match';
+return false;
+} else {
+confirmPasswordError.textContent = '';
+return true;
+}
+}
+
+// Form submission handler
+form.addEventListener('submit', function (e) {
+let isValid = true;
+
+// Reset error messages
+oldPasswordError.textContent = '';
+newPasswordError.textContent = '';
+confirmPasswordError.textContent = '';
+
+// Validate old password
+if (! oldPassword.value.trim()) {
+oldPasswordError.textContent = 'Old password cannot be empty';
+isValid = false;
+}
+
+// Validate new password
+if (! newPassword.value.trim()) {
+newPasswordError.textContent = 'New password cannot be empty';
+isValid = false;
+} else if (! validateNewPassword()) {
+newPasswordError.textContent = 'Password must include uppercase, lowercase, numbers, and special characters';
+isValid = false;
+}
+
+// Validate password confirmation
+if (! confirmPassword.value.trim()) {
+confirmPasswordError.textContent = 'Please confirm your password';
+isValid = false;
+} else if (! validateConfirmPassword()) {
+isValid = false;
+}
+
+if (! isValid) {
+e.preventDefault();
+}
+});
+});
+											</script>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+			<!-- profile menu area end -->
+
+			<div
+				class="profile__edit-modal">
+				<!-- Modal -->
+				<div class="modal fade" id="profile_edit_modal" tabindex="-1" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered">
+
+						<div class="modal-content">
+							<div class="profile__edit-close">
+								<button type="button" class="profile__edit-close-btn" data-bs-dismiss="modal">
+									<i class="fa-light fa-xmark"></i>
+								</button>
+							</div>
+							<div class="profile__edit-wrapper">
+								<form action="{{ path('app_update_profile') }}" method="POST" id="profileEditForm" novalidate>
+									<div class="profile__edit-input">
+										<p>Name</p>
+										<input type="text" name="full_name" placeholder="First Name Last Name" value="{{ (user.prenom ?? '') ~ ' ' ~ (user.nom ?? '') }}">
+										<span class="error-message" id="full_name-error">
+											{% for message in app.flashes('error') %}
+												{% if message starts with 'Please provide both' or message starts with 'First name' or message starts with 'Last name' %}
+													{{ message }}
+												{% endif %}
+											{% endfor %}
+										</span>
+									</div>
+									<div class="profile__edit-input">
+										<p>Email</p>
+										<input type="email" name="email" placeholder="Your Email" value="{{ user.email ?? ''}}">
+										<span class="error-message" id="email-error">
+											{% for message in app.flashes('error') %}
+												{% if message starts with 'The email' or message starts with 'Email' %}
+													{{ message }}
+												{% endif %}
+											{% endfor %}
+										</span>
+									</div>
+									<div class="profile__edit-input">
+										<p>Phone Number</p>
+										<input type="text" name="phone" placeholder="Your Phone" value="{{ user.tel ?? ''}}">
+										<span class="error-message" id="phone-error">
+											{% for message in app.flashes('error') %}
+												{% if message starts with 'Invalid phone' or message starts with 'Phone' %}
+													{{ message }}
+												{% endif %}
+											{% endfor %}
+										</span>
+									</div>
+
+									<div class="profile__edit-input">
+										<button type="submit" class="tp-btn w-100">Update</button>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<style>
+				.btn-primary {
+					background-color: #6366f1;
+					border: none;
+					padding: 0.75rem 1.5rem;
+					transition: all 0.3s ease;
+				}
+
+				.btn-primary:hover {
+					background-color: #4f46e5;
+					transform: translateY(-1px);
+				}
+
+				.invalid-feedback {
+					display: block;
+					font-size: 0.875rem;
+				}
+			</style>
+
+		</script>
+	</main>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+    {% if app.session.get('password_tab_active') %}
+        const passwordTab = document.getElementById('nav-password-tab');
+        if (passwordTab) {
+            passwordTab.click();
+        }
+        
+        // Tell the server to clean up the session variable
+        fetch('{{ path("app_profile") }}?cleanup=true');
+    {% endif %}
+});
+	</script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+const profileForm = document.getElementById('profileEditForm');
+const fullNameInput = document.querySelector('input[name="full_name"]');
+const emailInput = document.querySelector('input[name="email"]');
+const phoneInput = document.querySelector('input[name="phone"]');
+
+const fullNameError = document.getElementById('full_name-error');
+const emailError = document.getElementById('email-error');
+const phoneError = document.getElementById('phone-error');
+
+profileForm.addEventListener('submit', function (e) {
+let isValid = true;
+
+// Reset error messages
+fullNameError.textContent = '';
+emailError.textContent = '';
+phoneError.textContent = '';
+
+// Validate name
+if (! fullNameInput.value.trim()) {
+fullNameError.textContent = 'Name cannot be empty';
+isValid = false;
+} else {
+const nameParts = fullNameInput.value.trim().split(' ');
+if (nameParts.length < 2 || ! nameParts[0] || ! nameParts[1]) {
+fullNameError.textContent = 'Please provide both first and last name';
+isValid = false;
+}
+}
+
+// Validate email
+if (! emailInput.value.trim()) {
+emailError.textContent = 'Email cannot be empty';
+isValid = false;
+} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
+emailError.textContent = 'Please enter a valid email address';
+isValid = false;
+}
+
+// Validate phone (using Tunisian phone number format)
+if (! phoneInput.value.trim()) {
+phoneError.textContent = 'Phone number cannot be empty';
+isValid = false;
+} else if (!/^((\+|00)216)?([2579][0-9]{7}|(3[012]|4[01]|8[0128])[0-9]{6}|42[16][0-9]{5})$/.test(phoneInput.value)) {
+phoneError.textContent = 'Invalid phone number';
+isValid = false;
+}
+
+if (! isValid) {
+e.preventDefault();
+}
+});
+});
+	</script>
+
+
+{% endblock %}

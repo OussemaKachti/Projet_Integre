@@ -1,0 +1,227 @@
+{% extends 'baseAdmin.html.twig' %}
+
+{% block title %}Poll Details
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+	<link href="https://cdn.jsdelivr.net/npm/apexcharts@3.41.0/dist/apexcharts.css" rel="stylesheet">
+	<style>
+		.bin-button {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			width: 25px;
+			height: 25px;
+			border-radius: 5px;
+			background-color: rgb(255, 95, 95);
+			cursor: pointer;
+			border: 3px solid rgb(255, 201, 201);
+			transition-duration: 0.3s;
+		}
+
+		.bin-bottom {
+			width: 15px;
+		}
+
+		.bin-top {
+			width: 17px;
+			transform-origin: right;
+			transition-duration: 0.3s;
+		}
+
+		.bin-button:hover .bin-top {
+			transform: rotate(45deg);
+		}
+
+		.bin-button:hover {
+			background-color: rgb(255, 0, 0);
+		}
+
+		.bin-button:active {
+			transform: scale(0.9);
+		}
+
+		.action-buttons {
+			display: flex;
+			gap: 10px;
+			align-items: center;
+		}
+
+		.chart-container {
+			position: relative;
+			height: 400px;
+			width: 100%;
+			margin-top: 20px;
+		}
+	</style>
+{% endblock %}
+
+{% block body %}
+	<div class="main-panel" style="width: 100%; max-width: 1500px; margin: 0 auto 0 20px;">
+		<div
+			class="content-wrapper">
+			<!-- Informations du sondage -->
+			<div class="row mb-4">
+				<div class="col-12">
+					<div class="card">
+						<div class="card-body">
+							<h4 class="card-title">Poll Information</h4>
+							<p>
+								<strong>Question:</strong>
+								{{ sondage.question }}</p>
+							<p>
+								<strong>Club:</strong>
+								{{ sondage.club.nomC }}</p>
+							<p>
+								<strong>Created At:</strong>
+								{{ sondage.createdAt|date('d/m/Y H:i') }}</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Table des commentaires -->
+			<div class="row mb-4">
+				<div class="col-12">
+					<div class="card">
+						<div class="card-body">
+							<h4 class="card-title">Comments</h4>
+							<div class="table-responsive">
+								<table class="table table-striped">
+									<thead>
+										<tr>
+											<th>User</th>
+											<th>Comment</th>
+											<th>Created At</th>
+											<th>Actions</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for comment in comments %}
+											<tr>
+												<td>{{ comment.user.fullName }}</td>
+												{# Utilisation de la méthode getFullName() #}
+												<td>{{ comment.contenuComment }}</td>
+												<td>{{ comment.dateComment|date('d/m/Y H:i') }}</td>
+												<td class="actions-column">
+													<div class="action-buttons">
+														<button class="bin-button" data-id="{{ comment.id }}">
+															<svg class="bin-top" viewbox="0 0 39 7" fill="none">
+																<line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+																<line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
+															</svg>
+															<svg class="bin-bottom" viewbox="0 0 33 39" fill="none">
+																<path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+																<path d="M21 6V29" stroke="white" stroke-width="4"></path>
+															</svg>
+														</button>
+													</div>
+												</td>
+											</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+
+				<div class="col-lg-6 grid-margin stretch-card">
+					<div class="card">
+						<div class="card-body">
+							<h4 class="card-title">Bar chart for Responses to polls</h4>
+							<canvas id="barChart"></canvas>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Graphique des réponses -->
+		<div class="row">
+			<div class="col-lg-6 grid-margin stretch-card">
+				<div class="card">
+					<div class="card-body">
+						<h4 class="card-title">Response Statistics</h4>
+						<canvas id="statsChart" style="height: 300px;"></canvas>
+						
+						<!-- Légende des résultats -->
+						<div class="mt-4">
+							{% for result in poll_results %}
+								<div class="mb-2">
+									{{ result.choix }}: {{ result.count }} votes ({{ result.percentage }}%)
+								</div>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Nouvelle section pour le graphique ApexCharts -->
+		<div class="row">
+			<div class="col-lg-6 grid-margin stretch-card">
+				<div class="card">
+					<div class="card-body">
+						<h4 class="card-title">Response Analytics</h4>
+						<div id="responseAnalytics" class="chart-container"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		var ctx = document.getElementById('statsChart').getContext('2d');
+		var data = {{ poll_results|json_encode|raw }};
+		
+		console.log('Data:', data); // Pour déboguer
+		
+		new Chart(ctx, {
+			type: 'doughnut',
+			data: {
+				labels: data.map(item => item.choix),
+				datasets: [{
+					data: data.map(item => item.count),
+					backgroundColor: [
+						'#FF6384',
+						'#36A2EB',
+						'#FFCE56',
+						'#4BC0C0',
+						'#9966FF'
+					]
+				}]
+			},
+			options: {
+				responsive: true,
+				plugins: {
+					legend: {
+						position: 'bottom'
+					},
+					tooltip: {
+						callbacks: {
+							label: function(context) {
+								var label = context.label || '';
+								var value = context.raw || 0;
+								var total = context.dataset.data.reduce((a, b) => a + b, 0);
+								var percentage = ((value / total) * 100).toFixed(1);
+								return `${label}: ${value} votes (${percentage}%)`;
+							}
+						}
+					}
+				}
+			}
+		});
+	});
+</script>{% endblock %}

@@ -1,0 +1,202 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ evenement.nomEvent }}{% endblock %}
+
+{% block body %}
+<main>
+    <section class="event__area pt-115 p-relative">
+        <div class="container">
+            <div class="row">
+                <!-- Contenu principal -->
+                <div class="col-xxl-8">
+                    <div class="event__wrapper">
+                        <div class="page__title-content mb-25">
+                            <h5 class="breadcrumb__title-2">{{ evenement.nomEvent }}</h5>
+                        </div>
+
+                        <!-- Nouveau bloc pour la catégorie sous le titre avec un style personnalisé -->
+                        <div class="course__update mr-80 mb-30">
+                            {% if evenement.categorie %}
+                                <div class="course__category" style="display: inline-flex; align-items: center; background-color: #e0f7fa; padding: 8px 20px; border-radius: 25px;">
+                                    <span style="color: #021715; font-weight: bold; font-size: 16px; margin-right: 10px;">Catégorie:</span>
+                                    <i class="fa-solid fa-tags" style="margin-right: 10px; color: #00796b; font-size: 18px;"></i>
+                                    <span style="color: #021715; font-weight: bold; font-size: 16px;">{{ evenement.categorie.nomCat }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="course__update mr-80 mb-30">
+                            {% if evenement.club %}
+                                <div class="course__category" style="display: inline-flex; align-items: center; background-color: #e0f7fa; padding: 8px 20px; border-radius: 25px;">
+                                    <span style="color: #021715; font-weight: bold; font-size: 16px; margin-right: 10px;">Creator:</span>
+                                    <i class="fa-solid fa-users" style="margin-right: 10px; color: #00796b; font-size: 18px;"></i>
+                                    <span style="color: #021715; font-weight: bold; font-size: 16px;">{{ evenement.club.nomC }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="event__details mb-35">
+                            {% if evenement.imageDescription %}
+                                <div class="event__image-container">
+                                    <img src="{{ asset('uploads/events/' ~ evenement.imageDescription) }}" alt="Image de la description" style="max-width: 750px; max-height: 550px; width: auto; height: auto; object-fit: cover;">
+                                </div>
+                                <div class="space-between-image-description"></div>  {# Ajout d'un espace entre l'image et le titre #}
+                            {% else %}
+                                <p>Aucune image pour la description.</p>
+                            {% endif %}
+                            <h3>Description</h3>
+                            <p>{{ evenement.descEvent }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-xxl-4 col-xl-4 col-lg-4">
+                    <div class="event__sidebar pl-70">
+                        <div class="event__sidebar-widget white-bg mb-20">
+                            <div class="event__sidebar-shape">
+                                <div class="event__info">
+                                    <div class="event__info-content mb-35">
+                                        <ul>
+                                            <li class="d-flex align-items-center">
+                                                <div class="event__info-icon">
+                                                    <i class="fa-solid fa-clock event-icon-time"></i>
+                                                </div>
+                                                <div class="event__info-item">
+                                                    <h5><span>Début :</span> {{ evenement.startDate|date('d M Y H:i') }}</h5>
+                                                </div>
+                                            </li>
+                                            <li class="d-flex align-items-center">
+                                                <div class="event__info-icon">
+                                                    <i class="fa-solid fa-calendar-check event-icon-end"></i>
+                                                </div>
+                                                <div class="event__info-item">
+                                                    <h5><span>Fin :</span> {{ evenement.endDate|date('d M Y H:i') }}</h5>
+                                                </div>
+                                            </li>
+                                            <li class="d-flex align-items-center">
+                                                <div class="event__info-icon">
+                                                    <i class="fa-solid fa-location-pin event-icon-venue"></i>
+                                                </div>
+                                                <div class="event__info-item">
+                                                    <h5><span>Lieu :</span> {{ evenement.lieux }}</h5>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="event__join-btn">
+                                       <a href="#" id="inscrire-btn" class="tp-btn text-center w-100">
+                                          Register <i class="far fa-arrow-right"></i>
+                                       </a>
+
+                                        <style>
+                                       /* Styling des icônes pour chaque section */
+                                       .event__info-icon i {
+                                          font-size: 22px;
+                                          margin-right: 10px;
+                                       }
+                                    
+                                       /* Icône pour End (fin de l'événement) */
+                                       .event-icon-end {
+                                          color: #e74c3c; /* Rouge pour la fin */
+                                          transition: transform 0.3s ease-in-out;
+                                       }
+                                       .event-icon-end:hover {
+                                          transform: scale(1.2); /* Effet de zoom au survol */
+                                       }
+                                    
+                                       /* Icône pour Time (heure de l'événement) */
+                                       .event-icon-time {
+                                          color: #f39c12; /* Jaune pour l'heure */
+                                          transition: transform 0.3s ease-in-out;
+                                       }
+                                       .event-icon-time:hover {
+                                          transform: scale(1.2); /* Effet de zoom au survol */
+                                       }
+                                    
+                                       /* Icône pour Venue (lieu de l'événement) */
+                                       .event-icon-venue {
+                                          color: #3498db; /* Bleu pour le lieu */
+                                          transition: transform 0.3s ease-in-out;
+                                       }
+                                       .event-icon-venue:hover {
+                                          transform: scale(1.2); /* Effet de zoom au survol */
+                                       }
+                                    
+                                       /* Style général pour les éléments info */
+                                       .event__info-item h5 {
+                                          font-size: 16px;
+                                          color: #333;
+                                          font-weight: 500;
+                                       }
+                                       .event__info-item span {
+                                          color: #555;
+                                          font-weight: 700;
+                                       }
+                                    </style>
+                                    
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+.
+
+           
+               
+    </section>
+</main>
+
+<script>
+    // Modifier le texte du bouton d'inscription et désactiver le clic après l'inscription
+    document.getElementById("inscrire-btn").addEventListener("click", function (event) {
+        event.preventDefault();
+        this.innerHTML = "Inscrit ✔️";
+        this.style.pointerEvents = "none"; // Désactive le bouton une fois cliqué
+    });
+</script>
+
+{% endblock %}
+
+{% block styles %}
+<style>
+
+
+    
+   
+    /* Nouveau style pour la catégorie avec un fond coloré */
+    .course__category {
+        display: inline-flex;
+        align-items: center;
+        background-color: #e0f7fa;
+        padding: 8px 20px;
+        border-radius: 25px;
+    }
+
+    .course__category span {
+        color: #021715;
+        font-weight: bold;
+        font-size: 16px;
+        margin-right: 10px;
+    }
+
+    .course__category i {
+        margin-right: 10px;
+        color: #00796b;
+        font-size: 18px;
+    }
+
+    .event__image-container {
+        width: 100%;
+        max-width: 100px;  /* Limite la largeur du conteneur */
+        height: auto;
+        margin: 20px 0;
+        margin: 20px 20px 20px 0;
+        overflow: hidden;
+    }
+
+
+</style>
+{% endblock %}
