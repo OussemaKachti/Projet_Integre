@@ -43,6 +43,9 @@ class Club
     #[ORM\OneToMany(targetEntity: ParticipationMembre::class, mappedBy: "club", cascade: ["persist", "remove"])]
     private Collection $participations;
     
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $president = null;
    
 
 

@@ -1,79 +1,36 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Members List{% endblock %}
+
 
 {% block body %}
-<main>
-    <!-- Breadcrumb Area Start -->
-    <section class="breadcrumb__area include-bg pt-150 pb-80 breadcrumb__overlay" data-background="assets/img/clubsA.jpg">
-        <div class="container">
-            <div class="row">
-                <div class="col-xxl-12">
-                    <div class="breadcrumb__content text-center p-relative z-index-1">
-                        <h3 class="breadcrumb__title">Members List</h3>
-                        <div class="breadcrumb__list">
-                            <span><a href="index.html">Home</a></span>
-                            <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
-                            <span>Members List</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="container mt-5">
+    <h1 class="text-center mb-4 text-primary fw-bold">📋 Members list</h1>
+
+    {% if participation_membres is empty %}
+        <div class="alert alert-warning text-center fw-bold">🚨 Aucun participation_membres pour le moment.</div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped table-bordered shadow-lg rounded">
+                <thead class="bg-primary text-white text-center">
+                    <tr>
+                        <th class="py-3">👤 Nom</th>
+                        <th class="py-3">📧 Email</th>
+                        <th class="py-3">📞 Phone Number</th>
+                        <th class="py-3">🏛 Club</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">
+                    {% for participation_membres in participation_membres %}
+                        <tr class="align-middle">
+                            <td class="fw-bold">{{ participation_membres.user.nom }}</td>
+                            <td>{{ participation_membres.user.email }}</td>
+                            <td>{{ participation_membres.user.tel }}</td>
+                            <td class="text-uppercase fw-bold">{{ participation_membres.club.nomC }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-    </section>
-    <!-- Breadcrumb Area End -->
-
-    <br><br>
-
-    <!-- Members Table Section -->
-    <section class="cart-area pb-120">
-        <div class="container">
-            <div class="card shadow-lg p-4 rounded">
-                <!-- Title Section -->
-                <h2 class="text-center text-primary mb-4">Club Members</h2>
-
-                <!-- Table Content -->
-                <div class="table-content table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th class="cart-product-name">Full Name</th>
-                                <th class="product-price">Role</th>
-                                <th class="product-quantity">Email</th>
-                                <th class="product-subtotal">Phone</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Example Members -->
-                            <tr>
-                                <td class="product-name">Mariem Trabelsi</td>
-                                <td class="product-price">President</td>
-                                <td class="product-quantity">mariem.trabelsi@example.com</td>
-                                <td class="product-subtotal">+216 12 345 678</td>
-                            </tr>
-                            <tr>
-                                <td class="product-name">Morgan Karim</td>
-                                <td class="product-price">Member</td>
-                                <td class="product-quantity">morgan.karim@example.com</td>
-                                <td class="product-subtotal">+216 98 765 432</td>
-                            </tr>
-                            <!-- More members can be dynamically added here -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Back Button -->
-                <div class="text-center mt-4">
-                    <a href="{{ path('clubdetail') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to List
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- Members Table Section End -->
-
-   
-</main>
-
+    {% endif %}
+</div>
 {% endblock %}

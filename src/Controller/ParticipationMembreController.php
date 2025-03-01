@@ -34,44 +34,43 @@ class ParticipationMembreController extends AbstractController
     }
     
     #[Route('/new/{clubId}', name: 'app_participation_membre_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, int $clubId ,ClubRepository $clubRepository): Response
-    {
-        // Récupérer le club à partir de l'ID passé dans l'URL
-        $club = $entityManager->getRepository(Club::class)->find($clubId);
-    
-        // Vérifie si le club existe
-        $clubs = $clubRepository->findAll();
+public function new(Request $request, EntityManagerInterface $entityManager, int $clubId, ClubRepository $clubRepository): Response
+{
+    // Récupérer le club à partir de l'ID passé dans l'URL
+    $club = $entityManager->getRepository(Club::class)->find($clubId);
 
-    
-        // Créer une nouvelle participation
-        $participationMembre = new ParticipationMembre();
-        $participationMembre->setClub($club); // Associer le club à la participation
-    
-        $form = $this->createForm(ParticipationMembreType::class, $participationMembre);
-        $form->handleRequest($request);
-    
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Normalisation du statut
-            $participationMembre->setStatut("enAttente");
-    
-            // Persist l'objet
-            $entityManager->persist($participationMembre);
-            $entityManager->flush();
-    
-            // Message flash pour informer l'utilisateur
-            $this->addFlash('success', 'Votre demande de participation a été enregistrée avec succès.');
-    
-            // Redirige vers le détail du club
-            return $this->render('club/index.html.twig', [
-                'clubs' => $clubs,
-            ]);        }
-    
-        // Afficher le formulaire
-        return $this->render('participation_membre/new.html.twig', [
-            'participation_membre' => $participationMembre,
-            'form' => $form->createView(),
-        ]);
+    // Vérifie si le club existe
+    $clubs = $clubRepository->findAll();
+
+    // Créer une nouvelle participation
+    $participationMembre = new ParticipationMembre();
+    $participationMembre->setClub($club); // Associer le club à la participation
+
+    $form = $this->createForm(ParticipationMembreType::class, $participationMembre);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Normalisation du statut
+        $participationMembre->setStatut("enAttente");
+
+        // Persist l'objet
+        $entityManager->persist($participationMembre);
+        $entityManager->flush();
+
+        // Message flash pour informer l'utilisateur
+        $this->addFlash('success', 'Votre demande de participation a été enregistrée avec succès.');
+
+        // Redirige vers la route '/indexx'
+        return $this->redirectToRoute('index2');
     }
+
+    // Afficher le formulaire
+    return $this->render('participation_membre/new.html.twig', [
+        'participation_membre' => $participationMembre,
+        'form' => $form->createView(),
+    ]);
+}
+
     
 
     

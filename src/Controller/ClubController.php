@@ -96,25 +96,24 @@ class ClubController extends AbstractController
             'clubs' => $clubRepository->findAll(),
         ]);
     }
-
     #[Route('/newClub', name: 'app_club_new', methods: ['GET', 'POST'])]
     public function newClub(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $club = new Club();
         $form = $this->createForm(ClubType::class, $club);
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) { 
             $club->setStatus(StatutClubEnum::EN_ATTENTE);
             $club->setPoints(0);
-
+    
             // Gestion de l'upload de l'image du club
             $imageFile = $form->get('image')->getData();
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
-
+    
                 try {
                     $imageFile->move(
                         $this->getParameter('uploads_directory'), // Assurez-vous de définir ce paramètre
@@ -127,19 +126,25 @@ class ClubController extends AbstractController
                 }
             }
 
+            // Associer le club à l'utilisateur connecté (le président)
+           // $president = $this->getUser(); // Utilisateur connecté
+           // if (!$president) {
+               // throw new \Exception("Aucun utilisateur connecté.");
+           // }
+           // $club->setPresident($president); // Définir le président du club
+    
             $entityManager->persist($club); 
             $entityManager->flush(); 
-
+    
             return $this->redirectToRoute('app_club_index', [], Response::HTTP_SEE_OTHER); 
         }
-
+    //afficher le formulaire
         return $this->render('club/new.html.twig', [
             'club' => $club, 
             'form' => $form, 
         ]);
-    }   
-
-
+    }
+    
     #[Route('/{id}', name: 'app_club_show', methods: ['GET'])] // show the club
     public function show($id, EntityManagerInterface $entityManager): Response
 

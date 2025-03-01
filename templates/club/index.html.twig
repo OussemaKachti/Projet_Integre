@@ -1,4 +1,3 @@
-
 {% extends 'base.html.twig' %}
 
 {% block body %}
@@ -51,7 +50,7 @@
                                 </div>
                             </div>
 
-                <!-- create club button -->
+                            <!-- create club button -->
                             <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6">
                                 <div class="course__sort d-flex justify-content-sm-end">
                                     <div class="course__sort-inner">
@@ -65,14 +64,13 @@
                     </div>
                 </div>
             </div>
-<!-- end of create club button -->
+            <!-- end of create club button -->
 
-<!-- start of the clubs cards -->
-            <div class="row" style="display: flex; flex-wrap: wrap; align-items: stretch;">
-               
-                <!-- Carte 1 : Lion Club -->
-                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6" style="display: flex;">
-                    <div class="course__item-2 transition-3 white-bg mb-30 fix" style="display: flex; flex-direction: column; width: 100%;">
+            <!-- start of the clubs cards -->
+            <div class="row">
+                <!-- Static Card 1: Lion Club -->
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6 mb-30">
+                    <div class="course__item-2 transition-3 white-bg fix" style="display: flex; flex-direction: column; width: 100%; height: 100%;">
                         <div class="course__thumb-2 w-img fix">
                             <a href="#">
                                 <img src="{{ asset('front_assets/img/lion.jpg') }}" alt="Lion Club" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
@@ -105,14 +103,19 @@
                                         </li>
                                     </ul>
                                 </div>
+                                <a href="{{ path('app_participation_membre_new', {'clubId': 1}) }}" 
+                                   class="btn btn-primary" 
+                                   style="background-color: #007bff; border: none; color: #fff; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 14px;">
+                                    Participate
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Carte 2 : IEEE -->
-                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6" style="display: flex;">
-                    <div class="course__item-2 transition-3 white-bg mb-30 fix" style="display: flex; flex-direction: column; width: 100%;">
+                <!-- Static Card 2: IEEE -->
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6 mb-30">
+                    <div class="course__item-2 transition-3 white-bg fix" style="display: flex; flex-direction: column; width: 100%; height: 100%;">
                         <div class="course__thumb-2 w-img fix">
                             <a href="#">
                                 <img src="{{ asset('front_assets/img/IEEE.jpg') }}" alt="IEEE" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
@@ -145,14 +148,19 @@
                                         </li>
                                     </ul>
                                 </div>
+                                <a href="{{ path('app_participation_membre_new', {'clubId': 2}) }}" 
+                                   class="btn btn-primary" 
+                                   style="background-color: #007bff; border: none; color: #fff; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 14px;">
+                                    Participate
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Carte 3 : Enactus -->
-                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6" style="display: flex;">
-                    <div class="course__item-2 transition-3 white-bg mb-30 fix" style="display: flex; flex-direction: column; width: 100%;">
+                <!-- Static Card 3: Enactus -->
+                <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6 mb-30">
+                    <div class="course__item-2 transition-3 white-bg fix" style="display: flex; flex-direction: column; width: 100%; height: 100%;">
                         <div class="course__thumb-2 w-img fix">
                             <a href="#">
                                 <img src="{{ asset('front_assets/img/Enactus.png') }}" alt="Enactus" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
@@ -185,70 +193,71 @@
                                         </li>
                                     </ul>
                                 </div>
+                                <a href="{{ path('app_participation_membre_new', {'clubId': 3}) }}" 
+                                   class="btn btn-primary" 
+                                   style="background-color: #007bff; border: none; color: #fff; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 14px;">
+                                    Participate
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-
-
-<div class="row">
-    {% for club in clubs %}
-        <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6" style="display: flex;">
-            <div class="course__item-2 transition-3 white-bg mb-30 fix" style="display: flex; flex-direction: column; width: 100%;">
-                
-                <div class="course__thumb-2 w-img fix">
-                    <a href="#">
-                        {% if club.image %}
-                            <img src="{{ asset('uploads/' ~ club.image) }}" alt="" 
-                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
-                        {% else %}
-                            <img src="file:///C:/Users/YourUsername/Pictures/myimage.jpg" alt="Local Image">
-                        {% endif %}
-                    </a>
-                </div>
-
-                <div class="course__content-2 p-20" style="flex: 1; display: flex; flex-direction: column;">
-                    <h3 class="course__title-2" style="font-size: 24px; color: #333; margin-bottom: 15px;">
-                        <a>{{ club.nomC }}</a>
-                    </h3>
-                    <p style="font-size: 16px; color: #555; line-height: 1.6; margin-bottom: 20px; flex: 1;">
-                        {{ club.description }}
-                    </p>
-                    <div class="course__bottom-2 d-flex align-items-center justify-content-between">
-                        <div class="course__action-item d-flex align-items-center">
-                            <div class="course__action-icon mr-5">
-                                <span>
-                                    <!-- Score Icon -->
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#5F6160" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </span>
+                <!-- Dynamic Cards from the `clubs` variable -->
+                {% for club in clubs %}
+                    <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6 mb-30">
+                        <div class="course__item-2 transition-3 white-bg fix" style="display: flex; flex-direction: column; width: 100%; height: 100%;">
+                            <div class="course__thumb-2 w-img fix">
+                                <a href="#">
+                                    {% if club.image %}
+                                        <img src="{{ asset('uploads/' ~ club.image) }}" alt="{{ club.nomC }}" 
+                                             style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
+                                    {% else %}
+                                        <img src="{{ asset('front_assets/img/default-club.jpg') }}" alt="Default Club Image" 
+                                             style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
+                                    {% endif %}
+                                </a>
                             </div>
-                            <div class="course__action-score">
-                                <span style="font-weight: bold; color: #5F6160;">{{ club.points }}</span>
+
+                            <div class="course__content-2 p-20" style="flex: 1; display: flex; flex-direction: column;">
+                                <h3 class="course__title-2" style="font-size: 24px; color: #333; margin-bottom: 15px;">
+                                    <a href="{{ path('clubdetail', {'id': club.id}) }}">{{ club.nomC }}</a>
+                                </h3>
+                                <p style="font-size: 16px; color: #555; line-height: 1.6; margin-bottom: 20px; flex: 1;">
+                                    {{ club.description|slice(0, 100) ~ '...' }}
+                                </p>
+                                <div class="course__bottom-2 d-flex align-items-center justify-content-between">
+                                    <div class="course__action">
+                                        <ul style="list-style: none; padding: 0; margin: 0;">
+                                            <li>
+                                                <div class="course__action-item d-flex align-items-center">
+                                                    <div class="course__action-icon mr-5">
+                                                        <span>
+                                                            <!-- Score Icon -->
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#5F6160" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                            </svg>
+                                                        </span>
+                                                    </div>
+                                                    <div class="course__action-score">
+                                                        <span style="font-weight: bold; color: #5F6160;">{{ club.points }}</span>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <a href="{{ path('app_participation_membre_new', {'clubId': club.id}) }}" 
+                                       class="btn btn-primary" 
+                                       style="background-color: #007bff; border: none; color: #fff; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 14px;">
+                                        Participate
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                        <a href="{{ path('app_participation_membre_new', {'clubId': club.id}) }}" 
-                           class="btn btn-primary" 
-                           style="background-color: #007bff; border: none; color: #fff; padding: 5px 10px; border-radius: 5px; text-decoration: none; font-size: 14px;">
-                            Participate
-                        </a>
                     </div>
-                </div>
+                {% endfor %}
             </div>
-        </div>
-    
-</div>
-    {% else %}
-        <p>No clubs available yet!</p>
-    {% endfor %}
-</div>  
-
-
-
-            
+            <!-- end of the clubs cards -->
 
             <!-- Pagination -->
             <div class="row">
@@ -283,7 +292,5 @@
         </div>
     </section>
     <!-- course area end -->
-
-    
 </main>
 {% endblock %}
