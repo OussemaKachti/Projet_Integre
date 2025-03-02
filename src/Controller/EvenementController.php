@@ -48,24 +48,97 @@ class EvenementController extends AbstractController
             'categories' => $categories,
         ]);
     }
+    #[Route('/', name: 'event', methods: ['GET'])]
+    public function index(
+        Request $request, 
+        EvenementRepository $evenementRepository, 
+        PaginatorInterface $paginator
+    ): Response {
+        // Récupération des paramètres de recherche et de filtre
+        $search = $request->query->get('search');
+        $type   = $request->query->get('type');
+        $date   = $request->query->get('date');
+    
+        // Construction du QueryBuilder avec filtrage dynamique
+        $queryBuilder = $evenementRepository->createQueryBuilder('e');
+    
+        // Filtrage par nom d'événement
+        if ($search) {
+            $queryBuilder->andWhere('e.nomEvent LIKE :search')
+                         ->setParameter('search', '%' . $search . '%');
+        }
+    
+        // Filtrage par type d'événement
+        if ($type) {
+            $queryBuilder->andWhere('e.type = :type')
+                         ->setParameter('type', $type);
+        }
+    
+        // Filtrage par date (entre le début et la fin de la journée)
+        if ($date) {
+            try {
+                $dateObj = new \DateTime($date);
+                $startOfDay = (clone $dateObj)->setTime(0, 0, 0);
+                $endOfDay   = (clone $dateObj)->setTime(23, 59, 59);
+                $queryBuilder->andWhere('e.startDate BETWEEN :startOfDay AND :endOfDay')
+                             ->setParameter('startOfDay', $startOfDay)
+                             ->setParameter('endOfDay', $endOfDay);
+            } catch (\Exception $e) {
+                if ($request->isXmlHttpRequest()) {
+                    return $this->json(['error' => 'Invalid date format'], 400);
+                }
+                // Vous pouvez également ajouter un message flash pour les requêtes non-AJAX.
+            }
+        }
+    
+        // Si la requête est AJAX, on renvoie un JSON pour le filtrage dynamique
+        if ($request->isXmlHttpRequest()) {
+            $evenements = $queryBuilder->getQuery()->getResult();
+    
+            $events = [];
+            foreach ($evenements as $evenement) {
+                $events[] = [
+                    'id'       => $evenement->getId(),
+                    'title'    => $evenement->getNomEvent(),
+                    'start'    => $evenement->getStartDate()->format('Y-m-d H:i:s'),
+                    'end'      => $evenement->getEndDate() ? $evenement->getEndDate()->format('Y-m-d H:i:s') : null,
+                    'location' => $evenement->getLieux(),
+                ];
+            }
+    
+            return $this->json($events);
+        }
+    
+        // Pour une requête classique (non-AJAX), on effectue la pagination
+        $query = $queryBuilder->getQuery();
+        $evenements = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            4  // Nombre d'éléments par page (ajustez selon vos besoins)
+        );
+    
+        return $this->render('evenement/event.html.twig', [
+            'evenements' => $evenements,
+        ]);
+    }
+    
+//    #[Route('/', name: 'event', methods: ['GET'])]
+// public function index(Request $request, EvenementRepository $evenementRepository, PaginatorInterface $paginator): Response
+// {
+//     // Utilisation du QueryBuilder pour récupérer les événements
+//     $query = $evenementRepository->createQueryBuilder('e')->getQuery();
 
-   #[Route('/', name: 'event', methods: ['GET'])]
-public function index(Request $request, EvenementRepository $evenementRepository, PaginatorInterface $paginator): Response
-{
-    // Utilisation du QueryBuilder pour récupérer les événements
-    $query = $evenementRepository->createQueryBuilder('e')->getQuery();
+//     // Paginer la requête : 10 éléments par page, page courante récupérée via le paramètre "page"
+//     $evenements = $paginator->paginate(
+//         $query,
+//         $request->query->getInt('page', 1),
+//         4
+//     );
 
-    // Paginer la requête : 10 éléments par page, page courante récupérée via le paramètre "page"
-    $evenements = $paginator->paginate(
-        $query,
-        $request->query->getInt('page', 1),
-        4
-    );
-
-    return $this->render('evenement/event.html.twig', [
-        'evenements' => $evenements,
-    ]);
-}
+//     return $this->render('evenement/event.html.twig', [
+//         'evenements' => $evenements,
+//     ]);
+// }
     #[Route('/club/{clubId}/events', name: 'club_events')]
     public function showEvents(int $clubId, ClubRepository $clubRepository, EvenementRepository $evenementRepository): Response
     {
@@ -124,7 +197,7 @@ public function index(Request $request, EvenementRepository $evenementRepository
         $errors = [];
     
         if ($form->isSubmitted() && $form->isValid()) {
-    dump('Form is valid'); // Vérifier si ce message apparaît
+  
 
     // Récupérer l’image
     $imageDescriptionFile = $form->get('imageDescription')->getData();
@@ -214,33 +287,35 @@ public function getFilteredEvents(Request $request, EvenementRepository $eveneme
 {
     // Récupération des paramètres de la requête
     $search = $request->query->get('search');
-    $type = $request->query->get('type');
-    $date = $request->query->get('date');
+    $type   = $request->query->get('type');
+    $date   = $request->query->get('date');
 
     // Initialisation du QueryBuilder
     $queryBuilder = $evenementRepository->createQueryBuilder('e');
 
-    // Vérification de la présence d'un paramètre 'search' et ajout de la condition dans le QueryBuilder
+    // Filtrage par nom d'événement
     if ($search) {
         $queryBuilder->andWhere('e.nomEvent LIKE :search')
                      ->setParameter('search', '%' . $search . '%');
     }
 
-    // Vérification de la présence d'un paramètre 'type' et ajout de la condition dans le QueryBuilder
+    // Filtrage par type d'événement
     if ($type) {
         $queryBuilder->andWhere('e.type = :type')
                      ->setParameter('type', $type);
     }
 
-    // Vérification de la présence d'un paramètre 'date' et ajout de la condition dans le QueryBuilder
+    // Filtrage par date : récupération des événements dont la date de début se situe
+    // entre le début et la fin de la journée passée en paramètre
     if ($date) {
         try {
-            // Si la date est valide, on l'ajoute à la requête
             $dateObj = new \DateTime($date);
-            $queryBuilder->andWhere('e.startDate >= :date')
-                         ->setParameter('date', $dateObj);
+            $startOfDay = (clone $dateObj)->setTime(0, 0, 0);
+            $endOfDay   = (clone $dateObj)->setTime(23, 59, 59);
+            $queryBuilder->andWhere('e.startDate BETWEEN :startOfDay AND :endOfDay')
+                         ->setParameter('startOfDay', $startOfDay)
+                         ->setParameter('endOfDay', $endOfDay);
         } catch (\Exception $e) {
-            // Gestion d'une erreur de format de date
             return $this->json(['error' => 'Invalid date format'], 400);
         }
     }
@@ -248,9 +323,43 @@ public function getFilteredEvents(Request $request, EvenementRepository $eveneme
     // Exécution de la requête
     $evenements = $queryBuilder->getQuery()->getResult();
 
-    // Retour des résultats sous forme de JSON avec le groupe de serialization 'event:read'
-    return $this->json($evenements, 200, [], ['groups' => 'event:read']);
+    // Transformation des événements pour FullCalendar
+    $events = [];
+    foreach ($evenements as $evenement) {
+        $events[] = [
+            'id'       => $evenement->getId(),
+            'title'    => $evenement->getNomEvent(),
+            'start'    => $evenement->getStartDate()->format('Y-m-d H:i:s'),
+            'end'      => $evenement->getEndDate() ? $evenement->getEndDate()->format('Y-m-d H:i:s') : null,
+            'location' => $evenement->getLieux(),
+        ];
+    }
+
+    return $this->json($events);
 }
 
+
+#[Route('/calendar', name: 'app_calendar')]
+public function calendarView(): Response
+{
+    return $this->render('evenement/calendar.html.twig');
+}
+
+#[Route('/api/events', name: 'events_calendar')]
+public function getEvents(EvenementRepository $eventRepository): JsonResponse
+{
+    $events = $eventRepository->findAll();
+    $data = [];
+
+    foreach ($events as $event) {
+        $data[] = [
+            'title' => $event->getNomEvent(),
+            'start' => $event->getStartDate()->format('Y-m-d H:i:s'),
+            'color' => '#2C2C2C'
+        ];
+    }
+
+    return new JsonResponse($data);
+}
 
 }
