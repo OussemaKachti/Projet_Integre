@@ -78,8 +78,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 64, nullable: true)]
     private ?string $confirmationToken = null;
 
+
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $confirmationTokenExpiresAt = null;
+    #[ORM\Column(type: 'datetime_immutable',nullable: true)]
+    private \DateTimeImmutable $createdAt;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $lastLoginAt = null;
 
 
 
@@ -104,7 +110,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: ParticipationEvent::class, mappedBy: 'user_id')]
     private Collection $no;
 
-   
+
 
     public function __construct()
     {
@@ -114,6 +120,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->no = new ArrayCollection();
         $this->sondages = new ArrayCollection();
         $this->commandes = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
     public function getId(): ?int
     {
@@ -207,7 +214,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Commande::class)]
     private Collection $commandes;
 
-    
+
 
     /**
      * @return Collection|Commande[]
@@ -281,9 +288,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->role === RoleEnum::ADMINISTRATEUR;
     }
     public function __toString(): string
-{
-    return $this->getFullName();
-}
+    {
+        return $this->getFullName();
+    }
     //account dfisabling : 
     public function getStatus(): string
     {
@@ -349,6 +356,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getNo(): Collection
     {
         return $this->no;
+    }
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+    public function getLastLoginAt(): ?\DateTime
+    {
+        return $this->lastLoginAt;
+    }
+    public function setLastLoginAt(?\DateTime $lastLoginAt): self
+    {
+        $this->lastLoginAt = $lastLoginAt;
+        return $this;
+    }
+    public function updateLastLogin(): self
+    {
+        $this->lastLoginAt = new \DateTime();
+        return $this;
     }
     //IMEN //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

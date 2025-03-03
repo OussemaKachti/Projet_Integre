@@ -1,0 +1,75 @@
+<!-- Advanced Search Component -->
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Advanced Search</h5>
+    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedSearchCollapse">
+      <i class="mdi mdi-chevron-down"></i>
+    </button>
+  </div>
+  <div class="collapse" id="advancedSearchCollapse">
+    <div class="card-body">
+      <form id="advanced-search-form">
+        <div class="row g-3">
+          <!-- Basic Search -->
+          <div class="col-md-12">
+            <div class="input-group">
+              <input type="text" id="global-search" class="form-control" placeholder="Search by name, email or phone..." value="{{ searchQuery }}">
+              <button id="search-button" class="btn btn-primary" type="button">
+                <i class="mdi mdi-magnify"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Search Type -->
+          <div class="col-md-4">
+            <label for="search-type" class="form-label">Search Type</label>
+            <select id="search-type" class="form-select">
+              <option value="contains">Contains</option>
+              <option value="exact">Exact Match</option>
+              <option value="starts">Starts With</option>
+              <option value="ends">Ends With</option>
+            </select>
+          </div>
+          
+          <!-- Search Field -->
+          <div class="col-md-4">
+            <label for="search-field" class="form-label">Search In</label>
+            <select id="search-field" class="form-select">
+              <option value="all">All Fields</option>
+              <option value="name">Name</option>
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+            </select>
+          </div>
+          
+          <!-- Date Range -->
+          <div class="col-md-4">
+            <label for="date-range" class="form-label">Registration Date</label>
+            <select id="date-range" class="form-select">
+              <option value="">Any Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+          
+          <!-- Custom Date Range (initially hidden) -->
+          <div class="col-md-6 date-range-custom" style="display: none;">
+            <label for="date-from" class="form-label">From</label>
+            <input type="date" id="date-from" class="form-control">
+          </div>
+          <div class="col-md-6 date-range-custom" style="display: none;">
+            <label for="date-to" class="form-label">To</label>
+            <input type="date" id="date-to" class="form-control">
+          </div>
+          
+          <div class="col-12 d-flex justify-content-end mt-3">
+            <button type="button" id="clear-search" class="btn btn-outline-secondary me-2">Clear</button>
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

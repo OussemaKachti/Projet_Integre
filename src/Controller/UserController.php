@@ -94,74 +94,94 @@ class UserController extends AbstractController
         ]);
     }
     #[Route('/update-profile', name: 'app_update_profile', methods: ['POST'])]
-    public function updateProfile(
-        Request $request,
-        EntityManagerInterface $entityManager,
-        ValidatorInterface $validator
-    ): Response {
+    public function updateProfile(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): Response
+    {
+        /** @var User $user */
         $user = $this->getUser();
+        
         if (!$user) {
-            throw $this->createAccessDeniedException('You need to be logged in to update your profile.');
+            return $this->redirectToRoute('app_login');
         }
-
-        // Store original values in case of failure
-        $originalData = [
-            'nom' => $user->getNom(),
-            'prenom' => $user->getPrenom(),
-            'email' => $user->getEmail(),
-            'tel' => $user->getTel()
-        ];
-
-        try {
-            // Handle full name
-            $fullName = $request->request->get('full_name');
-            if (!empty($fullName)) {
-                $nameParts = explode(' ', trim($fullName), 2);
-                if (count($nameParts) === 2) {
-                    $user->setPrenom(trim($nameParts[0]));
-                    $user->setNom(trim($nameParts[1]));
-                }
-            }
-
-            // Handle other fields
-            $user->setEmail($request->request->get('email', $user->getEmail()));
-            $user->setTel($request->request->get('phone', $user->getTel()));
-
-            // Validate using entity constraints
-            $errors = $validator->validate($user);
-
-            if (count($errors) > 0) {
-                foreach ($errors as $error) {
-                    $field = $error->getPropertyPath();
-                    $message = $error->getMessage();
-
-                    // Map entity fields to form fields
-                    $formField = match ($field) {
-                        'nom' => 'full_name',
-                        'prenom' => 'full_name',
-                        'email' => 'email',
-                        'tel' => 'phone',
-                        default => 'general'
-                    };
-
-                    $this->addFlash("error_$formField", $message);
-                }
-
-                // Restore original values
-                $user->setNom($originalData['nom']);
-                $user->setPrenom($originalData['prenom']);
-                $user->setEmail($originalData['email']);
-                $user->setTel($originalData['tel']);
-
+        
+        // Get current password for verification
+        $currentPassword = $request->request->get('current_password');
+        
+        // Verify the current password
+        if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
+            $this->addFlash('error', 'Current password is incorrect');
+            return $this->redirectToRoute('app_profile');
+        }
+        
+        // Get form data
+        $fullName = $request->request->get('full_name');
+        $email = $request->request->get('email');
+        $phone = $request->request->get('phone');
+        
+        // Validate full name
+        $nameParts = explode(' ', trim($fullName));
+        if (count($nameParts) < 2 || empty($nameParts[0]) || empty($nameParts[1])) {
+            $this->addFlash('error', 'Please provide both first and last name');
+            return $this->redirectToRoute('app_profile');
+        }
+        
+        // Set first and last name
+        $firstName = $nameParts[0];
+        $lastName = implode(' ', array_slice($nameParts, 1));
+        
+        // Validate email
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->addFlash('error', 'Email address is not valid');
+            return $this->redirectToRoute('app_profile');
+        }
+        
+        // Check if email is already in use by another user
+        if ($email !== $user->getEmail()) {
+            $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+            if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                $this->addFlash('error', 'The email address is already in use');
                 return $this->redirectToRoute('app_profile');
             }
-
+        }
+        
+        // Validate phone number (Tunisian format)
+        $phonePattern = '/^((\+|00)216)?([2579][0-9]{7}|(3[012]|4[01]|8[0128])[0-9]{6}|42[16][0-9]{5})$/';
+        if (!empty($phone) && !preg_match($phonePattern, $phone)) {
+            $this->addFlash('error', 'Invalid phone number format');
+            return $this->redirectToRoute('app_profile');
+        }
+        
+        // Check if any data has changed
+        $hasChanges = false;
+        
+        if ($firstName !== $user->getPrenom()) {
+            $user->setPrenom($firstName);
+            $hasChanges = true;
+        }
+        
+        if ($lastName !== $user->getNom()) {
+            $user->setNom($lastName);
+            $hasChanges = true;
+        }
+        
+        if ($email !== $user->getEmail()) {
+            $user->setEmail($email);
+            $hasChanges = true;
+        }
+        
+        if ($phone !== $user->getTel()) {
+            $user->setTel($phone);
+            $hasChanges = true;
+        }
+        
+        // Only persist if there are changes
+        if ($hasChanges) {
+            $entityManager->persist($user);
             $entityManager->flush();
             $this->addFlash('success', 'Profile updated successfully');
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'An error occurred while updating your profile');
+        } else {
+            $this->addFlash('info', 'No changes were made to your profile');
         }
-
+        
         return $this->redirectToRoute('app_profile');
     }
 

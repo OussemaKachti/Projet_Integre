@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Profile</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        /* Main layout */
+        .main-content {
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .profile-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .profile-card {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .profile-heading {
+            font-size: 22px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .profile-subheading {
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+        
+        .profile-content {
+            display: flex;
+            gap: 30px;
+        }
+        
+        /* Menu styling */
+        .profile-menu {
+            width: 220px;
+            flex-shrink: 0;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            color: #495057;
+            text-decoration: none;
+        }
+        
+        .menu-item.active {
+            background-color: #e9f0ff;
+            color: #4361ee;
+            font-weight: 600;
+        }
+        
+        .menu-item:hover:not(.active) {
+            background-color: #f8f9fa;
+        }
+        
+        /* Profile info styling */
+        .profile-info {
+            flex-grow: 1;
+        }
+        
+        .info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .info-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .edit-btn {
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .info-row {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            width: 120px;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .info-value {
+            flex-grow: 1;
+        }
+        
+        .role-badge {
+            background-color: #4361ee;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 12px;
+        }
+        
+        /* Form styling */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+        
+        .error-text {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        .submit-btn {
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        
+        .cancel-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        .required {
+            color: #dc3545;
+        }
+        
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 0;
+            width: 500px;
+            max-width: 90%;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .close-modal {
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        /* Password requirements */
+        .password-requirements {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .password-requirements p {
+            margin-top: 0;
+            font-weight: 600;
+        }
+        
+        .password-requirements ul {
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+        
+        /* Alert styles */
+        .alert {
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .profile-content {
+                flex-direction: column;
+            }
+            
+            .profile-menu {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="profile-container">
+            <div class="profile-card">
+                <h2 class="profile-heading">Profile Information</h2>
+                <p class="profile-subheading">Manage your account details</p>
+                
+                <div class="profile-content">
+                    <!-- Left sidebar with profile menu -->
+                    <div class="profile-menu">
+                        <div class="menu-item active" id="profile-menu-link">
+                            <i class="fa fa-user"></i>
+                            <span>My Profile</span>
+                        </div>
+                        
+                        <div class="menu-item" id="change-password-link">
+                            <i class="fa fa-lock"></i>
+                            <span>Change Password</span>
+                        </div>
+                        
+                        <a href="{{ path('app_logout') }}" class="menu-item">
+                            <i class="fa fa-sign-out"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                    
+                    <!-- Right side with profile information -->
+                    <div class="profile-info">
+                        <!-- Profile section -->
+                        <div id="profile-section">
+                            <div class="info-header">
+                                <h3>Personal Information</h3>
+                                <button id="edit-profile-btn" class="edit-btn">
+                                    <i class="fa fa-edit"></i> Edit Profile
+                                </button>
+                            </div>
+                            
+                            {% for label, messages in app.flashes %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ label == 'error' ? 'danger' : label }}">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endfor %}
+                            
+                            <div class="info-row">
+                                <div class="info-label">Full Name</div>
+                                <div class="info-value">{{ user.prenom }} {{ user.nom }}</div>
+                            </div>
+                            
+                            <div class="info-row">
+                                <div class="info-label">Email</div>
+                                <div class="info-value">{{ user.email }}</div>
+                            </div>
+                            
+                            <div class="info-row">
+                                <div class="info-label">Phone</div>
+                                <div class="info-value">{{ user.tel }}</div>
+                            </div>
+                            
+                            <div class="info-row">
+                                <div class="info-label">Role</div>
+                                <div class="info-value">
+                                    <span class="role-badge">{{ user.role.value }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Password section (initially hidden) -->
+                        <div id="password-section" style="display: none;">
+                            <div class="info-header">
+                                <h3>Change Password</h3>
+                            </div>
+                            
+                            <form action="{{ path('app_change_password') }}" method="POST" id="changePasswordForm">
+                                <input type="hidden" name="active_tab" value="password">
+                                
+                                <div class="form-group">
+                                    <label for="oldPassword">Current Password</label>
+                                    <input type="password" name="oldPassword" id="oldPassword" required>
+                                    <span class="error-text" id="oldPasswordError"></span>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="newPassword">New Password</label>
+                                    <input type="password" name="newPassword" id="newPassword" required>
+                                    <span class="error-text" id="newPasswordError"></span>
+                                    <div class="password-requirements" id="passwordRequirements">
+                                        <p>Password must include:</p>
+                                        <ul>
+                                            <li id="length-check">At least 8 characters</li>
+                                            <li id="uppercase-check">At least one uppercase letter</li>
+                                            <li id="lowercase-check">At least one lowercase letter</li>
+                                            <li id="number-check">At least one number</li>
+                                            <li id="special-check">At least one special character (#?!@$%^&*-)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="confirmPassword">Confirm Password</label>
+                                    <input type="password" name="confirmPassword" id="confirmPassword" required>
+                                    <span class="error-text" id="confirmPasswordError"></span>
+                                </div>
+                                
+                                <button type="submit" class="submit-btn">Update Password</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Profile</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form action="{{ path('app_update_profile') }}" method="POST" id="profileEditForm">
+                    <div class="form-group">
+                        <label for="full_name">Full Name</label>
+                        <input type="text" name="full_name" id="full_name" value="{{ user.prenom ~ ' ' ~ user.nom }}">
+                        <span class="error-text" id="full_name-error"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" name="email" id="email" value="{{ user.email }}">
+                        <span class="error-text" id="email-error"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="text" name="phone" id="phone" value="{{ user.tel }}">
+                        <span class="error-text" id="phone-error"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="current_password">Current Password <span class="required">*</span></label>
+                        <input type="password" name="current_password" id="current_password" required>
+                        <span class="error-text" id="current_password-error"></span>
+                        <small>Required to confirm changes</small>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="cancel-btn" id="cancel-btn">Cancel</button>
+                        <button type="submit" class="submit-btn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab switching
+        const profileSection = document.getElementById('profile-section');
+        const passwordSection = document.getElementById('password-section');
+        const profileMenuLink = document.getElementById('profile-menu-link');
+        const changePasswordLink = document.getElementById('change-password-link');
+        
+        // Initial state check from session
+        {% if app.session.get('password_tab_active') %}
+            showPasswordSection();
+            // Clean up session
+            fetch('{{ path("app_admin_profile") }}?cleanup=true');
+        {% endif %}
+        
+        profileMenuLink.addEventListener('click', function() {
+            showProfileSection();
+        });
+        
+        changePasswordLink.addEventListener('click', function() {
+            showPasswordSection();
+        });
+        
+        function showProfileSection() {
+            profileSection.style.display = 'block';
+            passwordSection.style.display = 'none';
+            
+            profileMenuLink.classList.add('active');
+            changePasswordLink.classList.remove('active');
+        }
+        
+        function showPasswordSection() {
+            profileSection.style.display = 'none';
+            passwordSection.style.display = 'block';
+            
+            profileMenuLink.classList.remove('active');
+            changePasswordLink.classList.add('active');
+        }
+        
+        // Modal handling
+        const modal = document.getElementById('editProfileModal');
+        const editProfileBtn = document.getElementById('edit-profile-btn');
+        const closeModal = document.querySelector('.close-modal');
+        const cancelBtn = document.getElementById('cancel-btn');
+        
+        editProfileBtn.addEventListener('click', function() {
+            modal.style.display = 'block';
+        });
+        
+        closeModal.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+        
+        cancelBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+        
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+        
+        // Password validation
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const passwordRequirements = document.getElementById('passwordRequirements');
+        const lengthCheck = document.getElementById('length-check');
+        const uppercaseCheck = document.getElementById('uppercase-check');
+        const lowercaseCheck = document.getElementById('lowercase-check');
+        const numberCheck = document.getElementById('number-check');
+        const specialCheck = document.getElementById('special-check');
+        
+        // Show requirements when password field is focused
+        newPassword.addEventListener('focus', function() {
+            passwordRequirements.style.display = 'block';
+        });
+        
+        // Hide when clicking outside
+        document.addEventListener('click', function(event) {
+            if (event.target !== newPassword && !passwordRequirements.contains(event.target)) {
+                passwordRequirements.style.display = 'none';
+            }
+        });
+        
+        // Password validation logic
+        newPassword.addEventListener('input', function() {
+            const value = this.value;
+            
+            // Check length
+            if (value.length >= 8) {
+                lengthCheck.style.color = 'green';
+            } else {
+                lengthCheck.style.color = '';
+            }
+            
+            // Check uppercase
+            if (/[A-Z]/.test(value)) {
+                uppercaseCheck.style.color = 'green';
+            } else {
+                uppercaseCheck.style.color = '';
+            }
+            
+            // Check lowercase
+            if (/[a-z]/.test(value)) {
+                lowercaseCheck.style.color = 'green';
+            } else {
+                lowercaseCheck.style.color = '';
+            }
+            
+            // Check number
+            if (/[0-9]/.test(value)) {
+                numberCheck.style.color = 'green';
+            } else {
+                numberCheck.style.color = '';
+            }
+            
+            // Check special character
+            if (/[#?!@$%^&*-]/.test(value)) {
+                specialCheck.style.color = 'green';
+            } else {
+                specialCheck.style.color = '';
+            }
+        });
+        
+        // Password match validation
+        confirmPassword.addEventListener('input', function() {
+            const error = document.getElementById('confirmPasswordError');
+            if (this.value !== newPassword.value) {
+                error.textContent = 'Passwords do not match';
+            } else {
+                error.textContent = '';
+            }
+        });
+        
+        // Change password form validation
+        const changePasswordForm = document.getElementById('changePasswordForm');
+        changePasswordForm.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            // Validate old password
+            const oldPassword = document.getElementById('oldPassword');
+            const oldPasswordError = document.getElementById('oldPasswordError');
+            if (!oldPassword.value) {
+                oldPasswordError.textContent = 'Current password is required';
+                isValid = false;
+            }
+            
+            // Validate new password
+            const newPasswordError = document.getElementById('newPasswordError');
+            if (!newPassword.value) {
+                newPasswordError.textContent = 'New password is required';
+                isValid = false;
+            } else if (newPassword.value.length < 8 || 
+                      !/[A-Z]/.test(newPassword.value) || 
+                      !/[a-z]/.test(newPassword.value) || 
+                      !/[0-9]/.test(newPassword.value) || 
+                      !/[#?!@$%^&*-]/.test(newPassword.value)) {
+                newPasswordError.textContent = 'Password must meet all requirements';
+                isValid = false;
+            }
+            
+            // Validate confirm password
+            const confirmPasswordError = document.getElementById('confirmPasswordError');
+            if (!confirmPassword.value) {
+                confirmPasswordError.textContent = 'Please confirm your password';
+                isValid = false;
+            } else if (confirmPassword.value !== newPassword.value) {
+                confirmPasswordError.textContent = 'Passwords do not match';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+        
+        // Edit profile form validation
+        const profileForm = document.getElementById('profileEditForm');
+        profileForm.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            // Validate name
+            const fullName = document.getElementById('full_name');
+            const fullNameError = document.getElementById('full_name-error');
+            if (!fullName.value.trim()) {
+                fullNameError.textContent = 'Full name is required';
+                isValid = false;
+            } else if (fullName.value.trim().split(' ').length < 2) {
+                fullNameError.textContent = 'Please provide both first and last name';
+                isValid = false;
+            }
+            
+            // Validate email
+            const email = document.getElementById('email');
+            const emailError = document.getElementById('email-error');
+            if (!email.value.trim()) {
+                emailError.textContent = 'Email is required';
+                isValid = false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+                emailError.textContent = 'Please enter a valid email address';
+                isValid = false;
+            }
+            
+            // Validate phone
+            const phone = document.getElementById('phone');
+            const phoneError = document.getElementById('phone-error');
+            if (!phone.value.trim()) {
+                phoneError.textContent = 'Phone number is required';
+                isValid = false;
+            } else if (!/^((\+|00)216)?([2579][0-9]{7}|(3[012]|4[01]|8[0128])[0-9]{6}|42[16][0-9]{5})$/.test(phone.value.trim())) {
+                phoneError.textContent = 'Invalid phone number format';
+                isValid = false;
+            }
+            
+            // Validate current password
+            const currentPassword = document.getElementById('current_password');
+            const currentPasswordError = document.getElementById('current_password-error');
+            if (!currentPassword.value) {
+                currentPasswordError.textContent = 'Current password is required to save changes';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+    });
+    </script>
+</body>
+</html>

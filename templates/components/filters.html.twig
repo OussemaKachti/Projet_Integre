@@ -1,0 +1,87 @@
+<!-- Improved Filters Component -->
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Filters</h5>
+    <div>
+      <span id="filter-count" class="badge bg-primary me-2" style="display: none;">0</span>
+      <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
+        <i class="mdi mdi-filter-outline"></i>
+      </button>
+    </div>
+  </div>
+  <div class="collapse show" id="filtersCollapse">
+    <div class="card-body">
+      <div class="row g-3">
+        <!-- Roles with multi-select -->
+        <div class="col-md-4">
+          <label for="role-filter" class="form-label">Roles</label>
+          <select id="role-filter" class="form-select" multiple>
+            {% for role in availableRoles %}
+              <option value="{{ role }}" {% if role in roleFilter|split(',') %} selected {% endif %}>{{ role }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <!-- Status with icons -->
+        <div class="col-md-4">
+          <label for="status-filter" class="form-label">Status</label>
+          <select id="status-filter" class="form-select">
+            <option value="">All Statuses</option>
+            <option value="active" {% if statusFilter == 'active' %} selected {% endif %}>
+              <i class="mdi mdi-circle text-success"></i> Active
+            </option>
+            <option value="disabled" {% if statusFilter == 'disabled' %} selected {% endif %}>
+              <i class="mdi mdi-circle text-danger"></i> Disabled
+            </option>
+          </select>
+        </div>
+        
+        <!-- Verification -->
+        <div class="col-md-4">
+          <label for="verification-filter" class="form-label">Verification</label>
+          <select id="verification-filter" class="form-select">
+            <option value="">All Verification</option>
+            <option value="verified" {% if verificationFilter == 'verified' %} selected {% endif %}>Verified</option>
+            <option value="not-verified" {% if verificationFilter == 'not-verified' %} selected {% endif %}>Not Verified</option>
+          </select>
+        </div>
+        
+        <!-- Activity Filter -->
+        <div class="col-md-4">
+          <label for="activity-filter" class="form-label">Last Activity</label>
+          <select id="activity-filter" class="form-select">
+            <option value="">Any Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="inactive">Inactive (30+ days)</option>
+          </select>
+        </div>
+        
+        <!-- Save Filters -->
+        <div class="col-md-8 d-flex align-items-end">
+          <div class="input-group">
+            <input type="text" id="filter-preset-name" class="form-control" placeholder="Filter preset name">
+            <button id="save-filter-preset" class="btn btn-outline-secondary">
+              <i class="mdi mdi-content-save"></i> Save
+            </button>
+            <button id="load-filter-preset" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="mdi mdi-folder-open"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" id="filter-presets-list">
+              <li><span class="dropdown-item-text">No saved filters</span></li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="col-12 d-flex justify-content-between mt-3">
+          <span id="results-count" class="text-muted align-self-center">Showing {{ pagination.totalItemCount }} results</span>
+          <div>
+            <button type="button" id="clear-filters" class="btn btn-outline-secondary me-2">Clear Filters</button>
+            <button type="button" id="apply-filters" class="btn btn-primary">Apply Filters</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

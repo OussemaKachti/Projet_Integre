@@ -10,6 +10,23 @@ parameters:
 
 
 services:
+    # Access denied handler
+    App\EventListener\UserAuthenticationSubscriber:
+        tags:
+            - { name: kernel.event_subscriber }
+    App\Security\AccessDeniedHandler:
+        arguments:
+            $urlGenerator: '@router'
+            $security: '@security.helper'
+    
+    # Login redirect listener
+    App\EventListener\LoginRedirectListener:
+        arguments:
+            $security: '@security.helper'
+            $urlGenerator: '@router'
+        tags:
+            - { name: kernel.event_subscriber }
+
     _defaults:
         autowire: true      # Automatically injects dependencies based on type hints
         autoconfigure: true # Automatically tags services for common interfaces

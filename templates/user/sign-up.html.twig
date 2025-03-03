@@ -1,115 +1,158 @@
 {% extends 'base.html.twig' %}
-{% block title %}New User
-{% endblock %}
-
+{% block title %}New User{% endblock %}
 
 {% block body %}
+    <!-- back to top start -->
+    <div class="progress-wrap">
+        <svg class="progress-circle svg-content" width="100%" height="100%" viewbox="-1 -1 102 102">
+            <path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98"/>
+        </svg>
+    </div>
+    <!-- back to top end -->
 
-	<!-- back to top start -->
-	<div class="progress-wrap">
-		<svg class="progress-circle svg-content" width="100%" height="100%" viewbox="-1 -1 102 102">
-			<path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98"/>
-		</svg>
-	</div>
-	<!-- back to top end -->
+    <!-- sign up area start -->
+    <section class="signup__area p-relative z-index-1 pt-100 pb-145">
+        <div class="sign__shape">
+            <img class="man-1" src="{{ asset('front_assets/img/icon/sign/man-3.png') }}" alt="">
+            <img class="man-2 man-22" src="{{ asset('front_assets/img/icon/sign/man-2.png') }}" alt="">
+            <img class="circle" src="{{ asset('front_assets/img/icon/sign/circle.png') }}" alt="">
+            <img class="zigzag" src="{{ asset('front_assets/img/icon/sign/zigzag.png') }}" alt="">
+            <img class="dot" src="{{ asset('front_assets/img/icon/sign/dot.png') }}" alt="">
+            <img class="bg" src="{{ asset('front_assets/img/icon/sign/sign-up.png') }}" alt="">
+            <img class="flower" src="{{ asset('front_assets/img/icon/sign/flower.png') }}" alt="">
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-xxl-8 offset-xxl-2 col-xl-8 offset-xl-2">
+                    <div class="section__title-wrapper text-center mb-55">
+                        <h2 class="section__title">Join Us Today – Create Your Free Account!</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xxl-6 offset-xxl-3 col-xl-6 offset-xl-3 col-lg-8 offset-lg-2">
+                    <div class="sign__wrapper white-bg">
+                        <div class="sign__form">
+                            <style>
+                                .sign__input {
+                                    position: relative;
+                                }
+                                .error-text {
+                                    color: red;
+                                    font-size: 14px;
+                                    margin-top: 5px;
+                                }
+                                .toggle-password {
+                                    position: absolute;
+                                    right: 10px;
+                                    top: 50%;
+                                    transform: translateY(-50%);
+                                    cursor: pointer;
+                                    z-index: 5;
+                                }
+                            </style>
+                            
+                            {{ form_start(form, {'attr': {'class': 'signup-form','novalidate':'novalidate'}}) }}
+                            
+                            <div class="sign__input-wrapper mb-25">
+                                <h5>{{ 'First Name'|trans }}</h5>
+                                <div class="sign__input">
+                                    {{ form_widget(form.nom, {'attr': {'placeholder': 'First name', 'class': 'form-control'}}) }}
+                                    <i class="fal fa-user"></i>
+                                    <span class="error-text">{{ form_errors(form.nom) }}</span>
+                                </div>
+                            </div>
 
-	<!-- sign up area start -->
-	<section class="signup__area p-relative z-index-1 pt-100 pb-145">
-		<div class="sign__shape">
-			<img class="man-1" src="{{ asset('front_assets/img/icon/sign/man-3.png') }}" alt="">
-			<img class="man-2 man-22" src="{{ asset('front_assets/img/icon/sign/man-2.png') }}" alt="">
-			<img class="circle" src="{{ asset('front_assets/img/icon/sign/circle.png') }}" alt="">
-			<img class="zigzag" src="{{ asset('front_assets/img/icon/sign/zigzag.png') }}" alt="">
-			<img class="dot" src="{{ asset('front_assets/img/icon/sign/dot.png') }}" alt="">
-			<img class="bg" src="{{ asset('front_assets/img/icon/sign/sign-up.png') }}" alt="">
-			<img class="flower" src="{{ asset('front_assets/img/icon/sign/flower.png') }}" alt="">
-		</div>
-		<div class="container">
-			<div class="row">
-				<div class="col-xxl-8 offset-xxl-2 col-xl-8 offset-xl-2">
-					<div class="section__title-wrapper text-center mb-55">
-						<h2 class="section__title">Join Us Today – Create Your Free Account!</h2>
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-xxl-6 offset-xxl-3 col-xl-6 offset-xl-3 col-lg-8 offset-lg-2">
-					<div class="sign__wrapper white-bg">
-						<div class="sign__form">
-							<style>
-								.error-text {
-									color: red;
-									font-size: 14px; /* Ajustez la taille si nécessaire */
-									margin-top: 5px;
-								}
-							</style>
-							{{ form_start(form, {'attr': {'class': 'signup-form','novalidate':'novalidate'}}) }}
-							<div class="sign__input-wrapper mb-25">
-								<h5>{{ 'First Name'|trans }}</h5>
-								<div class="sign__input">
-									{{ form_widget(form.nom, {'attr': {'placeholder': 'First name', 'class': 'form-control'}}) }}
-									<i class="fal fa-user"></i>
-									<span class="error-text">{{ form_errors(form.nom) }}</span>
-								</div>
-							</div>
+                            <div class="sign__input-wrapper mb-25">
+                                <h5>{{ 'Last Name'|trans }}</h5>
+                                <div class="sign__input">
+                                    {{ form_widget(form.prenom, {'attr': {'placeholder': 'Last name', 'class': 'form-control'}}) }}
+                                    <i class="fal fa-user"></i>
+                                    <span class="error-text">{{ form_errors(form.prenom) }}</span>
+                                </div>
+                            </div>
 
-							<div class="sign__input-wrapper mb-25">
-								<h5>{{ 'Last Name'|trans }}</h5>
-								<div class="sign__input">
-									{{ form_widget(form.prenom, {'attr': {'placeholder': 'Last name', 'class': 'form-control'}}) }}
-									<i class="fal fa-user"></i>
-									<span class="error-text">{{ form_errors(form.prenom) }}</span>
-								</div>
-							</div>
+                            <div class="sign__input-wrapper mb-25">
+                                <h5>{{ form_label(form.email) }}</h5>
+                                <div class="sign__input">
+                                    {{ form_widget(form.email, {'attr': {'placeholder': 'Email address', 'class': 'form-control'}}) }}
+                                    <i class="fal fa-envelope"></i>
+                                    <span class="error-text">{{ form_errors(form.email) }}</span>
+                                </div>
+                            </div>
 
-							<div class="sign__input-wrapper mb-25">
-								<h5>{{ form_label(form.email) }}</h5>
-								<div class="sign__input">
-									{{ form_widget(form.email, {'attr': {'placeholder': 'Email address', 'class': 'form-control'}}) }}
-									<i class="fal fa-envelope"></i>
-									<span class="error-text">{{ form_errors(form.email) }}</span>
-								</div>
-							</div>
+                            <div class="sign__input-wrapper mb-25">
+                                <h5>{{ form_label(form.password) }}</h5>
+                                <div class="sign__input password-field position-relative">
+                                    {{ form_widget(form.password, {'attr': {'placeholder': 'Password', 'class': 'form-control'}}) }}
+                                    <i class="fal fa-lock"></i>
+                                    <span class="fa fa-fw fa-eye field-icon toggle-password"></span>
+                                    <span class="error-text">{{ form_errors(form.password) }}</span>
+                                </div>
+                            </div>
 
-							<div class="sign__input-wrapper mb-25">
-								<h5>{{ form_label(form.password) }}</h5>
-								<div class="sign__input">
-									{{ form_widget(form.password, {'type': 'password','attr': {'placeholder': 'Password', 'class': 'form-control'}}) }}
-									<i class="fal fa-lock"></i>
-									<span class="error-text">{{ form_errors(form.password) }}</span>
-								</div>
-							</div>
+                            <div class="sign__input-wrapper mb-25">
+                                <h5>{{ 'Phone Number'|trans }}</h5>
+                                <div class="sign__input">
+                                    {{ form_widget(form.tel, {'attr': {'placeholder': 'Phone number', 'class': 'form-control'}}) }}
+                                    <i class="fal fa-phone"></i>
+                                    <span class="error-text">{{ form_errors(form.tel) }}</span>
+                                </div>
+                            </div>
 
+                            <div class="sign__action d-flex justify-content-between mb-30">
+                                <div class="sign__agree d-flex align-items-center">
+                                    <input class="m-check-input" type="checkbox" id="m-agree">
+                                    <label class="m-check-label" for="m-agree">I agree to the
+                                        <a href="#">Terms & Conditions</a>
+                                    </label>
+                                </div>
+                            </div>
 
-							<div class="sign__input-wrapper mb-25">
-								<h5>{{ 'Phone Number'|trans }}</h5>
-								<div class="sign__input">
-									{{ form_widget(form.tel, {'attr': {'placeholder': 'Phone number', 'class': 'form-control'}}) }}
-									<i class="fal fa-phone"></i>
-									<span class="error-text">{{ form_errors(form.tel) }}</span>
-								</div>
-							</div>
+                            <button class="tp-btn w-100" type="submit">Sign Up</button>
+                            <div class="sign__new text-center mt-20">
+                                {# <p>Already in UniClubs? <a href="{{ path('app_user_login') }}">Sign In</a></p> #}
+                            </div>
 
-							<div class="sign__action d-flex justify-content-between mb-30">
-								<div class="sign__agree d-flex align-items-center">
-									<input class="m-check-input" type="checkbox" id="m-agree">
-									<label class="m-check-label" for="m-agree">I agree to the
-										<a href="#">Terms & Conditions</a>
-									</label>
-								</div>
-							</div>
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-							<button class="tp-btn w-100" type="submit">Sign Up</button>
-							<div
-								class="sign__new text-center mt-20">{# <p>Already in UniClubs? <a href="{{ path('app_user_login') }}">Sign In</a></p> #}
-							</div>
-
-							{{ form_end(form) }}
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</section>
-
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded');
+        
+        // Find the password field directly using its class/structure
+        const passwordField = document.querySelector('.password-field input[type="password"]');
+        const toggleButton = document.querySelector('.toggle-password');
+        
+        console.log('Password field found:', passwordField);
+        console.log('Toggle button found:', toggleButton);
+        
+        if (passwordField && toggleButton) {
+            toggleButton.addEventListener('click', function() {
+                console.log('Toggle button clicked');
+                
+                // Toggle the password field visibility
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    toggleButton.classList.remove('fa-eye');
+                    toggleButton.classList.add('fa-eye-slash');
+                } else {
+                    passwordField.type = 'password';
+                    toggleButton.classList.remove('fa-eye-slash');
+                    toggleButton.classList.add('fa-eye');
+                }
+            });
+            
+            console.log('Event listener added');
+        } else {
+            console.error('Password field or toggle button not found');
+        }
+    });
+    </script>
 {% endblock %}
