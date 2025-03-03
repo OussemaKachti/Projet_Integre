@@ -239,8 +239,14 @@
 													<li>
 														<a href="myclub.html">My club</a>
 													</li>
+													{% if app.user and (app.user.role.value == 'presidentClub' or app.user.role.value == 'membre') %}
+												<li>
+													<a href="{{ path('app_sondage_index') }}">Polls</a>
+												</li>
+											{% endif %}
 												</ul>
 											</li>
+											
 											<li class="has-dropdown">
 												<a href="event.html">Events</a>
 												<ul class="submenu">

@@ -188,11 +188,12 @@ public function delete($id, EntityManagerInterface $entityManager): RedirectResp
                                                     // }
 
     #[Route('/comment/list/{id}', name: 'list_comments', methods: ['GET'])]
-    public function listComments(int $id, EntityManagerInterface $em): JsonResponse
+    public function listComments(int $id, EntityManagerInterface $em, Security $security): JsonResponse
     {
         // Simuler un utilisateur (remplace par getUser() une fois l'authentification implémentée)
-        $user = $em->getRepository(User::class)->find(1); // Assure-toi que cet utilisateur existe
-    
+        //$user = $em->getRepository(User::class)->find(1); // Assure-toi que cet utilisateur existe
+        $user = $security->getUser();
+
         // Récupérer le sondage depuis la base de données
         $sondage = $em->getRepository(Sondage::class)->find($id);
     
@@ -304,8 +305,8 @@ public function addComment(
     ValidatorInterface $validator
 ): JsonResponse 
 {
-   // $user = $security->getUser();
-   $user = $em->getRepository(User::class)->find(30);
+   $user = $security->getUser();
+  // $user = $em->getRepository(User::class)->find(30);
 
     if (!$user) {
         return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
@@ -322,6 +323,11 @@ public function addComment(
     // Analyze comment for toxicity
     $toxicityAnalysis = $this->toxicityDetector->analyzeToxicity($commentContent);
 
+    $comment = new Commentaire();
+    $comment->setDateComment(new \DateTime());
+    $comment->setUser($user);
+    $comment->setSondage($sondage);
+
     if ($toxicityAnalysis['isToxic']) {
         // Send warning email to user
         $this->sendWarningEmail(
@@ -330,18 +336,15 @@ public function addComment(
             $toxicityAnalysis
         );
 
-        return new JsonResponse([
-            'error' => 'Your comment contains inappropriate content and has been rejected.',
-            'details' => $toxicityAnalysis['reason']
-        ], Response::HTTP_BAD_REQUEST);
+        // Replace toxic content with warning message
+        $warningMessage = "⚠️ Comment hidden: This content was flagged by our AI moderation system for potentially inappropriate language. " .
+                         "We encourage respectful and constructive discussions. " .
+                         "If you believe this is an error, please contact our support team.";
+        
+        $comment->setContenuComment($warningMessage);
+    } else {
+        $comment->setContenuComment($commentContent);
     }
-    
-    // Si le commentaire n'est pas toxique, continuer avec l'ajout
-    $comment = new Commentaire();
-    $comment->setContenuComment($commentContent);
-    $comment->setDateComment(new \DateTime());
-    $comment->setUser($user);
-    $comment->setSondage($sondage);
 
     // Validation
     $errors = $validator->validate($comment);
@@ -357,7 +360,7 @@ public function addComment(
     $em->flush();
 
     return new JsonResponse([
-        'message' => 'Comment successfully added',
+        'message' => $toxicityAnalysis['isToxic'] ? 'Comment was modified due to inappropriate content' : 'Comment successfully added',
         'comment' => [
             'id' => $comment->getId(),
             'contenu' => $comment->getContenuComment(),

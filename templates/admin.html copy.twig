@@ -2,98 +2,94 @@
 {% block title %}Admin's Dashboard
 {% endblock %}
 {% block body %}
-	<div class="main-panel" style="width: 100%; max-width: 1500px; margin: 0 auto 0 20px;">
+	<div class="content-wrapper p-0">
+		<div class="row m-0">
+			<div class="col-12 p-0">
+				<div class="card h-100">
+					<div class="card-body">
+						<h4 class="card-title">Admin's Dashboard</h4>
+						{% for message in app.flashes('success') %}
+							<div class="alert alert-success">
+								{{ message }}
+							</div>
+						{% endfor %}
 
-		<div class="content-wrapper p-0">
-			<div class="row m-0">
-				<div class="col-12 p-0">
-					<div class="card h-100">
-						<div class="card-body">
-							<h4 class="card-title">Admin's Dashboard</h4>
-							{% for message in app.flashes('success') %}
-								<div class="alert alert-success">
-									{{ message }}
-								</div>
-							{% endfor %}
+						<p class="card-description mb-4">List of users</p>
 
-							<p class="card-description mb-4">List of users</p>
-
-							<!-- Search and Filters -->
-							<div class="row mb-4">
-								<div class="col-md-6">
-									<div class="form-group">
-										<div class="input-group">
-											<input type="text" id="search-input" class="form-control" placeholder="Search by name, email or phone..." value="{{ searchQuery }}">
-											<div class="input-group-append">
-												<button id="search-button" class="btn btn-primary" type="button">
-													<i class="mdi mdi-magnify"></i>
-												</button>
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-6">
-									<div class="row">
-										<div
-											class="col-md-4">
-											{# Example filter HTML in admin.html.twig #}
-											<select id="role-filter" class="form-select">
-												<option value="">All Roles</option>
-												{% for role in availableRoles %}
-													<option value="{{ role }}" {% if roleFilter == role %} selected {% endif %}>{{ role }}</option>
-												{% endfor %}
-											</select>
-										</div>
-										<div class="col-md-4">
-											<select id="status-filter" class="form-control">
-												<option value="">All Statuses</option>
-												<option value="active" {% if statusFilter == 'active' %} selected {% endif %}>Active</option>
-												<option value="disabled" {% if statusFilter == 'disabled' %} selected {% endif %}>Disabled</option>
-											</select>
-										</div>
-										<div class="col-md-4">
-											<select id="verification-filter" class="form-control">
-												<option value="">All Verification</option>
-												<option value="verified" {% if verificationFilter == 'verified' %} selected {% endif %}>Verified</option>
-												<option value="not-verified" {% if verificationFilter == 'not-verified' %} selected {% endif %}>Not Verified</option>
-											</select>
+						<!-- Search and Filters -->
+						<div class="row mb-4">
+							<div class="col-md-6">
+								<div class="form-group">
+									<div class="input-group">
+										<input type="text" id="search-input" class="form-control" placeholder="Search by name, email or phone..." value="{{ searchQuery }}">
+										<div class="input-group-append">
+											<button id="search-button" class="btn btn-primary" type="button">
+												<i class="mdi mdi-magnify"></i>
+											</button>
 										</div>
 									</div>
 								</div>
 							</div>
-
-							<!-- Loading Indicator -->
-							<div id="loading-indicator" class="text-center mb-3" style="display: none;">
-								<div class="spinner-border text-primary" role="status">
-									<span class="sr-only">Loading...</span>
+							<div class="col-md-6">
+								<div class="row">
+									<div
+										class="col-md-4">
+										{# Example filter HTML in admin.html.twig #}
+										<select id="role-filter" class="form-select">
+											<option value="">All Roles</option>
+											{% for role in availableRoles %}
+												<option value="{{ role }}" {% if roleFilter == role %} selected {% endif %}>{{ role }}</option>
+											{% endfor %}
+										</select>
+									</div>
+									<div class="col-md-4">
+										<select id="status-filter" class="form-control">
+											<option value="">All Statuses</option>
+											<option value="active" {% if statusFilter == 'active' %} selected {% endif %}>Active</option>
+											<option value="disabled" {% if statusFilter == 'disabled' %} selected {% endif %}>Disabled</option>
+										</select>
+									</div>
+									<div class="col-md-4">
+										<select id="verification-filter" class="form-control">
+											<option value="">All Verification</option>
+											<option value="verified" {% if verificationFilter == 'verified' %} selected {% endif %}>Verified</option>
+											<option value="not-verified" {% if verificationFilter == 'not-verified' %} selected {% endif %}>Not Verified</option>
+										</select>
+									</div>
 								</div>
 							</div>
+						</div>
 
-							<div class="table-responsive">
-								<table class="table table-hover w-100">
-									<thead>
-										<tr>
-											<th>Name</th>
-											<th>Email</th>
-											<th>Phone Number</th>
-											<th>Role</th>
-											<th>Verification</th>
-											<th>Status</th>
-											<th>Actions</th>
-										</tr>
-									</thead>
-									<tbody id="user-table-body">
-										{% include '_table_body.html.twig' with {'pagination': pagination} %}
-									</tbody>
-								</table>
+						<!-- Loading Indicator -->
+						<div id="loading-indicator" class="text-center mb-3" style="display: none;">
+							<div class="spinner-border text-primary" role="status">
+								<span class="sr-only">Loading...</span>
 							</div>
+						</div>
+
+						<div class="table-responsive">
+							<table class="table table-hover w-100">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Email</th>
+										<th>Phone Number</th>
+										<th>Role</th>
+										<th>Verification</th>
+										<th>Status</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody id="user-table-body">
+									{% include '_table_body.html.twig' with {'pagination': pagination} %}
+								</tbody>
+							</table>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-
 
 	<!-- Pagination Controls -->
 	<div class="mt-4 d-flex justify-content-center">
