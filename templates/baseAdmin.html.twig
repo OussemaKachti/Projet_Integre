@@ -75,11 +75,11 @@
 					<ul
 						class="nav">
 						{# <li class="nav-item">
-																																																																																																							<a class="nav-link" href={{ path('app_admin_dashboard') }}>
-																																																																																																								<i class="icon-columns menu-icon"></i>
-																																																																																																								<span class="menu-title">User</span>
-																																																																																																							</a>
-																																																																																																						</li> #}
+																																																																																																													<a class="nav-link" href={{ path('app_admin_dashboard') }}>
+																																																																																																														<i class="icon-columns menu-icon"></i>
+																																																																																																														<span class="menu-title">User</span>
+																																																																																																													</a>
+																																																																																																												</li> #}
 						<li class="nav-item">
 							<a class="nav-link" href={{ path('app_admin_dashboard') }}>
 								<i class="icon-head menu-icon"></i>
@@ -105,7 +105,7 @@
 							</div>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link" href={{ path('app_sondage_index2') }}>
+							<a class="nav-link" href="#">
 								<i class="icon-columns menu-icon"></i>
 								<span class="menu-title">Events</span>
 							</a>
@@ -354,47 +354,47 @@ searchIcon.className = 'icon-search';
 				}
 
 				.main-panel {
-        margin-left: 280px !important; /* Augmenté de 260px à 280px pour plus d'espace */
-        width: calc(100% - 300px) !important; /* Ajusté pour le nouveau margin */
-    }
+					margin-left: 280px !important; /* Augmenté de 260px à 280px pour plus d'espace */
+					width: calc(100% - 300px) !important; /* Ajusté pour le nouveau margin */
+				}
 
-    .content-wrapper {
-        padding: 40px 40px 0 40px !important; /* Augmenté le padding des côtés */
-        width: 100% !important;
-    }
+				.content-wrapper {
+					padding: 40px 40px 0 !important; /* Augmenté le padding des côtés */
+					width: 100% !important;
+				}
 
-    /* Reste des styles inchangés */
-    .sidebar .nav .nav-item .nav-link {
-        color: #6C7383 !important;
-        background: transparent !important;
-    }
+				/* Reste des styles inchangés */
+				.sidebar .nav .nav-item .nav-link {
+					color: #6C7383 !important;
+					background: transparent !important;
+				}
 
-    .sidebar .nav .nav-item.active .nav-link {
-        background: #4B49AC !important;
-        color: #ffffff !important;
-    }
+				.sidebar .nav .nav-item.active .nav-link {
+					background: #4B49AC !important;
+					color: #ffffff !important;
+				}
 
-    .sidebar .nav.sub-menu {
-        padding-left: 1.5rem !important;
-        background: transparent !important;
-    }
+				.sidebar .nav.sub-menu {
+					padding-left: 1.5rem !important;
+					background: transparent !important;
+				}
 
-    /* Responsive */
-    @media (max-width: 991px) {
-        .main-panel {
-            margin-left: 0 !important;
-            width: 100% !important;
-        }
-        
-        .sidebar {
-            top: 70px !important;
-            z-index: 999;
-        }
+				/* Responsive */
+				@media(max-width: 991px) {
+					.main-panel {
+						margin-left: 0 !important;
+						width: 100% !important;
+					}
 
-        .content-wrapper {
-            padding: 40px 20px 0 20px !important; /* Padding réduit en mode mobile */
-        }
-    }
+					.sidebar {
+						top: 70px !important;
+						z-index: 999;
+					}
+
+					.content-wrapper {
+						padding: 40px 20px 0 !important; /* Padding réduit en mode mobile */
+					}
+				}
 				.table-striped th:nth-child(2), /* Colonne "Question" */
 				.table-striped td:nth-child(2),
 				.table-striped th:nth-child(3), /* Colonne "Options" */

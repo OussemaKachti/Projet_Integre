@@ -1,6 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{% endblock %}
+{% block title %}Liste des sondages
+{% endblock %}
 
 {% block body %}
 	<main>
@@ -296,7 +297,12 @@ toast.show();
 													<div class="row">
 														<div class="col-xxl-12">
 															<div class="postbox__comment-input">
-																<textarea placeholder="Enter your comment ..." class="comment-textarea"></textarea>
+																<div class="comment-input-wrapper">
+																	<textarea placeholder="Enter your comment ..." class="comment-textarea"></textarea>
+																	<button type="button" class="voice-input-btn" onclick="startVoiceRecognition(this)">
+																		<i class="fas fa-microphone"></i>
+																	</button>
+																</div>
 															</div>
 														</div>
 														<div class="col-xxl-12">
@@ -320,8 +326,8 @@ toast.show();
 						<div
 							class="blog__sidebar pl-70">
 							{# 
-																																																																																																																																																																																																																		    {% if app.user and app.user.role == 'presidentClub' %}
-																																																																																																																																																																																																																		#}
+																																																																																																																																																																																																																																							    {% if app.user and app.user.role == 'presidentClub' %}
+																																																																																																																																																																																																																																							#}
 							<form id="poll-form" method="POST" action="{{ path('api_poll_new') }}">
 								<div id="toastContainer" class="toast-container position-fixed top-50 start-50 translate-middle" style="z-index: 9999;"></div>
 								<style>
@@ -392,8 +398,8 @@ toast.show();
 								</div>
 
 								{# 
-																																																																																																																																																																																																																			    {% endif %}
-																																																																																																																																																																																																																			#}
+																																																																																																																																																																																																																																											    {% endif %}
+																																																																																																																																																																																																																																											#}
 								<button style="--clr: #7808d0" class="button" onclick="window.location.href='{{ path('api_user_polls') }}';">
 									<span class="button__icon-wrapper">
 										<svg width="10" class="button__icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 14 15">
@@ -854,6 +860,45 @@ commentList.innerHTML = "<p>Aucun commentaire pour l'instant.</p>";
 }
 }).catch(error => console.error("Erreur lors du chargement des commentaires:", error));
 }
+
+function startVoiceRecognition(button) {
+const form = button.closest('form');
+const textarea = form.querySelector('.comment-textarea');
+
+if (!('webkitSpeechRecognition' in window)) {
+alert("La reconnaissance vocale n'est pas supportée par votre navigateur.");
+return;
+}
+
+const recognition = new webkitSpeechRecognition();
+recognition.lang = 'fr-FR';
+recognition.continuous = true;
+recognition.interimResults = true;
+
+button.classList.add('recording');
+
+recognition.onresult = (event) => {
+const transcript = Array.from(event.results).map(result => result[0].transcript).join('');
+
+textarea.value = transcript;
+};
+
+recognition.onerror = (event) => {
+console.error('Erreur de reconnaissance vocale:', event.error);
+button.classList.remove('recording');
+};
+
+recognition.onend = () => {
+button.classList.remove('recording');
+};
+
+recognition.start();
+
+button.onclick = () => {
+recognition.stop();
+button.onclick = () => startVoiceRecognition(button);
+};
+}
 		</script>
 		<!-- jQuery et Bootstrap JS -->
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -885,5 +930,62 @@ commentList.innerHTML = "<p>Aucun commentaire pour l'instant.</p>";
 			</div>
 		</div>
 	</div>
+	<style>
+		.comment-input-wrapper {
+			position: relative;
+			width: 100%;
+		}
+
+		.comment-textarea {
+			width: 100%;
+			padding-right: 45px;
+		}
+
+		.voice-input-btn {
+			position: absolute;
+			right: 10px;
+			top: 50%;
+			transform: translateY(-50%);
+			width: 35px;
+			height: 35px;
+			padding: 0;
+			border: none;
+			background: #7808d0;
+			color: white;
+			border-radius: 50%;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+		}
+
+		.voice-input-btn:hover {
+			background: #6006a3;
+			transform: translateY(-50%) scale(1.05);
+		}
+
+		.voice-input-btn.recording {
+			background: #dc3545;
+			animation: pulse 1.5s infinite;
+		}
+
+		@keyframes pulse {
+			0% {
+				transform: translateY(-50%) scale(1);
+			}
+			50% {
+				transform: translateY(-50%) scale(1.1);
+			}
+			100% {
+				transform: translateY(-50%) scale(1);
+			}
+		}
+
+		.voice-input-btn i {
+			font-size: 16px;
+		}
+	</style>
 
 {% endblock %}
