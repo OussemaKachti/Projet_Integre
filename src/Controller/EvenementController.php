@@ -56,78 +56,95 @@ class EvenementController extends AbstractController
             'categories' => $categories,
         ]);
     }
+
+
     #[Route('/', name: 'event', methods: ['GET'])]
-    public function index(
-        Request $request,
-        EvenementRepository $evenementRepository,
-        PaginatorInterface $paginator
-    ): Response {
-        // Récupération des paramètres de recherche et de filtre
-        $search = $request->query->get('search');
-        $type = $request->query->get('type');
-        $date = $request->query->get('date');
-    
-        // Construction du QueryBuilder avec filtrage dynamique
-        $queryBuilder = $evenementRepository->createQueryBuilder('e');
-    
-        if ($search) {
-            $queryBuilder->andWhere('e.nomEvent LIKE :search')
-                         ->setParameter('search', '%' . $search . '%');
-        }
-    
-        if ($type) {
-            $queryBuilder->andWhere('e.type = :type')
-                         ->setParameter('type', $type);
-        }
-    
-        if ($date) {
-            try {
-                $dateObj = new \DateTime($date);
-                $startOfDay = (clone $dateObj)->setTime(0, 0, 0);
-                $endOfDay = (clone $dateObj)->setTime(23, 59, 59);
-    
-                $queryBuilder->andWhere('e.startDate BETWEEN :startOfDay AND :endOfDay')
-                             ->setParameter('startOfDay', $startOfDay)
-                             ->setParameter('endOfDay', $endOfDay);
-            } catch (\Exception $e) {
-                if ($request->isXmlHttpRequest()) {
-                    return $this->json(['error' => 'Invalid date format'], 400);
-                }
-                $this->addFlash('error', 'Invalid date format');
-            }
-        }
-    
-        // Traitement AJAX pour le filtrage dynamique
-        if ($request->isXmlHttpRequest()) {
-            $evenements = $queryBuilder->getQuery()->getResult();
-    
-            $events = array_map(fn($evenement) => [
-                'id' => $evenement->getId(),
-                'title' => $evenement->getNomEvent(),
-                'start' => $evenement->getStartDate()->format('Y-m-d H:i:s'),
-                'end' => $evenement->getEndDate() ? $evenement->getEndDate()->format('Y-m-d H:i:s') : null,
-                'location' => $evenement->getLieux(),
-            ], $evenements);
-    
-            return $this->json($events);
-        }
-    
-        // Pagination des résultats
-        $evenements = $paginator->paginate(
-            $queryBuilder->getQuery(),
-            $request->query->getInt('page', 1),
-            4
-        );
-    
-        // Vérification des permissions pour la création d'événements
-        $canCreateEvent = $this->canUserCreateEvent($this->getUser());
-    
-        return $this->render('evenement/event.html.twig', [
-            'evenements' => $evenements,
-            'canCreateEvent' => $canCreateEvent,
-        ]);
+public function index(
+    Request $request,
+    EvenementRepository $evenementRepository,
+    PaginatorInterface $paginator,
+    ClubRepository $clubRepository
+): Response {
+    // Récupération des paramètres de recherche et de filtre
+    $search = $request->query->get('search');
+    $type = $request->query->get('type');
+    $date = $request->query->get('date');
+    $clubId = $request->query->get('club');  // Ajout du paramètre club
+
+    // Construction du QueryBuilder avec filtrage dynamique
+    $queryBuilder = $evenementRepository->createQueryBuilder('e');
+
+    if ($search) {
+        $queryBuilder->andWhere('e.nomEvent LIKE :search')
+                     ->setParameter('search', '%' . $search . '%');
     }
-    
+
+    if ($type) {
+        $queryBuilder->andWhere('e.type = :type')
+                     ->setParameter('type', $type);
+    }
+
+    if ($date) {
+        try {
+            $dateObj = new \DateTime($date);
+            $startOfDay = (clone $dateObj)->setTime(0, 0, 0);
+            $endOfDay = (clone $dateObj)->setTime(23, 59, 59);
+
+            $queryBuilder->andWhere('e.startDate BETWEEN :startOfDay AND :endOfDay')
+                         ->setParameter('startOfDay', $startOfDay)
+                         ->setParameter('endOfDay', $endOfDay);
+        } catch (\Exception $e) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json(['error' => 'Invalid date format'], 400);
+            }
+            $this->addFlash('error', 'Invalid date format');
+        }
+    }
+
+    // Ajout du filtre par club
+    if ($clubId) {
+        $queryBuilder->andWhere('e.club = :clubId')
+                     ->setParameter('clubId', $clubId);
+    }
+
+    // Traitement AJAX pour le filtrage dynamique
+    if ($request->isXmlHttpRequest()) {
+        $evenements = $queryBuilder->getQuery()->getResult();
+
+        $events = array_map(fn($evenement) => [
+            'id' => $evenement->getId(),
+            'title' => $evenement->getNomEvent(),
+            'start' => $evenement->getStartDate()->format('Y-m-d H:i:s'),
+            'end' => $evenement->getEndDate() ? $evenement->getEndDate()->format('Y-m-d H:i:s') : null,
+            'location' => $evenement->getLieux(),
+        ], $evenements);
+
+        return $this->json($events);
+    }
+
+    // Pagination des résultats
+    $evenements = $paginator->paginate(
+        $queryBuilder->getQuery(),
+        $request->query->getInt('page', 1),
+        4
+    );
+
+    // Récupérer tous les clubs pour le menu déroulant de filtrage
+    $clubs = $clubRepository->findAll();
+
+    // Vérification des permissions pour la création d'événements
+    $canCreateEvent = $this->canUserCreateEvent($this->getUser());
+
+    return $this->render('evenement/event.html.twig', [
+        'evenements' => $evenements,
+        'canCreateEvent' => $canCreateEvent,
+        'clubs' => $clubs,
+        'search' => $search,
+        'type' => $type,
+        'date' => $date,
+        'club' => $clubId,
+    ]);
+}
     /**
      * Vérifie si l'utilisateur peut créer un événement.
      */
@@ -154,44 +171,36 @@ class EvenementController extends AbstractController
 //         'evenements' => $evenements,
 //     ]);
 // }
-    #[Route('/club/{clubId}/events', name: 'club_events')]
-    public function showEvents(int $clubId, ClubRepository $clubRepository, EvenementRepository $evenementRepository): Response
-    {
-        // Retrieve club by ID
-        $club = $clubRepository->find($clubId);
+#[Route('/event/details/{id}', name: 'eventdetails', methods: ['GET'])]
+public function show(EvenementRepository $evenementRepository, EntityManagerInterface $entityManager, int $id): Response
+{
+    // Récupération de l'événement
+    $evenement = $evenementRepository->find($id);
 
-        if (!$club) {
-            throw $this->createNotFoundException('Le club n\'existe pas.');
-        }
-
-        // Retrieve club events
-        $evenements = $evenementRepository->findBy(['club' => $club]);
-
-        return $this->render('evenement/eventClub.html.twig', [
-            'club' => $club,
-            'evenements' => $evenements,
-        ]);
+    if (!$evenement) {
+        throw $this->createNotFoundException('Événement non trouvé');
     }
 
-    #[Route('/event/details/{id}', name: 'eventdetails', methods: ['GET'])]
-    public function show(EvenementRepository $evenementRepository, int $id): Response
-    {
-        // Récupération de l'événement
-        $evenement = $evenementRepository->find($id);
+    // Vérification si l'utilisateur peut afficher les actions administratives
+    $canManageEvent = $this->canUserManageEvent($this->getUser());
     
-        if (!$evenement) {
-            throw $this->createNotFoundException('Événement non trouvé');
-        }
-    
-        // Vérification si l'utilisateur peut afficher les actions administratives
-        $canManageEvent = $this->canUserManageEvent($this->getUser());
-    
-        // Retourner la vue avec l'événement et la permission de gestion
-        return $this->render('evenement/eventdetails.html.twig', [
+    // Récupérer la participation de l'utilisateur actuel, si elle existe
+    $participation = null;
+    $user = $this->getUser();
+    if ($user) {
+        $participation = $entityManager->getRepository(ParticipationEvent::class)->findOneBy([
             'evenement' => $evenement,
-            'canManageEvent' => $canManageEvent,  // Variable pour les actions admin
+            'user' => $user
         ]);
     }
+
+    // Retourner la vue avec l'événement, la permission de gestion et la participation
+    return $this->render('evenement/eventdetails.html.twig', [
+        'evenement' => $evenement,
+        'canManageEvent' => $canManageEvent,  // Variable pour les actions admin
+        'participation' => $participation,    // Passer la participation à la vue
+    ]);
+}
     
     /**
      * Vérifie si l'utilisateur peut gérer un événement (modifier, supprimer, etc.).
@@ -213,123 +222,123 @@ class EvenementController extends AbstractController
    
   
     
-        #[Route('/event/join/{id}', name: 'event_join', methods: ['POST'])]
-        public function joinEvent(Request $request, EvenementRepository $evenementRepository, 
-                               EntityManagerInterface $entityManager, int $id): Response
-        {
-            // Récupération de l'événement
-            $evenement = $evenementRepository->find($id);
+    #[Route('/event/join/{id}', name: 'event_join', methods: ['POST'])]
+    public function joinEvent(Request $request, EvenementRepository $evenementRepository, 
+                           EntityManagerInterface $entityManager, int $id): Response
+    {
+        // Récupération de l'événement
+        $evenement = $evenementRepository->find($id);
+        
+        if (!$evenement) {
+            throw $this->createNotFoundException('Événement non trouvé');
+        }
+        
+        // Récupération de l'utilisateur connecté
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+        
+        // Vérifier si l'utilisateur participe déjà à l'événement
+        $participation = $entityManager->getRepository(ParticipationEvent::class)->findOneBy([
+            'evenement' => $evenement,
+            'user' => $user
+        ]);
+        
+        if (!$participation) {
+            // Création d'une nouvelle participation
+            $participation = new ParticipationEvent();
+            $participation->setEvenement($evenement);
+            $participation->setUser($user);
+            $participation->setdateparticipation(new \DateTime());
             
-            if (!$evenement) {
-                throw $this->createNotFoundException('Événement non trouvé');
-            }
+            // Enregistrement de la participation
+            $entityManager->persist($participation);
+            $entityManager->flush();
             
-            // Récupération de l'utilisateur connecté
-            $user = $this->getUser();
-            if (!$user) {
-                return $this->redirectToRoute('app_login');
-            }
-            
-            // Vérifier si l'utilisateur participe déjà à l'événement
-            $participation = $entityManager->getRepository(ParticipationEvent::class)->findOneBy([
-                'evenement' => $evenement,
-                'user' => $user
-            ]);
-            
-            if (!$participation) {
-                // Création d'une nouvelle participation
-                $participation = new ParticipationEvent();
-                $participation->setEvenement($evenement);
-                $participation->setUser($user);
-                $participation->setdateparticipation(new \DateTime());
-                
-                // Enregistrement de la participation
-                $entityManager->persist($participation);
-                $entityManager->flush();
-                
-                // Rediriger vers la page de téléchargement du ticket
-                return $this->redirectToRoute('download_ticket', ['id' => $participation->getId()], Response::HTTP_SEE_OTHER);
-
-
-            }
-            
+            $this->addFlash('success', 'Votre participation a été enregistrée avec succès. Vous pouvez maintenant télécharger votre ticket.');
+        } else {
             // L'utilisateur participe déjà à l'événement
             $this->addFlash('info', 'Vous participez déjà à cet événement.');
-            return $this->redirectToRoute('eventdetails', ['id' => $id]);
         }
+        
+        // Rediriger vers la page de détails de l'événement (au lieu de la page de téléchargement)
+        return $this->redirectToRoute('eventdetails', ['id' => $id]);
+    }
     
-        #[Route('/event/ticket/{id}', name: 'download_ticket', methods: ['GET'])]
-        public function downloadTicket(int $id, EntityManagerInterface $entityManager): Response
-        {
-            // Récupérer la participation
-            $participation = $entityManager->getRepository(ParticipationEvent::class)->find($id);
-            
-            if (!$participation) {
-                throw $this->createNotFoundException('Participation non trouvée');
-            }
-            
-            // Vérifier que l'utilisateur actuel est autorisé à accéder à ce ticket
-            if ($participation->getUser() !== $this->getUser()) {
-                throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ce ticket');
-            }
-            
-            try {
-                // Générer et télécharger le PDF
-                return $this->generateTicketPdf($participation);
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'Erreur lors de la génération du ticket: ' . $e->getMessage());
-                return $this->redirectToRoute('eventdetails', ['id' => $participation->getEvenement()->getId()]);
-            }
+    // Les autres méthodes restent inchangées
+    #[Route('/event/ticket/{id}', name: 'download_ticket', methods: ['GET'])]
+    public function downloadTicket(int $id, EntityManagerInterface $entityManager): Response
+    {
+        // Récupérer la participation
+        $participation = $entityManager->getRepository(ParticipationEvent::class)->find($id);
+        
+        if (!$participation) {
+            throw $this->createNotFoundException('Participation non trouvée');
         }
+        
+        // Vérifier que l'utilisateur actuel est autorisé à accéder à ce ticket
+        if ($participation->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à ce ticket');
+        }
+        
+        try {
+            // Générer et télécharger le PDF
+            return $this->generateTicketPdf($participation);
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la génération du ticket: ' . $e->getMessage());
+            return $this->redirectToRoute('eventdetails', ['id' => $participation->getEvenement()->getId()]);
+        }
+    }
     
-        /**
-         * Génère un ticket PDF pour une participation
-         */
-        private function generateTicketPdf(ParticipationEvent $participation): Response
-        {
-            // Configuration de DomPDF
-            $pdfOptions = new Options();
-            $pdfOptions->set('defaultFont', 'Arial');
-            $pdfOptions->set('isHtml5ParserEnabled', true);
-            $pdfOptions->set('isRemoteEnabled', true);
-            
-            $dompdf = new Dompdf($pdfOptions);
-            
-            // Récupérer les données pour le template
-            $evenement = $participation->getEvenement();
-            $user = $participation->getUser();
-            $ticketId = 'TICKET-' . $participation->getId() . '-' . time();
-            
-            // Générer le HTML du ticket
-            $html = $this->renderView('evenement/ticketPdf.html.twig', [
-                'participation' => $participation,
-                'evenement' => $evenement,
-                'user' => $user,
-                'ticketId' => $ticketId,
-            ]);
-            
-            // Générer le PDF
-            $dompdf->loadHtml($html);
-            $dompdf->setPaper('A4', 'portrait');
-            $dompdf->render();
-            
-            // Générer le nom du fichier
-            $eventName = preg_replace('/[^a-zA-Z0-9_-]/', '', $evenement->getNomEvent());
-            $fileName = 'ticket-' . $eventName . '-' . time() . '.pdf';
-            
-            // Retourner le PDF en tant que réponse à télécharger
-            return new Response(
-                $dompdf->output(),
-                Response::HTTP_OK,
-                [
-                    'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
-                    'Cache-Control' => 'no-cache, no-store, must-revalidate',
-                    'Pragma' => 'no-cache',
-                    'Expires' => '0'
-                ]
-            );
-        }
+    /**
+     * Génère un ticket PDF pour une participation
+     */
+    private function generateTicketPdf(ParticipationEvent $participation): Response
+    {
+        // Configuration de DomPDF
+        $pdfOptions = new Options();
+        $pdfOptions->set('defaultFont', 'Arial');
+        $pdfOptions->set('isHtml5ParserEnabled', true);
+        $pdfOptions->set('isRemoteEnabled', true);
+        
+        $dompdf = new Dompdf($pdfOptions);
+        
+        // Récupérer les données pour le template
+        $evenement = $participation->getEvenement();
+        $user = $participation->getUser();
+        $ticketId = 'TICKET-' . $participation->getId() . '-' . time();
+        
+        // Générer le HTML du ticket
+        $html = $this->renderView('evenement/ticketPdf.html.twig', [
+            'participation' => $participation,
+            'evenement' => $evenement,
+            'user' => $user,
+            'ticketId' => $ticketId,
+        ]);
+        
+        // Générer le PDF
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        // Générer le nom du fichier
+        $eventName = preg_replace('/[^a-zA-Z0-9_-]/', '', $evenement->getNomEvent());
+        $fileName = 'ticket-' . $eventName . '-' . time() . '.pdf';
+        
+        // Retourner le PDF en tant que réponse à télécharger
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0'
+            ]
+        );
+    }
     
         #[Route('/event/{id}/participants', name: 'event_participants', methods: ['GET'])]
         public function viewParticipants(int $id, EvenementRepository $evenementRepository, EntityManagerInterface $entityManager): Response
@@ -351,7 +360,13 @@ class EvenementController extends AbstractController
         }
         
         #[Route('/my-events', name: 'my_events')]
-        public function myEvents(ParticipationEventRepository $participationRepository, EntityManagerInterface $entityManager): Response
+        public function myEvents(
+            Request $request,
+            ParticipationEventRepository $participationRepository,
+            EvenementRepository $evenementRepository,
+            ClubRepository $clubRepository,
+            EntityManagerInterface $entityManager
+        ): Response
         {
             // Récupérer l'utilisateur connecté
             $user = $this->getUser();
@@ -360,20 +375,79 @@ class EvenementController extends AbstractController
                 return $this->redirectToRoute('app_login'); // Redirige vers la page de login si l'utilisateur n'est pas connecté
             }
         
+            // Récupération des paramètres de filtrage
+            $search = $request->query->get('search');
+            $type = $request->query->get('type');
+            $date = $request->query->get('date');
+            $clubId = $request->query->get('club');
+        
             // Récupérer les participations de l'utilisateur
             $participations = $participationRepository->findBy(['user' => $user]);
         
-            // Récupérer les événements associés
-            $evenements = [];
+            // Récupérer les IDs des événements auxquels l'utilisateur participe
+            $evenementIds = [];
             foreach ($participations as $participation) {
-                $evenements[] = $participation->getEvenement();
+                $evenementIds[] = $participation->getEvenement()->getId();
             }
+        
+            // Si l'utilisateur ne participe à aucun événement, retourner un tableau vide
+            if (empty($evenementIds)) {
+                return $this->render('evenement/myevents.html.twig', [
+                    'evenements' => [],
+                    'clubs' => $clubRepository->findAll(),
+                ]);
+            }
+        
+            // Création du QueryBuilder pour filtrer les événements
+            $queryBuilder = $evenementRepository->createQueryBuilder('e')
+                ->where('e.id IN (:ids)')
+                ->setParameter('ids', $evenementIds);
+        
+            // Appliquer les filtres
+            if ($search) {
+                $queryBuilder->andWhere('e.nomEvent LIKE :search')
+                    ->setParameter('search', '%' . $search . '%');
+            }
+        
+            if ($type) {
+                $queryBuilder->andWhere('e.type = :type')
+                    ->setParameter('type', $type);
+            }
+        
+            if ($date) {
+                try {
+                    $dateObj = new \DateTime($date);
+                    $startOfDay = (clone $dateObj)->setTime(0, 0, 0);
+                    $endOfDay = (clone $dateObj)->setTime(23, 59, 59);
+                    $queryBuilder->andWhere('e.startDate BETWEEN :startOfDay AND :endOfDay')
+                        ->setParameter('startOfDay', $startOfDay)
+                        ->setParameter('endOfDay', $endOfDay);
+                } catch (\Exception $e) {
+                    // En cas d'erreur de format de date, ignorer ce filtre
+                }
+            }
+        
+            // Filtrer par club
+            if ($clubId) {
+                $queryBuilder->andWhere('e.club = :clubId')
+                    ->setParameter('clubId', $clubId);
+            }
+        
+            // Exécuter la requête
+            $evenements = $queryBuilder->getQuery()->getResult();
+        
+            // Récupérer tous les clubs pour le menu déroulant de filtrage
+            $clubs = $clubRepository->findAll();
         
             return $this->render('evenement/myevents.html.twig', [
                 'evenements' => $evenements,
+                'search' => $search,
+                'type' => $type,
+                'date' => $date,
+                'club' => $clubId,
+                'clubs' => $clubs,
             ]);
         }
-        
 
     #[Route('/new', name: 'app_evenement_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, ValidatorInterface $validator): Response

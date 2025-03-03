@@ -34,6 +34,93 @@
       margin: 30px auto;
       padding: 20px;
     }
+    
+    /* Styles améliorés pour le formulaire de filtrage */
+    .filter-form {
+      background-color: #f8f9fa;
+      padding: 25px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+      border: 1px solid #e9ecef;
+    }
+
+    .filter-form .form-label {
+      color: #495057;
+      font-size: 14px;
+    }
+
+    .filter-form .input-group-text {
+      background-color: #f1f3f5;
+      border-right: none;
+      color: #6c757d;
+    }
+
+    .filter-form .form-control,
+    .filter-form .form-select {
+      border-left: none;
+      box-shadow: none;
+      font-size: 14px;
+    }
+
+    .filter-form .form-control:focus,
+    .filter-form .form-select:focus {
+      box-shadow: none;
+      border-color: #ced4da;
+    }
+
+    .filter-btn {
+      background-color: #3E6FF4;
+      color: white;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(62, 111, 244, 0.3);
+    }
+
+    .filter-btn:hover {
+      background-color: #2E5AD9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(46, 90, 217, 0.4);
+    }
+
+    .reset-btn {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-left: 10px;
+      font-weight: 500;
+      box-shadow: 0 2px 5px rgba(108, 117, 125, 0.3);
+    }
+
+    .reset-btn:hover {
+      background-color: #5a6268;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(90, 98, 104, 0.4);
+    }
+
+    /* Support pour les écrans mobiles */
+    @media (max-width: 767.98px) {
+      .filter-form {
+        padding: 15px;
+      }
+      
+      .filter-form .form-group {
+        margin-bottom: 15px;
+      }
+      
+      .reset-btn {
+        margin-left: 0;
+        margin-top: 10px;
+      }
+    }
   </style>
 
   <!-- breadcrumb area start -->
@@ -56,8 +143,90 @@
   </section>
   <!-- breadcrumb area end -->
 
+  <!-- Zone de filtrage améliorée -->
+  <section class="pt-50">
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <div class="filter-form">
+            <form method="GET" action="{{ path('my_events') }}">
+              <div class="row align-items-end g-3">
+                <!-- Recherche par nom -->
+                <div class="col-md-3">
+                  <div class="form-group mb-0">
+                    <label for="search" class="form-label fw-bold mb-2">Event Name</label>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-search"></i></span>
+                      <input type="text" id="search" name="search" class="form-control" value="{{ search|default('') }}" placeholder="Search events...">
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Filtre par type -->
+                <div class="col-md-3">
+                  <div class="form-group mb-0">
+                    <label for="type" class="form-label fw-bold mb-2">Event Type</label>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                      <select id="type" name="type" class="form-select">
+                        <option value="">All Types</option>
+                        <option value="open" {% if type == 'open' %}selected{% endif %}>Open</option>
+                        <option value="closed" {% if type == 'closed' %}selected{% endif %}>Closed</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Filtre par date -->
+                <div class="col-md-3">
+                  <div class="form-group mb-0">
+                    <label for="date" class="form-label fw-bold mb-2">Event Date</label>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                      <input type="date" id="date" name="date" class="form-control" value="{{ date|default('') }}">
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Filtre par club -->
+                <div class="col-md-3">
+                  <div class="form-group mb-0">
+                    <label for="club" class="form-label fw-bold mb-2">Club</label>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-users"></i></span>
+                      <select id="club" name="club" class="form-select">
+                        <option value="">All Clubs</option>
+                        {% for clubItem in clubs %}
+                          <option value="{{ clubItem.id }}" {% if club is defined and club == clubItem.id %}selected{% endif %}>
+                            {{ clubItem.nomClub }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Boutons de filtrage -->
+              <div class="row mt-4">
+                <div class="col-12 text-center">
+                  <button type="submit" class="filter-btn">
+                    <i class="fas fa-filter"></i> Filter Events
+                  </button>
+                  <a href="{{ path('my_events') }}" class="reset-btn">
+                    <i class="fas fa-undo"></i> Reset Filters
+                  </a>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Zone des événements -->
-  <section class="event__area pt-115">
+  <section class="event__area pt-50">
     <div class="container">
       <div class="row" id="eventList">
         {% if evenements is not empty %}
@@ -118,14 +287,17 @@
           {% endfor %}
         {% else %}
           <div class="col-12 text-center">
-            <p>You have no events yet.</p>
+            <p>No events found matching your criteria.</p>
+            {% if search is defined or type is defined or date is defined or club is defined %}
+              <p>Try adjusting your filters or <a href="{{ path('my_events') }}">view all your events</a>.</p>
+            {% else %}
+              <p>You have no events yet.</p>
+            {% endif %}
           </div>
         {% endif %}
       </div>
     </div>
   </section>
   <!-- End Event Area -->
-
-  
 </main>
 {% endblock %}
