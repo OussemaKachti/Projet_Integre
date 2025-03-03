@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ParticipationEventRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ParticipationEventRepository::class)]
 class ParticipationEvent
@@ -14,25 +15,27 @@ class ParticipationEvent
     #[ORM\Column]
     private ?int $id = null;
 
-   
-
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: "participations", cascade: ["remove"])]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?User $user = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?evenement $event_id = null;
+    #[ORM\ManyToOne(targetEntity: Evenement::class, inversedBy: "participations", cascade: ["remove"])]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
+    private ?Evenement $evenement = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Assert\NotNull(message: "La date de participation est obligatoire.")]
     private ?\DateTimeInterface $dateparticipation = null;
+
+    public function __construct()
+    {
+        $this->dateparticipation = new \DateTime(); // Définit automatiquement la date actuelle
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
-
-   
 
     public function getUser(): ?User
     {
@@ -42,19 +45,17 @@ class ParticipationEvent
     public function setUser(?User $user): static
     {
         $this->user = $user;
-
         return $this;
     }
 
-    public function getEventId(): ?evenement
+    public function getEvenement(): ?Evenement
     {
-        return $this->event_id;
+        return $this->evenement;
     }
 
-    public function setEventId(?evenement $event_id): static
+    public function setEvenement(?Evenement $evenement): static
     {
-        $this->event_id = $event_id;
-
+        $this->evenement = $evenement;
         return $this;
     }
 
@@ -66,7 +67,6 @@ class ParticipationEvent
     public function setDateparticipation(\DateTimeInterface $dateparticipation): static
     {
         $this->dateparticipation = $dateparticipation;
-
         return $this;
     }
 }

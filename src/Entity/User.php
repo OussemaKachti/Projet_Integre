@@ -101,24 +101,52 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, ParticipationEvent>
      */
-    #[ORM\OneToMany(targetEntity: ParticipationEvent::class, mappedBy: 'user_id')]
-    private Collection $no;
+   /**
+ * @var Collection<int, ParticipationEvent>
+ */
+#[ORM\OneToMany(targetEntity: ParticipationEvent::class, mappedBy: 'user', cascade: ["persist", "remove"])]
+private Collection $participationsEvents;
 
-   
+// Modifier le constructeur pour initialiser cette collection
+public function __construct()
+{
+    $this->participations = new ArrayCollection();
+    $this->commentaires = new ArrayCollection();
+    $this->likes = new ArrayCollection();
+    $this->sondages = new ArrayCollection();
+    $this->participationsEvents = new ArrayCollection(); // Remplacer no par participationsEvents
+}
 
-    public function __construct()
-    {
-        $this->participations = new ArrayCollection();
-        $this->commentaires = new ArrayCollection();
-        $this->likes = new ArrayCollection();
-        $this->no = new ArrayCollection();
-        $this->sondages = new ArrayCollection();
+// Ajouter les getters et setters pour cette propriété
+/**
+ * @return Collection<int, ParticipationEvent>
+ */
+public function getParticipationsEvents(): Collection
+{
+    return $this->participationsEvents;
+}
+
+public function addParticipationEvent(ParticipationEvent $participation): static
+{
+    if (!$this->participationsEvents->contains($participation)) {
+        $this->participationsEvents->add($participation);
+        $participation->setUser($this);
     }
-    public function getId(): ?int
-    {
-        return $this->id;
+
+    return $this;
+}
+
+public function removeParticipationEvent(ParticipationEvent $participation): static
+{
+    if ($this->participationsEvents->removeElement($participation)) {
+        // set the owning side to null (unless already changed)
+        if ($participation->getUser() === $this) {
+            $participation->setUser(null);
+        }
     }
 
+    return $this;
+}
     public function getNom(): ?string
     {
         return $this->nom;
@@ -311,11 +339,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @return Collection<int, ParticipationEvent>
      */
-    public function getNo(): Collection
-    {
-        return $this->no;
-    }
-    //IMEN //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // public function addNo(ParticipationEvent $no): static
     // {

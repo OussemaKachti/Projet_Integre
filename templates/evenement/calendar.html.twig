@@ -2,7 +2,7 @@
 
 {% block body %}
     <div class="calendar-container">
-       <h1 class="calendar-title" style="color: rgb(78, 17, 61);">Events Calendar</h1>
+       <h1 class="calendar-title" style="color: rgb(27, 5, 89);">Events Calendar</h1>
 
 
         <!-- Conteneur pour le calendrier avec style amélioré -->
@@ -20,7 +20,7 @@
     margin: 30px auto;
     padding: 20px;
     font-family: 'Arial', sans-serif;
-    background-color: #f9f9f9;
+    background-color:rgb(230, 230, 235);
     border-radius: 10px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
@@ -44,7 +44,7 @@
 
 /* Style des entêtes des jours de la semaine */
 .fc-col-header-cell {
-    background-color:rgb(137, 31, 107);
+    background-color:rgb(27, 5, 89);
     color: white;
     padding: 10px 0 !important;
     text-align: center;
@@ -57,7 +57,7 @@
 }
 
 .fc-daygrid-day:hover {
-    background-color: #f1f1f1;
+    background-color:rgb(220, 221, 223);
     transform: scale(1.05);
 }
 
@@ -79,14 +79,14 @@
 
 /* Couleur par défaut des événements */
 .fc-event-default {
-    background-color:  #F8D7DA;
+    background-color:rgb(215, 222, 248);
     color: white;
 }
 
 /* Amélioration des boutons de navigation */
 .fc-button-primary {
-    background-color: rgb(78, 17, 61)!important;
-    border-color: rgb(78, 17, 61) !important;
+    background-color: rgb(27, 5, 89)!important;
+    border-color: rgb(27, 5, 89) !important;
     box-shadow: none !important;
     font-size: 14px;
     padding: 8px 15px;
@@ -100,7 +100,7 @@
 
 /* Jour actuel */
 .fc-day-today {
-    background-color: rgba(177, 136, 158, 0.54) !important;
+    background-color: rgba(161, 164, 227, 0.54) !important;
 }
 
 /* Événement avec des badges */
@@ -164,8 +164,8 @@
                             data = data.map(event => {
                                 // Si aucune couleur n'est définie, utiliser une couleur par défaut
                                 if (!event.backgroundColor) {
-                                    event.backgroundColor = '#2C2C2C';
-                                    event.borderColor = '#2C2C2C';
+                                    event.backgroundColor = '#2007BFF';
+                                    event.borderColor = '#007BFF';
                                 }
                                 
                                 // Ajouter des effets visuels

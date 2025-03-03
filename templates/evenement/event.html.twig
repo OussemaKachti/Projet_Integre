@@ -86,14 +86,17 @@
         </div>
       </form>
 
-      <div class="d-flex justify-content-between align-items-center mt-5">
+      {% if canCreateEvent %}
+    <div class="d-flex justify-content-between align-items-center mt-5">
         <div class="text-center">
-          <h4 class="mb-3">Want to organize an amazing event? 🎉</h4>
-          <p class="mb-4">Click below to create your event and engage your community!</p>
+            <h4 class="mb-3">Want to organize an amazing event? 🎉</h4>
+            <p class="mb-4">Click below to create your event and engage your community!</p>
         </div>
         <a href="{{ path('app_evenement_new') }}" class="btn btn-primary btn-lg add-event-btn"
            style="background-color: #003366; border-color: #003366;">Add Event</a>
-      </div>
+    </div>
+{% endif %}
+
 
       <!-- Zone du calendrier FullCalendar -->
   <!-- Section de navigation des vues (entre le formulaire de recherche et la section "Add Event") -->
