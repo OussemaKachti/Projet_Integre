@@ -45,15 +45,17 @@ class CommandeRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
-public function searchByKeyword(string $keyword): query
+public function searchByKeyword(string $keyword): Query
 {
     return $this->createQueryBuilder('p')
-        ->leftJoin('p.club', 'c')  // Joindre la table Club
-        ->where('p.nomProd LIKE :keyword OR p.descProd LIKE :keyword')
-        ->orWhere('c.nomC LIKE :keyword')  // Ajouter la recherche par nom du club
+        ->leftJoin('p.orderDetails', 'od')  // Joindre Orderdetails
+        ->leftJoin('od.produit', 'prod')  // Joindre Produit
+        ->leftJoin('prod.club', 'c')  // Joindre Club via Produit
+        ->where('prod.nomProd LIKE :keyword ')
+        //->orWhere('c.nomC LIKE :keyword')  
         ->setParameter('keyword', '%' . $keyword . '%')
-        ->orderBy('p.id', 'ASC') // Optionnel : trier par ID
+        ->orderBy('p.id', 'ASC')
         ->getQuery();
-        
 }
+
 }

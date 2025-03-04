@@ -19,7 +19,7 @@
     <button type="submit" class="btn btn-primary">Research</button>
 </form>
         <div class="row">
-            <h1>Table des commandes</h1>
+            <h1>Order table</h1>
             <div class="col-12">
                 <div class="table-content table-responsive">
                     <table class="table table-striped">
@@ -106,7 +106,9 @@
                                 <tr>
                                     <td colspan="8">Aucune commande trouvée</td>
                                 </tr>
+                                
                             {% endfor %}
+                            
                         </tbody>
                     </table>
                     <div class="row mt-4">
@@ -118,4 +120,62 @@
         </div>
     </div>
 </section>
+{# Nouveau bloc pour le graphique des produits les plus vendus #}
+<section class="container mt-5">
+    <h2 class="mb-4">Top Products Sold</h2>
+    <canvas id="topProduitsChart"></canvas>
+</section>
+
+{# Script pour le graphique #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("{{ path('top_produits') }}")
+            .then(response => response.json())
+            .then(data => {
+                console.log("Données reçues :", data);
+                const labels = data.map(item => item.nomProd);
+                const values = data.map(item => item.totalVentes);
+
+                const ctx = document.getElementById('topProduitsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Nombre de ventes',
+                            data: values,
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Quantité vendue'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Produits'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Top Produits Vendus'
+                            }
+                        }
+                    }
+                });
+            });
+    });
+</script>
 {% endblock %}

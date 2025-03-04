@@ -1,5 +1,5 @@
 <?php
-// src/services/OrderValidationService.php
+// src/Services/OrderValidationService.php
 
 namespace App\Services;
 
@@ -12,13 +12,13 @@ class OrderValidationService
 {
     private MailerInterface $mailer;
     private EntityManagerInterface $entityManager;
-    
+
     public function __construct(MailerInterface $mailer, EntityManagerInterface $entityManager)
     {
         $this->mailer = $mailer;
         $this->entityManager = $entityManager;
     }
-    
+
     /**
      * Valide la commande :
      * - Envoie un e-mail à l'utilisateur
@@ -38,7 +38,7 @@ class OrderValidationService
 
         // Créer l'email
         $email = (new Email())
-            ->from('noreply@votresite.com')
+            ->from('uniclubs191@gmail.com')  // Votre adresse Gmail
             ->to($user->getEmail())
             ->subject('Validation de votre commande')
             ->html('<p>Bonjour ' . $user->getNom() . ',</p>
@@ -55,3 +55,4 @@ class OrderValidationService
         $this->entityManager->flush();
     }
 }
+

@@ -32,13 +32,23 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMINISTRATEUR }
+        
         # - { path: ^/login, roles: PUBLIC_ACCESS, allow_if: "not is_authenticated()" }
         # - { path: ^/user/sign-up, roles: PUBLIC_ACCESS, allow_if: "not is_authenticated()" }
           - { path: ^/login$, roles: PUBLIC_ACCESS }
           - { path: ^/user/sign-up, roles: PUBLIC_ACCESS }
           - { path: ^/home$, roles: PUBLIC_ACCESS }
+          - { path: ^/presi, roles: ROLE_PRESIDENT_CLUB }
+          
+          - { path: ^/admin, roles: ROLE_ADMINISTRATEUR }
+          - { path: ^/, roles: PUBLIC_ACCESS }
         #   - { path: ^/contact$, roles: PUBLIC_ACCESS }
+        
+    role_hierarchy:
+        ROLE_MEMBRE: ROLE_USER
+        ROLE_PRESIDENT_CLUB: ROLE_MEMBRE
+        ROLE_ADMINISTRATEUR: [ROLE_PRESIDENT_CLUB, ROLE_ALLOWED_TO_SWITCH]
+   
 
 when@test:
     security:

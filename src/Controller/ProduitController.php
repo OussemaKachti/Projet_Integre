@@ -50,6 +50,7 @@ public function inde(
     PaginatorInterface $paginator
 ): Response
 {
+    
     // Get search query if present
     $keyword = $request->query->get('q', '');
     
@@ -107,26 +108,26 @@ public function proadmin(
         'keyword' => $keyword
     ]);
 }
-    #[Route('/{id}/delete', name: 'produit.admin_delete', methods: ['POST'])]
-public function deletee(Request $request, int $id, ProduitRepository $produitRepository, EntityManagerInterface $entityManager): Response
+#[Route('/{id}/delete', name: 'produit.admin_delete', methods: ['POST', 'GET'])]
+public function deletee(int $id, EntityManagerInterface $entityManager): Response
 {
-    $produit = $produitRepository->find($id);
+    // Récupérer le produit par ID
+    $produit = $entityManager->getRepository(Produit::class)->find($id);
 
     if (!$produit) {
-        throw $this->createNotFoundException('Le produit avec ID '.$id.' n\'existe pas.');
+        $this->addFlash('danger', 'Produit non trouvé.');
+        return $this->redirectToRoute('produit_admin');
     }
 
-    if ($this->isCsrfTokenValid('delete'.$produit->getId(), $request->request->get('_token'))) {
-        $entityManager->remove($produit);
-        $entityManager->flush();
-        $this->addFlash('success', 'Le produit a été supprimé avec succès.');
-    } else {
-        $this->addFlash('error', 'Jeton CSRF invalide.');
-    
-    }
+    // Supprimer le produit
+    $entityManager->remove($produit);
+    $entityManager->flush();
 
-    return $this->redirect($request->headers->get('referer') ?: $this->generateUrl('produit_admin'));
+    $this->addFlash('success', 'Produit supprimé avec succès.');
+
+    return $this->redirectToRoute('produit_admin');
 }
+
 
     #[Route('/new', name: 'app_produit_new', methods: ['GET', 'POST'])] //ajout de produits
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
@@ -363,63 +364,77 @@ exit;
     
         return $this->redirect($request->headers->get('referer') ?: $this->generateUrl('cart_index'));
     }
-
     #[Route('/increase/{id}', name: 'cart_increase')]
-public function increase(Produit $produit, SessionInterface $session): Response
-{
-    $cart = $session->get('cart', []);
-    $id = $produit->getId();
-
-    if (isset($cart[$id])) {
-        $cart[$id]['quantity']++;
-        // Recalcul du total pour ce produit
-        $cart[$id]['total'] = $produit->getPrix() * $cart[$id]['quantity'];
-    }
-
-    $session->set('cart', $cart);
-
-    return $this->redirectToRoute('cart_index');
-}
-
-#[Route('/decrease/{id}', name: 'cart_decrease')]
-public function decrease(Produit $produit, SessionInterface $session): Response
-{
-    $cart = $session->get('cart', []);
-    $id = $produit->getId();
-
-    if (isset($cart[$id])) {
-        if ($cart[$id]['quantity'] > 1) {
-            $cart[$id]['quantity']--;
-            // Recalcul du total pour ce produit
-            $cart[$id]['total'] = $produit->getPrix() * $cart[$id]['quantity'];
-        } else {
-            unset($cart[$id]);
-        }
-    }
-    var_dump($cart);
-
+    public function increase(Produit $produit, SessionInterface $session, ProduitRepository $produitRepository): Response
+    {
+        $cart = $session->get('cart', []);
+        $id = $produit->getId();
     
+        if (isset($cart[$id])) {
+            $cart[$id]['quantity']++;
+        } else {
+            $cart[$id] = [
+                'quantity' => 1,
+                'produit' => $produit
+            ];
+        }
+    
+        // Recalcul du total général du panier
+        $total = 0;
+        $quantities = [];
+        foreach ($cart as $productId => $item) {
+            $currentProduit = $produitRepository->find($productId);
+            if ($currentProduit) {
+                $total += $currentProduit->getPrix() * $item['quantity'];
+                $quantities[$productId] = $item['quantity'];
+            }
+        }
+    
+        $session->set('cart', $cart);
+    
+        // Retourner une réponse JSON avec le total et les quantités
+        return new JsonResponse([
+            'success' => true,
+            'total' => $total,
+            'quantities' => $quantities
+        ]);
+    }
+    
+    #[Route('/decrease/{id}', name: 'cart_decrease')]
+    public function decrease(Produit $produit, SessionInterface $session, ProduitRepository $produitRepository): Response
+    {
+        $cart = $session->get('cart', []);
+        $id = $produit->getId();
+    
+        if (isset($cart[$id])) {
+            if ($cart[$id]['quantity'] > 1) {
+                $cart[$id]['quantity']--;
+            } else {
+                unset($cart[$id]);
+            }
+        }
+    
+        // Recalcul du total général du panier
+        $total = 0;
+        $quantities = [];
+        foreach ($cart as $productId => $item) {
+            $currentProduit = $produitRepository->find($productId);
+            if ($currentProduit) {
+                $total += $currentProduit->getPrix() * $item['quantity'];
+                $quantities[$productId] = $item['quantity'];
+            }
+        }
+    
+        $session->set('cart', $cart);
+    
+        // Retourner une réponse JSON avec le total et les quantités
+        return new JsonResponse([
+            'success' => true,
+            'total' => $total,
+            'quantities' => $quantities
+        ]);
+    }
 
-    $session->set('cart', $cart);
-
-    return $this->redirectToRoute('cart_index');
-}
-#[Route('/cart/clear', name: 'cart_clear', methods: ['POST', 'GET'])]
-public function clearCart(Request $request, SessionInterface $session): Response
-{
-    // Supprimer la clé 'cart' de la session (vidant ainsi le panier)
-    $session->remove('cart');
-
-    // Ou alternativement, vous pouvez simplement réinitialiser le panier à un tableau vide :
-    // $session->set('cart', []);
-
-    $this->addFlash('success', 'Votre panier a été vidé avec succès.');
-
-    // Rediriger vers la page précédente ou vers la page du panier
-    return $this->redirect(
-        $request->headers->get('referer') ?: $this->generateUrl('cart_index')
-    );
-}
 
 
 #[Route('/search', name: 'produit_search', methods: ['GET'])]

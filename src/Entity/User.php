@@ -183,6 +183,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->role;
     }
+    
 
     public function setRole(RoleEnum $role): self
     {
@@ -248,7 +249,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         // Ensure the role is always an array and includes ROLE_ prefix
-        return ['ROLE_' . strtoupper($this->role->value)];
+        return ['ROLE_' . strtoupper(preg_replace('/(?<!^)[A-Z]/', '_$0',$this->role->value))];
     }
 
     public function getUserIdentifier(): string

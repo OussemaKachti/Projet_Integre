@@ -30,3 +30,25 @@ services:
         arguments:
             $client: '@http_client'
             $apiKey: '%env(OPENAI_API_KEY)%'
+     # Définir un transport personnalisé avec MAILER_DSN3
+    app.custom_transport:
+        class: Symfony\Component\Mailer\Transport\TransportInterface
+        factory: ['@mailer.transport_factory', 'fromString']
+        arguments:
+            $dsn: '%env(MAILER_DSN3)%'
+
+    # Définir un service de mailer personnalisé utilisant le transport personnalisé
+    app.custom_mailer:
+        class: Symfony\Component\Mailer\Mailer
+        arguments:
+            $transport: '@app.custom_transport'
+            $bus: '@messenger.default_bus' # Optionnel, si vous utilisez Messenger
+            $dispatcher: '@event_dispatcher'
+
+    # Injecter le mailer personnalisé dans OrderValidationService
+    App\Services\OrderValidationService:
+        arguments:
+            $mailer: '@app.custom_mailer'
+            $entityManager: '@doctrine.orm.entity_manager'
+            
+        

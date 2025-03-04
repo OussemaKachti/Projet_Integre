@@ -19,6 +19,9 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use App\Enum\StatutCommandeEnum;
 use App\Services\OrderValidationService;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\Security\Core\Security;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
 
 #[Route('/commande')]
 class CommandeController extends AbstractController
@@ -52,7 +55,7 @@ public function index(
     $pagination = $paginator->paginate(
         $query,
         $request->query->getInt('page', 1),
-        2 // Number of items per page
+        3 // Number of items per page
     );
     
     // Process the paginated commands
@@ -96,16 +99,16 @@ public function index(
     ]);
 }
 
-    #[Route('/president', name: 'presi_commandes')]
-    public function commande(EntityManagerInterface $entityManager,
-    PaginatorInterface $paginator,Request $request,): Response
-    { 
-        // Get search query if present
+#[Route('/president', name: 'presi_commandes')]
+public function commande(EntityManagerInterface $entityManager,
+    PaginatorInterface $paginator, Request $request): Response
+{
+    // Get search query if present
     $keyword = $request->query->get('q', '');
-    
+
     // Create query for commands
     $commandeRepository = $entityManager->getRepository(Commande::class);
-    
+
     if (!empty($keyword)) {
         // Search query - you need to implement this in your repository
         $query = $commandeRepository->searchByKeyword($keyword);
@@ -115,55 +118,55 @@ public function index(
             ->orderBy('c.dateComm', 'DESC')
             ->getQuery();
     }
-    
-    // Paginate the raw commands (we'll process them after pagination)
+
+    // Paginate the filtered or all commands (based on search)
     $pagination = $paginator->paginate(
         $query,
         $request->query->getInt('page', 1),
-        2 // Number of items per page
+        3 // Number of items per page
     );
-        // Récupérer toutes les commandes
-        $commandes = $entityManager->getRepository(Commande::class)->findAll();
-    
-        $data = [];
-        foreach ($commandes as $commande) {
-            $user = $commande->getUser();
-            if (!$user) {
-                $user = null; // Correction ici pour éviter l'erreur
-            }
-    
-            $orderDetails = $commande->getOrderDetails(); // Collection d'OrderDetails
-            if ($orderDetails->isEmpty()) {
+
+    // Process the paginated commands
+    $data = [];
+    foreach ($pagination->getItems() as $commande) {
+        $user = $commande->getUser();
+        if (!$user) {
+            $user = null;
+        }
+
+        $orderDetails = $commande->getOrderDetails();
+        if ($orderDetails->isEmpty()) {
+            $data[] = [
+                'user' => $user ? $user : 'Utilisateur inconnu',
+                'commande' => $commande,
+                'produit' => null,
+                'club' => null,
+                'dateComm' => $commande->getDateComm(),
+                'orderDetails' => $orderDetails,
+            ];
+        } else {
+            foreach ($orderDetails as $orderDetail) {
+                $produit = $orderDetail->getProduit();
+                $club = $produit ? $produit->getClub() : null;
+
                 $data[] = [
                     'user' => $user ? $user : 'Utilisateur inconnu',
                     'commande' => $commande,
-                    'produit' => null, // Pas de produit
-                    'club' => null,
+                    'produit' => $produit,
+                    'club' => $club,
                     'dateComm' => $commande->getDateComm(),
-                    'orderDetails' => $orderDetails,
                 ];
-            } else {
-                foreach ($orderDetails as $orderDetail) {
-                    $produit = $orderDetail->getProduit();
-                    $club = $produit ? $produit->getClub() : null;
-    
-                    $data[] = [
-                        'user' => $user ? $user : 'Utilisateur inconnu',
-                        'commande' => $commande,
-                        'produit' => $produit,
-                        'club' => $club,
-                        'dateComm' => $commande->getDateComm(),
-                    ];
-                }
             }
         }
-        
-        return $this->render('produit/index2.html.twig', [
-            'data' => $data,
-            'pagination' => $pagination,
-            'keyword' => $keyword
-        ]);
     }
+
+    return $this->render('produit/index2.html.twig', [
+        'data' => $data,
+        'pagination' => $pagination,
+        'keyword' => $keyword
+    ]);
+}
+
 
     #[Route('/commande/valider/{id}', name: 'commande_validate', methods: ['GET'])]
     public function validateCommande(Commande $commande, OrderValidationService $orderValidationService): Response
@@ -267,11 +270,12 @@ public function index(
         ProduitRepository $produitRepository, 
         EntityManagerInterface $entityManager
     ): Response {
-        // Récupérer un utilisateur de test (remplacez l'ID 1 par un ID valide dans votre base)
-    $user = $entityManager->getRepository(User::class)->find(1);
-    
+        // Récupérer l'utilisateur connecté
+    $user = $this->getUser();
+
     if (!$user) {
-        throw new \Exception("Utilisateur de test non trouvé !");
+        // Si l'utilisateur n'est pas connecté, le rediriger vers la page de connexion
+        return $this->redirectToRoute('app_login');
     }
     
         // Récupérer le panier depuis la session
@@ -332,9 +336,35 @@ public function index(
 #[Route('/order/{id}', name: 'order_success', methods: ['GET'])]
 public function success(Commande $commande): Response
 {
+    // Vérifier si l'utilisateur est connecté
+    if (!$this->getUser()) {
+        // Stocker la route actuelle pour redirection après connexion
+        $session->set('_security.target_path', $this->generateUrl('order_success', ['id' => $commande->getId()]));
+
+        // Rediriger vers la page de connexion
+        return $this->redirectToRoute('app_user_signup');
+    }
     return $this->render('commande/chekout.html.twig', [
         'commande' => $commande,
     ]);
 }
+
+#[Route('/stats/top-produits', name: 'top_produits')]
+    public function topProduits(EntityManagerInterface $entityManager): JsonResponse
+    {
+        // Récupérer les produits les plus vendus
+        $query = $entityManager->createQuery(
+            'SELECT p.nomProd, SUM(o.quantity) as totalVentes
+             FROM App\Entity\Produit p
+             JOIN p.orderdetails o
+             GROUP BY p.id
+             ORDER BY totalVentes DESC'
+        );
+
+        $topProduits = $query->getResult();
+        
+
+        return $this->json($topProduits);
+    }
 
 }
