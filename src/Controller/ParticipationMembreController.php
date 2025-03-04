@@ -14,12 +14,13 @@ use App\Entity\Club;
 use App\Entity\User;
 use App\Repository\ClubRepository;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\Security\Core\Security;
 
 #[Route('/participation/membre')]
 class ParticipationMembreController extends AbstractController
 {
     #[Route('/', name: 'app_participation_membre_index', methods: ['GET'])]
-public function index(EntityManagerInterface $entityManager, PaginatorInterface $paginator, Request $request): Response
+public function index(EntityManagerInterface $entityManager, PaginatorInterface $paginator, Request $request,ParticipationMembreRepository $participationMembreRepository): Response
 {
     // Create a query to fetch participation requests, ordered by ID
     $query = $entityManager->getRepository(ParticipationMembre::class)
@@ -34,9 +35,12 @@ public function index(EntityManagerInterface $entityManager, PaginatorInterface 
         2 // Number of items per page
     );
 
+    
+
     // Render the template with paginated results
     return $this->render('participation_membre/index.html.twig', [
         'pagination' => $pagination, // Pass pagination to the template
+        
     ]);
 }
 
@@ -73,20 +77,41 @@ public function index2(EntityManagerInterface $entityManager, PaginatorInterface
     ]);
 }
 
-    
-    #[Route('/new/{clubId}', name: 'app_participation_membre_new', methods: ['GET', 'POST'])]
-public function new(Request $request, EntityManagerInterface $entityManager, int $clubId, ClubRepository $clubRepository): Response
+
+
+#[Route('/new/{clubId}', name: 'app_participation_membre_new', methods: ['GET', 'POST'])]
+public function new(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    int $clubId,
+    ClubRepository $clubRepository,
+    Security $security // Injecter le service Security
+): Response
 {
+    // Récupérer l'utilisateur connecté
+    $user = $security->getUser();
+
+    // Vérifier si l'utilisateur est connecté
+    if (!$user) {
+        $this->addFlash('error', 'Vous devez être connecté pour effectuer cette action.');
+        return $this->redirectToRoute('app_login'); // Rediriger vers la page de connexion
+    }
+
     // Récupérer le club à partir de l'ID passé dans l'URL
     $club = $entityManager->getRepository(Club::class)->find($clubId);
 
-    // Vérifie si le club existe
-    $clubs = $clubRepository->findAll();
+    // Vérifier si le club existe
+    if (!$club) {
+        $this->addFlash('error', 'Le club demandé n\'existe pas.');
+        return $this->redirectToRoute('app_club_index'); // Rediriger vers une page appropriée
+    }
 
     // Créer une nouvelle participation
     $participationMembre = new ParticipationMembre();
     $participationMembre->setClub($club); // Associer le club à la participation
+    $participationMembre->setUser($user); // Associer l'utilisateur connecté à la participation
 
+    // Créer et gérer le formulaire
     $form = $this->createForm(ParticipationMembreType::class, $participationMembre);
     $form->handleRequest($request);
 
@@ -101,8 +126,8 @@ public function new(Request $request, EntityManagerInterface $entityManager, int
         // Message flash pour informer l'utilisateur
         $this->addFlash('success', 'Votre demande de participation a été enregistrée avec succès.');
 
-        // Redirige vers la route '/indexx'
-        return $this->redirectToRoute('index2');
+        // Rediriger vers la route '/indexx'
+        return $this->redirectToRoute('app_club_index');
     }
 
     // Afficher le formulaire

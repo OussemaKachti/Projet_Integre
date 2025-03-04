@@ -45,6 +45,12 @@ public function searchByKeyword(string $keyword): Query
         ->getQuery();
         
 }
+//find the most popular club in the last week
+
+// Custom method to find the most popular clubs in the last week
+
+
+
 
 
 //    /**

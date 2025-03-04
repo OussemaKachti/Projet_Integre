@@ -30,6 +30,7 @@ class ParticipationMembre
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
+    
 
     public function __construct()
     {

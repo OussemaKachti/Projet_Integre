@@ -12,6 +12,8 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Security\Core\Security;
+
 
 class ParticipationMembreType extends AbstractType
 {
@@ -24,16 +26,17 @@ class ParticipationMembreType extends AbstractType
                 'attr' => [
                     'placeholder' => 'Ajoutez une description...',
                 ],
-            ])
-            ->add('user', EntityType::class, [
-                'class' => User::class,
-                // Affichage uniquement de l'ID de l'utilisateur
-                'choice_label' => function (User $user) {
-                    return $user->getId(); // Affiche uniquement l'ID
-                },
-                'label' => 'Membre',
-                'placeholder' => 'Sélectionnez un membre',
             ]);
+
+    
+            //->add('user', EntityType::class, [
+               // 'class' => User::class,
+                //'choice_label' => function (User $user) {
+                    //return $user->getId(); // Affiche uniquement l'ID
+              // },
+                //'label' => 'Membre',
+                //'placeholder' => 'Sélectionnez un membre',
+            //]);
           
     }
 

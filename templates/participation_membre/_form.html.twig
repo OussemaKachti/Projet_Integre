@@ -9,13 +9,6 @@
                 {{ form_widget(form.description, {'attr': {'class': 'form-control', 'placeholder': 'Exprimez vos motivations...', 'required': 'required'}}) }}
                 {{ form_errors(form.description) }}
             </div>
-
-            <div class="col-md-6 mb-3">
-                <label class="form-label">{{ form.user.vars.label|capitalize }}</label>
-                {{ form_widget(form.user, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
-                {{ form_errors(form.user) }}
-            </div>
-
           
         </div>
 
