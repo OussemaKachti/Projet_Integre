@@ -47,16 +47,50 @@ class EvenementController extends AbstractController
     }
 
     #[Route('/admincat', name: 'admincat_page')]
-    public function admincatPage(CategorieRepository $categorieRepository): Response
+    public function admincatPage(CategorieRepository $categorieRepository, EntityManagerInterface $entityManager): Response
     {
         // Retrieve categories
         $categories = $categorieRepository->findAll();
-
+        
+        // Get statistics: count events for each category
+        $categoryStats = [];
+        
+        // Using DQL to get the count of events per category
+        $query = $entityManager->createQuery(
+            'SELECT c.id, c.nomCat, COUNT(e) as eventCount 
+             FROM App\Entity\Categorie c 
+             LEFT JOIN c.evenements e 
+             GROUP BY c.id 
+             ORDER BY eventCount DESC'
+        );
+        
+        $results = $query->getResult();
+        
+        // Format data for charts
+        $categoryLabels = [];
+        $categoryData = [];
+        $backgroundColors = [
+            'rgb(54, 162, 235)',
+            'rgb(255, 99, 132)',
+            'rgb(255, 205, 86)',
+            'rgb(75, 192, 192)',
+            'rgb(153, 102, 255)',
+            'rgb(255, 159, 64)',
+            'rgb(201, 203, 207)'
+        ];
+        
+        foreach ($results as $result) {
+            $categoryLabels[] = $result['nomCat'];
+            $categoryData[] = $result['eventCount'];
+        }
+        
         return $this->render('evenement/admincat.html.twig', [
             'categories' => $categories,
+            'categoryLabels' => json_encode($categoryLabels),
+            'categoryData' => json_encode($categoryData),
+            'backgroundColors' => json_encode($backgroundColors)
         ]);
     }
-
 
     #[Route('/', name: 'event', methods: ['GET'])]
 public function index(

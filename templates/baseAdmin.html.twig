@@ -1,480 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<!-- Required meta tags -->
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<title>Skydash Admin</title>
-		<!-- plugins:css -->
-		<link rel="stylesheet" href=" {{asset('../../back_assets/vendors/feather/feather.css')}}">
-		<link rel="stylesheet" href=" {{asset('../../back_assets/vendors/ti-icons/css/themify-icons.css')}}">
-		<link rel="stylesheet" href=" {{asset('../../back_assets/vendors/css/vendor.bundle.base.css')}}">
-		<link rel="stylesheet" href=" {{asset('../../back_assets/vendors/font-awesome/css/font-awesome.min.css')}}">
-		<link rel="stylesheet" href=" {{asset('../../back_assets/vendors/mdi/css/materialdesignicons.min.css')}}">
-		<link rel="stylesheet" href="{{ asset('back_assets/vendors/bootstrap/css/bootstrap.min.css') }}">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Skydash Admin</title>
+    <!-- plugins:css -->
+    <link rel="stylesheet" href=" {{asset('../../back_assets/vendors/feather/feather.css')}}">
+    <link rel="stylesheet" href=" {{asset('../../back_assets/vendors/ti-icons/css/themify-icons.css')}}">
+    <link rel="stylesheet" href=" {{asset('../../back_assets/vendors/css/vendor.bundle.base.css')}}">
+    <link rel="stylesheet" href=" {{asset('../../back_assets/vendors/font-awesome/css/font-awesome.min.css')}}">
+    <link rel="stylesheet" href=" {{asset('../../back_assets/vendors/mdi/css/materialdesignicons.min.css')}}">
+    <!-- endinject -->
+    <!-- inject:css -->
+    <link rel="stylesheet" href=" {{asset('../../back_assets/css/style.css')}}">
+    <!-- endinject -->
+    <link rel="shortcut icon" href=" {{asset('../../back_assets/images/favicon.png')}}" />
+  </head>
+  <body>
+    <div class="container-scroller">
+      <!-- partial:../../partials/_navbar.html -->
+      <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
+          <a class="navbar-brand brand-logo me-5" href="../../pages/tables/userAdmin.html"><img src=" {{asset('../../back_assets/images/log.png')}}" class="me-2" alt="logo" /></a>
+        </div>
+        <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+          <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+            <span class="icon-menu"></span>
+          </button>
+          <ul class="navbar-nav mr-lg-2">
+            <li class="nav-item nav-search d-none d-lg-block">
+              <div class="input-group">
+                <div class="input-group-prepend hover-cursor" id="navbar-search-icon">
+                  <span class="input-group-text" id="search">
+                    <i class="icon-search"></i>
+                  </span>
+                </div>
+                <input type="text" class="form-control" id="navbar-search-input" placeholder="Search now" aria-label="search" aria-describedby="search">
+              </div>
+            </li>
+          </ul>
+          <ul class="navbar-nav navbar-nav-right">
+            <li class="nav-item nav-profile dropdown">
+              <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" id="profileDropdown"> User
+                <img src=" {{asset('../../back_assets/images/faces/user.png')}}" alt="profile" />
+              </a>
+              <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+                <a class="dropdown-item">
+                  <i class="ti-settings text-primary"></i> Settings </a>
+                <a class="dropdown-item">
+                  <i class="ti-power-off text-primary"></i> Logout </a>
+              </div>
+            </li>
+          </ul>
+          <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+            <span class="icon-menu"></span>
+          </button>
+        </div>
+      </nav>
+      <!-- partial -->
+      <div class="container-fluid page-body-wrapper">
+        <!-- partial:../../partials/_sidebar.html -->
+        <nav class="sidebar sidebar-offcanvas" id="sidebar">
+          <ul class="nav">
+            <li class="nav-item">
+              <a class="nav-link" href="../../pages/tables/userAdmin.html">
+                  <i class="icon-columns menu-icon"></i>
+                  <span class="menu-title">User</span>
+              </a>
+            </li>
+            <li class="nav-item">
+             <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
+              
+                <i class="icon-layout menu-icon"></i>
+                <span class="menu-title">Clubs</span>
+                <i class="menu-arrow"></i>
+              </a>
+              <div class="collapse" id="ui-basic">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item"> <a class="nav-link" href="nav-link">Club</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="nav-link">Member List</a></li>
+                </ul>
+              </div>
+            </li>
 
-		<!-- endinject -->
-		<!-- Plugin css for this page -->
-		<!-- End plugin css for this page -->
-		<!-- inject:css -->
-		<link
-		rel="stylesheet" href=" {{asset('../../back_assets/css/style.css')}}"> <!-- endinject -->
-		<link rel="shortcut icon" href=" {{asset('../../back_assets/images/favicon.png')}}"/>
-	</head>
-	<body>
-		<div
-			class="container-scroller">
-			<!-- partial:../../partials/_navbar.html -->
-			<nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
-				<div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
-					<a class="navbar-brand brand-logo me-5" href="../../pages/tables/userAdmin.html"><img src=" {{asset('../../back_assets/images/log.png')}}" class="me-2" alt="logo"/></a>
-				</div>
-				<div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
-					<button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
-						<span class="icon-menu"></span>
-					</button>
-					<ul class="navbar-nav mr-lg-2">
-						<li class="nav-item nav-search d-none d-lg-block">
-							<div class="input-group">
-								<div class="input-group-prepend hover-cursor" id="navbar-search-icon">
-									<span class="input-group-text" id="search">
-										<i class="icon-search"></i>
-									</span>
-								</div>
-								<input type="text" class="form-control" id="navbar-search-input" placeholder="Search now" aria-label="search" aria-describedby="search">
-							</div>
-						</li>
-					</ul>
-					<ul class="navbar-nav navbar-nav-right">
-						<li class="nav-item nav-profile dropdown">
-							<a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" id="profileDropdown">
-								{{ app.user.nom}}
-								{{ app.user.prenom }}
-								<img src=" {{asset('../../back_assets/images/faces/user.png')}}" alt="profile"/>
-							</a>
-							<div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
-								<a class="dropdown-item" href="{{path('app_profile')}}">
-									<i class="ti-settings text-primary"></i>
-									Profile
-								</a>
-								<a class="dropdown-item" href="{{path('app_logout')}}">
-									<i class="ti-power-off text-primary"></i>
-									Logout
-								</a>
-							</div>
-						</li>
-					</ul>
-					<button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
-						<span class="icon-menu"></span>
-					</button>
-				</div>
-			</nav>
-			<!-- partial -->
-			<div
-				class="container-fluid page-body-wrapper">
-				<!-- partial:../../partials/_sidebar.html -->
-				<nav class="sidebar sidebar-offcanvas" id="sidebar">
-					<ul class="nav">
-						<li class="nav-item">
-							<a class="nav-link" href={{ path('app_admin_dashboard') }}>
-								<i class="icon-columns menu-icon"></i>
-								<span class="menu-title">User</span>
-							</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
-								<i class="icon-layout menu-icon"></i>
-								<span class="menu-title">Clubs</span>
-								<i class="menu-arrow"></i>
-							</a>
-							<div class="collapse" id="ui-basic">
-								<ul class="nav flex-column sub-menu">
-									<li class="nav-item">
-										<a class="nav-link" href="../../pages/tables/club_admin.html">Club</a>
-									</li>
-									<li class="nav-item">
-										<a class="nav-link" href="../../pages/tables/members_admin.html">Member List</a>
-									</li>
-								</ul>
-							</div>
-						</li>
-							<li class="nav-item">
-							<a class="nav-link" data-bs-toggle="collapse" href="#Events" aria-expanded="false" aria-controls="Events">
+            
+            <li class="nav-item">
+             <a class="nav-link" data-bs-toggle="collapse" href="#Events" aria-expanded="false" aria-controls="Events">
+            
+                  <i class="icon-layout menu-icon"></i>
+                <span class="menu-title">Event</span>
+                <i class="menu-arrow"></i>
 
-								<i class="icon-layout menu-icon"></i>
-								<span class="menu-title">Event</span>
-								<i class="menu-arrow"></i>
+              
+              </a>
+             <div class="collapse" id="Events">
+  <ul class="nav flex-column sub-menu">
+    <li class="nav-item">
+      <a class="nav-link" href="{{ path('admin_page') }}">Events</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ path('admincat_page') }}">Category</a>
+    </li>
+  </ul>
+</div>
 
-
-							</a>
-							<div class="collapse" id="Events">
-								<ul class="nav flex-column sub-menu">
-									<li class="nav-item">
-										<a class="nav-link" href="{{ path('admin_page') }}">Events</a>
-									</li>
-									<li class="nav-item">
-										<a class="nav-link" href="{{ path('admincat_page') }}">Category</a>
-									</li>
-								</ul>
-							</div>
-
-						</li>
-
-
-						<li class="nav-item">
-							<a class="nav-link" data-bs-toggle="collapse" href="#tables" aria-expanded="false" aria-controls="tables">
-								<i class="icon-grid-2 menu-icon"></i>
-								<span class="menu-title">Products</span>
-								<i class="menu-arrow"></i>
-							</a>
-							<div class="collapse" id="tables">
-								<ul class="nav flex-column sub-menu">
-									<li class="nav-item">
-										<a class="nav-link" href="../../pages/tables/products_admin.html">Products</a>
-									</li>
-									<li class="nav-item">
-										<a class="nav-link" href="../../pages/tables/commands_admin.html">Orders</a>
-									</li>
-
-								</ul>
-							</div>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" data-bs-toggle="collapse" href="#icons" aria-expanded="false" aria-controls="icons">
-								<i class="icon-contract menu-icon"></i>
-								<span class="menu-title">Competitions</span>
-								<i class="menu-arrow"></i>
-							</a>
-							<div class="collapse" id="icons">
-								<ul class="nav flex-column sub-menu">
-									<li class="nav-item">
-										<a class="nav-link" href="{{ path('app_competition_index') }}">Competitions</a>
-									</li>
-									<li class="nav-item">
-										<a class="nav-link" href="{{ path('app_saison_index') }}">Seasons</a>
-									</li>
-								</ul>
-							</div>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
-								<i class="icon-head menu-icon"></i>
-								<span class="menu-title">Polls</span>
-								<i class="menu-arrow"></i>
-							</a>
-							<div class="collapse" id="auth">
-								<ul class="nav flex-column sub-menu">
-									<li class="nav-item">
-										<a class="nav-link" href="{{ path('app_sondage_index2') }}">
-											Polls
-										</a>
-									</li>
-									<li class="nav-item">
-										<a class="nav-link" href="{{ path('app_commentaire_index') }}">
-											Comments
-										</a>
-									</li>
-
-								</ul>
-							</div>
-						</li>
-
-					</ul>
-					<script>
-						document.addEventListener('DOMContentLoaded', function () { // First, check if we're on the admin page
-if (window.location.pathname.includes('/admin')) { // Try to find the search input - adjust this selector to match your actual search input
-const searchInput = document.getElementById('navbar-search-input') || document.querySelector('input[type="search"]') || document.querySelector('.search-input');
-
-const userTableBody = document.getElementById('user-table-body');
-
-// Debug: Check if elements are found
-console.log('Search input found:', searchInput);
-console.log('Table body found:', userTableBody);
-
-if (searchInput && userTableBody) { // Set initial value from URL if exists
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.has('q')) {
-searchInput.value = urlParams.get('q');
-}
-
-let timeoutId;
-
-searchInput.addEventListener('input', function () {
-clearTimeout(timeoutId);
-
-// Add a small delay to prevent sending too many requests
-timeoutId = setTimeout(function () {
-const query = searchInput.value.trim();
-console.log('Searching for:', query);
-
-// Show loading indicator if available
-const searchIcon = document.querySelector('#navbar-search-icon i');
-if (searchIcon) {
-searchIcon.className = 'mdi mdi-refresh mdi-spin';
-}
-
-// Fetch search results with or without a query
-fetchSearchResults(query);
-}, 300);
-});
-
-console.log('Search event listener added');
-} else {
-console.error('Could not find search input or table body');
-// If the navbar search input doesn't exist, let's create a search form
-if (! searchInput && userTableBody) {
-createSearchForm();
-}
-}
-}
-
-function createSearchForm() {
-const tableContainer = document.querySelector('.table-responsive');
-if (! tableContainer) 
-return;
+</li>
 
 
 
-// Create a search form above the table
-const searchForm = document.createElement('div');
-searchForm.className = 'mb-3';
-searchForm.innerHTML = `
-            <div class="input-group">
-                <input type="text" id="custom-search-input" class="form-control" placeholder="Search users...">
-                <button class="btn btn-primary" type="button" id="search-button">
-                    <i class="mdi mdi-magnify"></i>
-                </button>
-            </div>
-        `;
 
-tableContainer.parentNode.insertBefore(searchForm, tableContainer);
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="collapse" href="#tables" aria-expanded="false" aria-controls="tables">
+                <i class="icon-grid-2 menu-icon"></i>
+                <span class="menu-title">Products</span>
+                <i class="menu-arrow"></i>
+              </a>
+              <div class="collapse" id="tables">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item"> <a class="nav-link" href="nav-link"">Products</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="nav-link"nav-link"">Orders</a></li>
+                </ul>
+              </div>
+            </li>
 
-// Add event listeners to the new search input
-const customSearchInput = document.getElementById('custom-search-input');
-const searchButton = document.getElementById('search-button');
+            
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="collapse" href="#icons" aria-expanded="false" aria-controls="icons">
+                <i class="icon-contract menu-icon"></i>
+                <span class="menu-title">Competitions</span>
+                <i class="menu-arrow"></i>
+              </a>
+              <div class="collapse" id="icons">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item"> <a class="nav-link" href="nav-link"">Competitions</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="nav-link"nav-link"">Seasons</a></li>
+                </ul>
+              </div>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
+                <i class="icon-head menu-icon"></i>
+                <span class="menu-title">Polls</span>
+                <i class="menu-arrow"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
 
-let timeoutId;
-customSearchInput.addEventListener('input', function () {
-clearTimeout(timeoutId);
+        <main>
+          {% block body %}{% endblock %}
+        </main>
+      </div>
+      <!-- footer -->
+      <footer class="footer">
+        <div class="d-sm-flex justify-content-center justify-content-sm-between">
+          <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2023. Premium <a href="https://www.bootstrapdash.com/" target="_blank">Bootstrap admin template</a> from BootstrapDash. All rights reserved.</span>
 
-timeoutId = setTimeout(function () {
-const query = customSearchInput.value.trim();
-console.log('Searching for:', query);
-fetchSearchResults(query);
-}, 300);
-});
+        </div>
+      </footer>
+    </div>
 
-searchButton.addEventListener('click', function () {
-const query = customSearchInput.value.trim();
-fetchSearchResults(query);
-});
+    <!-- plugins:js -->
+    <script src=" {{asset('../../back_assets/vendors/js/vendor.bundle.base.js')}}"></script>
+    <!-- inject:js -->
+    <script src=" {{asset('../../back_assets/js/off-canvas.js')}}"></script>
+    <script src=" {{asset('../../back_assets/js/template.js')}}"></script>
+    <script src=" {{asset('../../back_assets/js/settings.js')}}"></script>
+    <script src=" {{asset('../../back_assets/js/todolist.js')}}"></script>
+    <script src=" {{asset('../../back_assets/js/chart.js')}}"></script>
+    <script src=" {{asset('../../back_assets/vendors/chart.js/chart.umd.js')}}"></script>
+  </body>
 
-console.log('Custom search form created');
-}
+  <style>
 
-function fetchSearchResults(query) { // Build the URL with the search query
-const url = '/admin' + (
-query ? `?q=${
-encodeURIComponent(query)
-}` : ''
-);
-console.log('Fetching results from:', url);
+    .actions-column {
+      text-align: center;
+    }
 
-// Update browser's address bar without triggering page reload
-window.history.replaceState(null, '', url);
+    .action-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
 
-fetch(url, {
-headers: {
-'X-Requested-With': 'XMLHttpRequest'
-}
-}).then(response => {
-console.log('Response status:', response.status);
-if (!response.ok) {
-throw new Error('Network response was not ok');
-}
-return response.text();
-}).then(html => {
-console.log('Got HTML response');
-const userTableBody = document.getElementById('user-table-body');
-if (userTableBody) {
-userTableBody.innerHTML = html;
-console.log('Table body updated');
-}
+    .plusButton {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid white;
+      width: 1.8rem;
+      height: 1.8rem;
+      background-color: #000;
+      overflow: hidden;
+    }
 
-// Restore search icon
-const searchIcon = document.querySelector('#navbar-search-icon i');
-if (searchIcon) {
-searchIcon.className = 'icon-search';
-}
-}).catch(error => {
-console.error('Error fetching search results:', error);
+    .bin-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 25px;
+      height: 25px;
+      border-radius: 5px;
+      background-color: rgb(255, 95, 95);
+      cursor: pointer;
+      border: 3px solid rgb(255, 201, 201);
+      transition-duration: 0.3s;
+    }
 
-// Restore search icon
-const searchIcon = document.querySelector('#navbar-search-icon i');
-if (searchIcon) {
-searchIcon.className = 'icon-search';
-}
-});
-}
-});
-					</script>
-				</nav>
-
-
-				<main>
-					{% block body %}{% endblock %}
-				</main>
-
-				<!-- content-wrapper ends -->
-				<!-- partial:../../partials/_footer.html -->
-				<footer class="footer">
-					<div class="d-sm-flex justify-content-center justify-content-sm-between">
-						<span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2023. Premium
-							<a href="https://www.bootstrapdash.com/" target="_blank">Bootstrap admin template</a>
-							from BootstrapDash. All rights reserved.</span>
-						<span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Hand-crafted & made with
-							<i class="ti-heart text-danger ms-1"></i>
-						</span>
-					</div>
-				</footer>
-				<!-- partial -->
-
-				<!-- container-scroller -->
-				<!-- plugins:js --><script src=" {{asset('../../back_assets/vendors/js/vendor.bundle.base.js')}}"> </script>
-				<!-- endinject -->
-				<!-- Plugin js for this page -->
-				<!-- End plugin js for this page -->
-				<!-- inject:js --><script src=" {{asset('../../back_assets/js/off-canvas.js')}}"> </script>
-				<script src=" {{asset('../../back_assets/js/template.js')}}"></script>
-				<script src=" {{asset('../../back_assets/js/settings.js')}}"></script>
-				<script src=" {{asset('../../back_assets/js/todolist.js')}}"></script>
-				<script src=" {{asset('../../back_assets/js/chart.js')}}"></script>
-				<script src=" {{asset('../../back_assets/vendors/chart.js/chart.umd.js')}}"></script>
-				<script src="{{ asset('back_assets/vendors/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-
-
-				<!-- endinject -->
-			<!-- Custom js for this page-->
-				<!-- End custom js for this page-->
-			</body>
-			<style>
-
-				.table-striped th:nth-child(2), /* Colonne "Question" */
-				.table-striped td:nth-child(2),
-				.table-striped th:nth-child(3), /* Colonne "Options" */
-				.table-striped td:nth-child(3) {
-					max-width: 200px; /* Définit la largeur maximale avant retour à la ligne */
-					word-wrap: break-word; /* Permet de couper les mots longs */
-					overflow-wrap: break-word;
-					white-space: normal; /* Permet au texte de revenir à la ligne */
-				}
-				/* From Uiverse.io by OnCloud125252 */
-				/* Note that you only needs to edit the config to customize the button! */
-
-				.actions-column {
-					text-align: center;
-				}
-
-				.action-buttons {
-					display: flex;
-					align-items: center; /* Centre verticalement */
-					justify-content: center; /* Centre horizontalement */
-					gap: 10px; /* Espacement entre les boutons */
-				}
-
-
-				.plusButton {
-					/* Config start */
-					--plus_sideLength: 1.8rem;
-					--plus_topRightTriangleSideLength: 0.5rem;
-					/* Config end */
-					position: relative;
-					display: flex;
-					justify-content: center;
-					align-items: center;
-					border: 1px solid white;
-					width: var(--plus_sideLength);
-					height: var(--plus_sideLength);
-					background-color: #000000;
-					overflow: hidden;
-				}
-
-				.plusButton::before {
-					position: absolute;
-					content: "";
-					top: 0;
-					right: 0;
-					width: 0;
-					height: 0;
-					border-width: 0 var(--plus_topRightTriangleSideLength) var(--plus_topRightTriangleSideLength) 0;
-					border-style: solid;
-					border-color: transparent white transparent transparent;
-					transition-timing-function: ease-in-out;
-					transition-duration: 0.2s;
-				}
-
-				.plusButton:hover {
-					cursor: pointer;
-				}
-
-				.plusButton:hover::before {
-					--plus_topRightTriangleSideLength: calc(var(--plus_sideLength) * 2);
-				}
-
-				.plusButton:focus-visible::before {
-					--plus_topRightTriangleSideLength: calc(var(--plus_sideLength) * 2);
-				}
-
-				.plusButton > .plusIcon {
-					fill: white;
-					width: calc(var(--plus_sideLength) * 0.7);
-					height: calc(var(--plus_sideLength) * 0.7);
-					z-index: 1;
-					transition-timing-function: ease-in-out;
-					transition-duration: 0.2s;
-				}
-
-				.plusButton:hover > .plusIcon {
-					fill: black;
-					transform: rotate(180deg);
-				}
-
-				.plusButton:focus-visible > .plusIcon {
-					fill: black;
-					transform: rotate(180deg);
-				}
-
-				.bin-button {
-					display: flex;
-					flex-direction: column;
-					align-items: center;
-					justify-content: center;
-					width: 25px;
-					height: 25px;
-					border-radius: 5px;
-					background-color: rgb(255, 95, 95);
-					cursor: pointer;
-					border: 3px solid rgb(255, 201, 201);
-					transition-duration: 0.3s;
-				}
-				.bin-bottom {
-					width: 15px;
-				}
-				.bin-top {
-					width: 17px;
-					transform-origin: right;
-					transition-duration: 0.3s;
-				}
-				.bin-button:hover .bin-top {
-					transform: rotate(45deg);
-				}
-				.bin-button:hover {
-					background-color: rgb(255, 0, 0);
-				}
-				.bin-button:active {
-					transform: scale(0.9);
-				}
-			</style>
-		</html>
-	</body>
+    .bin-button:hover {
+      background-color: rgb(255, 0, 0);
+    }
+  </style>
 </html>
