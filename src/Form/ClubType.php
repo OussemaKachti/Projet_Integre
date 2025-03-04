@@ -35,11 +35,6 @@ class ClubType extends AbstractType
                         'mimeTypesMessage' => 'Veuillez télécharger une image valide (JPEG, PNG, GIF).',
                     ])
                 ],
-            ]) // Fix closing parentheses here
-            ->add('president', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => 'id', // Or any other field you want to display
-                'placeholder' => 'Select a President',
             ]);
     }
 

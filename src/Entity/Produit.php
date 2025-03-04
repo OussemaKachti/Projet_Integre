@@ -30,7 +30,7 @@ class Produit
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\ManyToOne(targetEntity: Club::class, inversedBy: "produits")]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private Club $club;
 
     public function getClub(): Club

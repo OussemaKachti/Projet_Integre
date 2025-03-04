@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Entity\ParticipationMembre;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Query;
 
 /**
  * @extends ServiceEntityRepository<ParticipationMembre>
@@ -32,6 +34,18 @@ class ParticipationMembreRepository extends ServiceEntityRepository
         ->getQuery()
         ->getOneOrNullResult();
 }
+
+public function searchByKeyword(string $keyword): Query
+{
+    return $this->createQueryBuilder('c')
+        ->leftJoin('c.club', 'c')  // Joindre la table Club
+        ->where('c.nomC LIKE :keyword')
+        ->setParameter('keyword', '%' . $keyword . '%')
+        ->orderBy('c.id', 'ASC') // Optionnel : trier par ID
+        ->getQuery();
+        
+}
+
 
 //    /**
 //     * @return ParticipationMembre[] Returns an array of ParticipationMembre objects

@@ -25,7 +25,7 @@ class ParticipationMembre
     private User $user;
 
     #[ORM\ManyToOne(targetEntity: Club::class, inversedBy: "participations")]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private Club $club;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]

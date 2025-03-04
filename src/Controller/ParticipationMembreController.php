@@ -13,25 +13,74 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Club;
 use App\Entity\User;
 use App\Repository\ClubRepository;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/participation/membre')]
 class ParticipationMembreController extends AbstractController
 {
     #[Route('/', name: 'app_participation_membre_index', methods: ['GET'])]
-    public function index(ParticipationMembreRepository $participationMembreRepository): Response
-    {
-        return $this->render('participation_membre/index.html.twig', [
-            'participation_membres' => $participationMembreRepository->findAll(),
-        ]);
-    }
+public function index(EntityManagerInterface $entityManager, PaginatorInterface $paginator, Request $request): Response
+{
+    // Create a query to fetch participation requests, ordered by ID
+    $query = $entityManager->getRepository(ParticipationMembre::class)
+        ->createQueryBuilder('p')
+        ->orderBy('p.id', 'ASC') // Sort by ID
+        ->getQuery();
 
-    #[Route('/indexx', name: 'index2', methods: ['GET'])]
-    public function index2(ParticipationMembreRepository $participationMembreRepository): Response
-    {
-        return $this->render('participation_membre/index2.html.twig', [
-            'participation_membres' => $participationMembreRepository->findAll(),
-        ]);
-    }
+    // Paginate results (2 items per page)
+    $pagination = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1), // Current page, default to 1
+        2 // Number of items per page
+    );
+
+    // Render the template with paginated results
+    return $this->render('participation_membre/index.html.twig', [
+        'pagination' => $pagination, // Pass pagination to the template
+    ]);
+}
+
+#[Route('/indexx', name: 'index2', methods: ['GET'])]
+public function index2(EntityManagerInterface $entityManager, PaginatorInterface $paginator, Request $request): Response
+{
+
+  // Get search query if present
+  $keyword = $request->query->get('q', '');
+
+  // Create base query builder
+  $queryBuilder = $entityManager->getRepository(Club::class)->createQueryBuilder('c');
+
+  // Apply search filter if keyword is not empty
+  if (!empty($keyword)) {
+      $queryBuilder
+          ->andWhere('c.nomC LIKE :keyword')
+          ->setParameter('keyword', '%' . $keyword . '%');
+  }
+
+  // Order by club name
+  $queryBuilder->orderBy('c.nomC', 'ASC');
+
+  // Create query
+  $query = $queryBuilder->getQuery();
+
+    // Create a query to fetch participation requests, ordered by ID
+    $query = $entityManager->getRepository(ParticipationMembre::class)
+        ->createQueryBuilder('p')
+        ->orderBy('p.id', 'ASC') // Sort by ID
+        ->getQuery();
+
+    // Paginate results (2 items per page)
+    $pagination = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1), // Current page, default to 1
+        2 // Number of items per page
+    );
+
+    // Render the template with paginated results
+    return $this->render('participation_membre/index2.html.twig', [
+        'pagination' => $pagination, // Pass pagination to the template
+    ]);
+}
     
     #[Route('/new/{clubId}', name: 'app_participation_membre_new', methods: ['GET', 'POST'])]
 public function new(Request $request, EntityManagerInterface $entityManager, int $clubId, ClubRepository $clubRepository): Response
@@ -156,7 +205,8 @@ public function new(Request $request, EntityManagerInterface $entityManager, int
             //$this->addFlash('error', 'Le poste n\'existe pas.');
             return $this->redirectToRoute('app_participation_membre_index');
         }
-
+         // Debugging: Check the current status
+        dump($participationMembre->getStatut());
         // accepte the post from the database
         $participationMembre->setStatut("accepte");
         $entityManager->flush();
@@ -165,3 +215,25 @@ public function new(Request $request, EntityManagerInterface $entityManager, int
         return $this->redirectToRoute('app_participation_membre_index');
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

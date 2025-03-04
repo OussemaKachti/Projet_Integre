@@ -13,17 +13,55 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Enum\StatutClubEnum;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;  
+use Knp\Component\Pager\PaginatorInterface;
+
 
 #[Route('/club')]
 class ClubController extends AbstractController
 {
+    public function __construct(
+        private ClubRepository $clubRepository
+    ) {
+    }
+
     #[Route('/carte', name: 'app_club_index', methods: ['GET'])]
-    public function index(ClubRepository $clubRepository): Response
-    {
+    public function index(
+        Request $request, 
+        EntityManagerInterface $entityManager, 
+        PaginatorInterface $paginator
+    ): Response {
+        // Get search query if present
+        $keyword = $request->query->get('q', '');
+
+        // Create base query builder
+        $queryBuilder = $entityManager->getRepository(Club::class)->createQueryBuilder('c');
+
+        // Apply search filter if keyword is not empty
+        if (!empty($keyword)) {
+            $queryBuilder
+                ->andWhere('c.nomC LIKE :keyword')
+                ->setParameter('keyword', '%' . $keyword . '%');
+        }
+
+        // Order by club name
+        $queryBuilder->orderBy('c.nomC', 'ASC');
+
+        // Create query
+        $query = $queryBuilder->getQuery();
+
+        // Paginate results
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            3 // Number of items per page
+        );
+
         return $this->render('club/index.html.twig', [
-            'clubs' => $clubRepository->findAll(),
+            'pagination' => $pagination,
+            'keyword' => $keyword,
         ]);
     }
+
 
     #[Route('/', name: 'clubdetail', methods: ['GET'])]
     public function clubdetail(ClubRepository $clubRepository): Response
@@ -90,10 +128,23 @@ class ClubController extends AbstractController
     //}
 
     #[Route('/index2', name: 'app_club_index2', methods: ['GET'])]
-    public function index2(ClubRepository $clubRepository): Response
+    public function index2(ClubRepository $clubRepository, EntityManagerInterface $entityManager, PaginatorInterface $paginator, Request $request ): Response
     {   
+        // Créer une requête pour récupérer les clubs
+        $query = $entityManager->getRepository(Club::class)->createQueryBuilder('c')
+        ->orderBy('c.nomC', 'ASC') // Trier par nom
+        ->getQuery();
+
+    // Paginate results
+    $pagination = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        3// Number of items per page
+    );
+
         return $this->render('club/index2.html.twig', [
             'clubs' => $clubRepository->findAll(),
+            'pagination' => $pagination,
         ]);
     }
     #[Route('/newClub', name: 'app_club_new', methods: ['GET', 'POST'])]
@@ -127,11 +178,11 @@ class ClubController extends AbstractController
             }
 
             // Associer le club à l'utilisateur connecté (le président)
-           // $president = $this->getUser(); // Utilisateur connecté
-           // if (!$president) {
-               // throw new \Exception("Aucun utilisateur connecté.");
-           // }
-           // $club->setPresident($president); // Définir le président du club
+            $president = $this->getUser(); // Utilisateur connecté
+            if (!$president) {
+                throw new \Exception("Aucun utilisateur connecté.");
+            }
+            $club->setPresident($president); // Définir le président du club
     
             $entityManager->persist($club); 
             $entityManager->flush(); 
@@ -208,7 +259,7 @@ class ClubController extends AbstractController
     public function supprimerPoste(int $id, EntityManagerInterface $entityManager, ClubRepository $clubRepository): Response
     {
        // $club = $entityManager->getRepository(Club::class)->find($id);
-$club = $clubRepository->find($id);
+        $club = $clubRepository->findById($id);
         if (!$club) {
             // Post does not exist, redirect back
            // $this->addFlash('error', 'Le poste n\'existe pas.');
@@ -224,24 +275,64 @@ $club = $clubRepository->find($id);
     }
 
     #[Route('/accepteclub/{id}', name: 'club_accepte')]
-    public function acceptePoste(int $id,EntityManagerInterface $entityManager, ClubRepository $clubRepository): Response
-    {
-        $club = $entityManager->getRepository(Club::class)->find($id);
+    public function acceptePoste(
+        int $id, 
+        EntityManagerInterface $entityManager, 
+        ClubRepository $clubRepository
+    ): Response {
+        // Find the club using the repository method
+        $club = $clubRepository->find($id);
 
+        // Check if the club exists
         if (!$club) {
-            // Post does not exist, redirect back
-            //$this->addFlash('error', 'Le poste n\'existe pas.');
+            // Add error handling
+            $this->addFlash('error', 'Club not found.');
             return $this->redirectToRoute('app_club_index2');
         }
 
-        // accepte the post from the database
-        $club->setStatus(StatutClubEnum::ACCEPTE);
-        $entityManager->flush();
+        try {
+            // Get the current status before changing
+            $currentStatus = $club->getStatus();
 
-        //$this->addFlash('success', 'Le poste a été accepte avec succès.');
-        return $this->redirectToRoute('app_club_index2');
+            // Update the status to ACCEPTE
+            $club->setStatus(StatutClubEnum::ACCEPTE);
+
+            // Persist and flush the changes
+            $entityManager->persist($club);
+            $entityManager->flush();
+
+            // Add success message
+            //$this->addFlash('success', 'Club has been successfully accepted. Previous status: ' . $currentStatus);
+
+            // Redirect back to the index page
+            return $this->redirectToRoute('app_club_index2');
+
+        } catch (\Exception $e) {
+            // Log the error
+            $this->addFlash('error', 'An error occurred: ' . $e->getMessage());
+            return $this->redirectToRoute('app_club_index2');
+        }
     }
 
+    #[Route('/search', name: 'app_club_search', methods: ['GET'])]
+    public function search(Request $request, ClubRepository $clubRepository): Response
+    {
+        // Récupérer le terme de recherche
+        $query = $request->query->get('query');
+
+        // Filtrer les clubs si un terme de recherche est présent
+        if ($query) {
+            $clubs = $clubRepository->findByName($query);
+        } else {
+            // Sinon, afficher tous les clubs
+            $clubs = $clubRepository->findAll();
+        }
+
+        // Passer la variable `clubs` au template
+        return $this->render('club/index.html.twig', [
+            'clubs' => $clubs,
+        ]);
+    }
 }
 
 

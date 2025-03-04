@@ -5,7 +5,8 @@ controllers:
     type: attribute
 confirm_email:
     path: /confirm-email/{token}
-    controller: App\Controller\SecurityController::confirmEmailclubdetails:
+    controller: App\Controller\SecurityController::confirmEmail
+clubdetails:
     path: /club/{id}
     controller: App\Controller\ClubController::details
     methods: GET

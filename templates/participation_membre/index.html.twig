@@ -1,7 +1,5 @@
 {% extends 'baseAdmin.html.twig' %}
 
-
-
 {% block body %}
     <h1 class="mb-4">Join Requests</h1>
 
@@ -16,7 +14,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for participation_membre in participation_membres %}
+                {% for participation_membre in pagination %}
                     <tr>
                         <td>{{ participation_membre.id }}</td>
                         <td>{{ participation_membre.dateRequest ? participation_membre.dateRequest|date('Y-m-d H:i:s') : 'N/A' }}</td>
@@ -30,9 +28,9 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{{ path('club_accepte', {'id': participation_membre.id}) }}" class="btn btn-success btn-sm">
-                                <i class="fas fa-check-circle"></i> Accept
-                            </a>
+                            <a href="{{ path('accepte', {'id': participation_membre.id}) }}" class="btn btn-success btn-sm">
+    <i class="fas fa-check-circle"></i> Accept
+</a>
                             <a href="{{ path('app_club_delete', {'id': participation_membre.id}) }}" class="btn btn-danger btn-sm">
                                 <i class="fas fa-trash-alt"></i> Delete
                             </a>
@@ -45,5 +43,10 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        {{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig') }}
     </div>
 {% endblock %}

@@ -1,12 +1,19 @@
 {% extends 'base.html.twig' %}
 
-
-
 {% block body %}
 <div class="container mt-5">
     <h1 class="text-center mb-4 text-primary fw-bold">📋 Members list</h1>
+    <!-- Barre de recherche améliorée -->
+                        <div class="search-bar-container d-flex justify-content-center">
+                            <form action="{{ path('index2') }}" method="get" class="d-flex align-items-center search-bar">
+                                <input type="text" name="query" class="form-control search-input" placeholder="🔍 Rechercher un club..." value="{{ app.request.query.get('query') }}">
+                                <button type="submit" class="btn btn-primary search-btn">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </form>
+                        </div>
 
-    {% if participation_membres is empty %}
+    {% if pagination is empty %}
         <div class="alert alert-warning text-center fw-bold">🚨 Aucun participation_membres pour le moment.</div>
     {% else %}
         <div class="table-responsive">
@@ -20,17 +27,28 @@
                     </tr>
                 </thead>
                 <tbody class="text-center">
-                    {% for participation_membres in participation_membres %}
+                    {% for participation_membre in pagination %}
                         <tr class="align-middle">
-                            <td class="fw-bold">{{ participation_membres.user.nom }}</td>
-                            <td>{{ participation_membres.user.email }}</td>
-                            <td>{{ participation_membres.user.tel }}</td>
-                            <td class="text-uppercase fw-bold">{{ participation_membres.club.nomC }}</td>
+                            <td class="fw-bold">{{ participation_membre.user.nom }}</td>
+                            <td>{{ participation_membre.user.email }}</td>
+                            <td>{{ participation_membre.user.tel }}</td>
+                            <td class="text-uppercase fw-bold">{{ participation_membre.club.nomC }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     {% endif %}
+</div>
+
+<!-- Pagination with Better Spacing -->
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-xxl-12 d-flex justify-content-center">
+            <div class="pagination">
+                {{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig') }}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
