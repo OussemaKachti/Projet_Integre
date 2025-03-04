@@ -6,11 +6,12 @@
     <!-- Barre de recherche améliorée -->
                         <div class="search-bar-container d-flex justify-content-center">
                             <form action="{{ path('index2') }}" method="get" class="d-flex align-items-center search-bar">
-                                <input type="text" name="query" class="form-control search-input" placeholder="🔍 Rechercher un club..." value="{{ app.request.query.get('query') }}">
-                                <button type="submit" class="btn btn-primary search-btn">
-                                    <i class="fa-solid fa-magnifying-glass"></i>
-                                </button>
-                            </form>
+    <input type="text" name="query" class="form-control search-input" placeholder="🔍 Rechercher un club..." value="{{ keyword }}">
+    <button type="submit" class="btn btn-primary search-btn">
+        <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+</form>
+
                         </div>
 
     {% if pagination is empty %}

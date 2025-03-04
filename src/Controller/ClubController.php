@@ -31,7 +31,8 @@ class ClubController extends AbstractController
         PaginatorInterface $paginator
     ): Response {
         // Get search query if present
-        $keyword = $request->query->get('q', '');
+        $keyword = $request->query->get('query', ''); // Match the input field name
+
 
         // Create base query builder
         $queryBuilder = $entityManager->getRepository(Club::class)->createQueryBuilder('c');

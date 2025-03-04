@@ -43,44 +43,36 @@ public function index(EntityManagerInterface $entityManager, PaginatorInterface 
 #[Route('/indexx', name: 'index2', methods: ['GET'])]
 public function index2(EntityManagerInterface $entityManager, PaginatorInterface $paginator, Request $request): Response
 {
+    // Get search query if present
+    $keyword = $request->query->get('query', '');
 
-  // Get search query if present
-  $keyword = $request->query->get('q', '');
-
-  // Create base query builder
-  $queryBuilder = $entityManager->getRepository(Club::class)->createQueryBuilder('c');
-
-  // Apply search filter if keyword is not empty
-  if (!empty($keyword)) {
-      $queryBuilder
-          ->andWhere('c.nomC LIKE :keyword')
-          ->setParameter('keyword', '%' . $keyword . '%');
-  }
-
-  // Order by club name
-  $queryBuilder->orderBy('c.nomC', 'ASC');
-
-  // Create query
-  $query = $queryBuilder->getQuery();
-
-    // Create a query to fetch participation requests, ordered by ID
-    $query = $entityManager->getRepository(ParticipationMembre::class)
+    // Create base query builder for ParticipationMembre
+    $queryBuilder = $entityManager->getRepository(ParticipationMembre::class)
         ->createQueryBuilder('p')
-        ->orderBy('p.id', 'ASC') // Sort by ID
-        ->getQuery();
+        ->join('p.club', 'c') // Join the club entity
+        ->join('p.user', 'u') // Join the user entity
+        ->orderBy('p.id', 'ASC'); // Sort by ID
 
-    // Paginate results (2 items per page)
+    // Apply search filter if keyword is provided
+    if (!empty($keyword)) {
+        $queryBuilder
+            ->andWhere('c.nomC LIKE :keyword')
+            ->setParameter('keyword', '%' . $keyword . '%');
+    }
+
+    // Paginate results
     $pagination = $paginator->paginate(
-        $query,
-        $request->query->getInt('page', 1), // Current page, default to 1
-        2 // Number of items per page
+        $queryBuilder->getQuery(),
+        $request->query->getInt('page', 1), // Current page
+        2 // Items per page
     );
 
-    // Render the template with paginated results
     return $this->render('participation_membre/index2.html.twig', [
-        'pagination' => $pagination, // Pass pagination to the template
+        'pagination' => $pagination,
+        'keyword' => $keyword, // Pass keyword for search input persistence
     ]);
 }
+
     
     #[Route('/new/{clubId}', name: 'app_participation_membre_new', methods: ['GET', 'POST'])]
 public function new(Request $request, EntityManagerInterface $entityManager, int $clubId, ClubRepository $clubRepository): Response
