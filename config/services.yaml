@@ -19,3 +19,12 @@ services:
         arguments:
             $client: '@http_client'
             $apiKey: '%env(OPENAI_API_KEY)%'
+    App\EventListener\MissionProgressListener:
+        arguments:
+            $missionCompletionChecker: '@App\Service\MissionCompletionChecker'
+            $logger: '@logger'
+        tags:
+            - { name: kernel.event_subscriber }
+    App\EventListener\EventCreationListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.terminate }
