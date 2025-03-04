@@ -21,6 +21,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Service\ToxicityDetector;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Knp\Component\Pager\PaginatorInterface;
 
 
 
@@ -47,54 +48,55 @@ class CommentaireController extends AbstractController
 
    
     
-    
+
 
 
 
                                                 #[Route('/adminComments', name: 'app_commentaire_index', methods: ['GET'])]
-                                                public function afficherCommentairesClub(CommentaireRepository $commentaireRepository, Request $request): Response
-                                                {
-                                                    $clubFilter = $request->query->get('club'); 
-                                                
+                                                public function afficherCommentairesClub(
+                                                    CommentaireRepository $commentaireRepository, 
+                                                    Request $request,
+                                                    PaginatorInterface $paginator
+                                                ): Response {
+                                                    // Récupérer le filtre depuis la requête GET
+                                                    $clubFilter = $request->query->get('club', 'all');
+                                                    
+                                                    // Créer le QueryBuilder de base
+                                                    $queryBuilder = $commentaireRepository->createQueryBuilder('c')
+                                                        ->leftJoin('c.sondage', 's')
+                                                        ->leftJoin('s.club', 'cl')
+                                                        ->leftJoin('c.user', 'u')
+                                                        ->orderBy('c.dateComment', 'DESC');
+
+                                                    // Appliquer le filtre si un club spécifique est sélectionné
                                                     if ($clubFilter && $clubFilter !== 'all') {
-                                                        $commentaires = $commentaireRepository->createQueryBuilder('c')
-                                                            ->join('c.sondage', 's')
-                                                            ->join('s.club', 'cl')
-                                                            ->where('cl.nomC = :clubName')
-                                                            ->setParameter('clubName', $clubFilter)
-                                                            ->getQuery()
-                                                            ->getResult();
-                                                    } else {
-                                                        // Sinon, récupérer tous les commentaires
-                                                        $commentaires = $commentaireRepository->findAll();
+                                                        $queryBuilder->andWhere('cl.nomC = :clubName')
+                                                            ->setParameter('clubName', $clubFilter);
                                                     }
-                                                
-                                                    // Formater les commentaires
-                                                    $commentairesAvecClub = [];
-                                                    $clubs = []; // Liste pour stocker les noms des clubs disponibles
-                                                
-                                                    foreach ($commentaires as $commentaire) {
-                                                        $sondage = $commentaire->getSondage();
-                                                        $club = $sondage->getClub(); // Assurez-vous que la relation existe
-                                                        $clubName = $club ? $club->getNomC() : 'Non défini'; 
-                                                
-                                                        if ($club) {
-                                                            $clubs[$clubName] = $clubName; // Ajouter à la liste des clubs uniques
-                                                        }
-                                                
-                                                        $commentairesAvecClub[] = [
-                                                            'id' => $commentaire->getId(),
-                                                            'user' => $commentaire->getUser()->getNom() . ' ' . $commentaire->getUser()->getPrenom(),
-                                                            'contenu' => $commentaire->getContenuComment(),
-                                                            'club_name' => $clubName,
-                                                            'created_at' => $commentaire->getDateComment()->format('Y-m-d')
-                                                        ];
-                                                    }
-                                                
+
+                                                    // Pagination
+                                                    $pagination = $paginator->paginate(
+                                                        $queryBuilder->getQuery(),
+                                                        $request->query->getInt('page', 1),
+                                                        6 // Nombre d'éléments par page
+                                                    );
+
+                                                    // Statistiques des commentaires
+                                                    $stats = [
+                                                        'total_comments' => $commentaireRepository->count([]),
+                                                        'today_comments' => $commentaireRepository->countTodayComments(),
+                                                        'flagged_comments' => $commentaireRepository->countFlaggedComments(),
+                                                        'clubs_activity' => $commentaireRepository->getClubsActivity()
+                                                    ];
+
+                                                    // Récupérer la liste des clubs pour le filtre
+                                                    $clubs = $commentaireRepository->getAvailableClubs();
+
                                                     return $this->render('commentaire/adminComments.html.twig', [
-                                                        'commentaires' => $commentairesAvecClub,
-                                                        'clubs' => $clubs, // Envoyer la liste des clubs pour le filtre
-                                                        'selectedClub' => $clubFilter ?? 'all' // Club actuellement sélectionné
+                                                        'pagination' => $pagination,
+                                                        'stats' => $stats,
+                                                        'clubs' => $clubs,
+                                                        'selectedClub' => $clubFilter
                                                     ]);
                                                 }
                                                 
@@ -142,7 +144,7 @@ public function delete($id, EntityManagerInterface $entityManager): RedirectResp
                                                     //     ValidatorInterface $validator
                                                     // ): JsonResponse 
                                                     // {
-                                                    //     // $user = $this->getUser(); // 🔹 Récupérer l'utilisateur connecté
+                                                    //     // $user = $this->getUser(); // �� Récupérer l'utilisateur connecté
                                                     //     $user = $security->getUser();
                                                         
                                                     //     if (!$user) {

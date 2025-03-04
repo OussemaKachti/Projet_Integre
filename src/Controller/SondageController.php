@@ -239,6 +239,37 @@ public function getColorByPercentage(float $percentage): string
                                                 2 // Nombre d'éléments par page
                                             );
                                             
+                                            // Calcul des statistiques
+                                            $totalPolls = $sondageRepository->count([]);
+                                            
+                                            // Trouver le club le plus actif
+                                            $mostActiveClub = $sondageRepository->createQueryBuilder('s')
+                                                ->select('c.nomC as club_name, COUNT(s.id) as poll_count')
+                                                ->leftJoin('s.club', 'c')
+                                                ->groupBy('c.id')
+                                                ->orderBy('poll_count', 'DESC')
+                                                ->setMaxResults(1)
+                                                ->getQuery()
+                                                ->getOneOrNullResult();
+
+                                            // Compter les sondages actifs (créés dans les 30 derniers jours)
+                                            $activePolls = $sondageRepository->createQueryBuilder('s')
+                                                ->select('COUNT(s.id)')
+                                                ->where('s.createdAt >= :thirtyDaysAgo')
+                                                ->setParameter('thirtyDaysAgo', new \DateTime('-30 days'))
+                                                ->getQuery()
+                                                ->getSingleScalarResult();
+
+                                            // Compter le nombre total de réponses
+                                            $totalVotes = $sondageRepository->createQueryBuilder('s')
+                                                ->select('COUNT(r.id)')
+                                                ->leftJoin('s.reponses', 'r')
+                                                ->getQuery()
+                                                ->getSingleScalarResult();
+
+                                            // Récupérer les statistiques des 7 derniers jours
+                                            $weekly_stats = $sondageRepository->getWeeklyStats();
+
                                             if ($request->isXmlHttpRequest()) {
                                                 $sondagesFormatted = array_map(function($sondage) {
                                                     return [
@@ -266,7 +297,14 @@ public function getColorByPercentage(float $percentage): string
                                         
                                             return $this->render('sondage/adminPolls.html.twig', [
                                                 'pagination' => $pagination,
-                                                'sondages' => $pagination->getItems()
+                                                'sondages' => $pagination->getItems(),
+                                                'total_polls' => $totalPolls,
+                                                'total_votes' => $totalVotes,
+                                                'active_polls' => $activePolls,
+                                                'most_active_club' => $mostActiveClub ? $mostActiveClub['club_name'] : 'No club',
+                                                'most_active_club_polls' => $mostActiveClub ? $mostActiveClub['poll_count'] : 0,
+                                                'weekly_polls' => $weekly_stats['polls'],
+                                                'weekly_votes' => $weekly_stats['votes'],
                                             ]);
                                             
                                         }
@@ -519,25 +557,17 @@ public function create(Request $request, EntityManagerInterface $em): Response
      if (!$data) {
          return new JsonResponse(['status' => 'error', 'message' => 'Invalid JSON data'], 400);
      }
-     $sondages = []; // Initialisation vide
 
-     
      $user = $security->getUser();
-     if ($user) {
-        // Vérifier si l'utilisateur est président d'un club
-        $clubPresident = $entityManager->getRepository(Club::class)->findOneBy(['president' => $user]);
-        
-        // Vérifier si l'utilisateur est membre d'un club
-        $participation = $entityManager->getRepository(ParticipationMembre::class)->findOneBy(['user' => $user, 'statut' => 'accepte']);
-        $clubMembre = $participation ? $participation->getClub() : null;
-        
-        // Récupérer les sondages selon les conditions
-        if ($clubPresident) {
-            $sondages = $sondageRepository->findBy(['club' => $clubPresident]);
-        } elseif ($clubMembre) {
-            $sondages = $sondageRepository->findBy(['club' => $clubMembre]);
-        }
-    }
+     if (!$user) {
+         return new JsonResponse(['status' => 'error', 'message' => 'User not authenticated'], 401);
+     }
+
+     // Trouver le club du président
+     $club = $em->getRepository(Club::class)->findOneBy(['president' => $user]);
+     if (!$club) {
+         return new JsonResponse(['status' => 'error', 'message' => 'User is not a club president'], 403);
+     }
      
      $sondage = new Sondage();
      $sondage->setQuestion($data['question'] ?? '');

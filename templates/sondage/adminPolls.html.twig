@@ -3,12 +3,90 @@
 
 {% block javascripts %}
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 {% block title %}Sondage
 {% endblock %}
 {% block body %}
 	<div class="main-panel" style="width: 100%; max-width: 1500px; margin: 0 auto 0 20px;">
 		<div class="content-wrapper">
+			<div class="row">
+				<div class="col-xl-3 col-md-6 mb-4">
+					<div class="card border-left-primary shadow h-100 py-2">
+						<div class="card-body">
+							<div class="row no-gutters align-items-center">
+								<div class="col mr-2">
+									<div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Polls</div>
+									<div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_polls }}</div>
+								</div>
+								<div class="col-auto">
+									<i class="fas fa-poll fa-2x text-gray-300"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-xl-3 col-md-6 mb-4">
+					<div class="card border-left-success shadow h-100 py-2">
+						<div class="card-body">
+							<div class="row no-gutters align-items-center">
+								<div class="col mr-2">
+									<div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Votes</div>
+									<div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_votes }}</div>
+								</div>
+								<div class="col-auto">
+									<i class="fas fa-vote-yea fa-2x text-gray-300"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-xl-3 col-md-6 mb-4">
+					<div class="card border-left-info shadow h-100 py-2">
+						<div class="card-body">
+							<div class="row no-gutters align-items-center">
+								<div class="col mr-2">
+									<div class="text-xs font-weight-bold text-info text-uppercase mb-1">Active Polls</div>
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ active_polls }}</div>
+										</div>
+										<div class="col">
+											<div class="progress progress-sm mr-2">
+												<div class="progress-bar bg-info" role="progressbar" 
+													 style="width: {{ (active_polls / total_polls) * 100 }}%"></div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-auto">
+									<i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-xl-3 col-md-6 mb-4">
+					<div class="card border-left-warning shadow h-100 py-2">
+						<div class="card-body">
+							<div class="row no-gutters align-items-center">
+								<div class="col mr-2">
+									<div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Most Active Club</div>
+									<div class="h5 mb-0 font-weight-bold text-gray-800">{{ most_active_club }}</div>
+									<div class="small text-muted">{{ most_active_club_polls }} polls</div>
+								</div>
+								<div class="col-auto">
+									<i class="fas fa-trophy fa-2x text-gray-300"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<div class="row">
 				<div class="col-lg-12 grid-margin stretch-card">
 					<div class="card">
@@ -369,6 +447,91 @@
 					</div>
 				</div>
 			</div>
+
+			{# Activity Chart Section #}
+			<div class="row mt-4">
+				<div class="col-lg-12">
+					<div class="card shadow">
+						<div class="card-header py-3">
+							<h6 class="m-0 font-weight-bold text-primary">Polls Activity Overview</h6>
+						</div>
+						<div class="card-body">
+							<canvas id="pollsActivityChart"></canvas>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
+
+	<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		// Données pour le graphique (derniers 7 jours)
+		const ctx = document.getElementById('pollsActivityChart').getContext('2d');
+		
+		// Générer les 7 derniers jours
+		const labels = Array.from({length: 7}, (_, i) => {
+			const d = new Date();
+			d.setDate(d.getDate() - i);
+			return d.toLocaleDateString();
+		}).reverse();
+
+		new Chart(ctx, {
+			type: 'line',
+			data: {
+				labels: labels,
+				datasets: [{
+					label: 'Nouveaux sondages',
+					data: [{{ weekly_polls|join(',') }}],
+					borderColor: '#4e73df',
+					tension: 0.1,
+					fill: false
+				}, {
+					label: 'Votes',
+					data: [{{ weekly_votes|join(',') }}],
+					borderColor: '#1cc88a',
+					tension: 0.1,
+					fill: false
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				scales: {
+					y: {
+						beginAtZero: true
+					}
+				}
+			}
+		});
+	});
+	</script>
+
+	<style>
+	.border-left-primary { border-left: 4px solid #4e73df; }
+	.border-left-success { border-left: 4px solid #1cc88a; }
+	.border-left-info { border-left: 4px solid #36b9cc; }
+	.border-left-warning { border-left: 4px solid #f6c23e; }
+
+	.card {
+		transition: transform 0.2s ease-in-out;
+	}
+
+	.card:hover {
+		transform: translateY(-5px);
+	}
+
+	.progress {
+		height: 0.5rem;
+		border-radius: 0.25rem;
+	}
+
+	.text-xs {
+		font-size: 0.7rem;
+	}
+
+	.fa-2x {
+		color: rgba(0,0,0,0.1);
+	}
+	</style>
 {% endblock %}

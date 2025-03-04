@@ -405,20 +405,73 @@
             <div class="col-lg-6 grid-margin stretch-card">
                 <div class="card">
                     <div class="card-body">
-                        <h4 class="card-title">Votes Distribution</h4>
-                        <div class="chart-container">
-                            <div class="d-flex justify-content-around align-items-end" style="height: 200px;">
-                                {% for result in poll_results %}
-                                    <div class="column-wrapper">
-                                        <div class="column" style="height: {{ result.percentage }}%">
-                                            <div class="column-value">{{ result.count }} votes</div>
-                                        </div>
-                                        <div class="column-label">{{ result.choix }}</div>
-                                        <div class="column-percentage">{{ result.percentage }}%</div>
-                                    </div>
-                                {% endfor %}
-                            </div>
+                        <h4 class="card-title">Vote Distribution Cards</h4>
+                        <div class="card2">
+                            {% for result in poll_results %}
+                                <div class="item item--{{ loop.index }}">
+                                    <span class="quantity">
+                                        {{ result.count }}
+                                    </span>
+                                    <span class="text text--{{ loop.index }}">
+                                        {{ result.choix }}
+                                    </span>
+                                </div>
+                            {% endfor %}
                         </div>
+
+                        <style>
+                            .card2 {
+                                width: 100%;
+                                height: auto;
+                                min-height: 254px;
+                                color: white;
+                                display: grid;
+                                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                                gap: 15px;
+                                padding: 15px;
+                            }
+
+                            .card2 .item {
+                                border-radius: 10px;
+                                padding: 20px;
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                text-align: center;
+                            }
+
+                            .item:hover {
+                                transform: scale(1.05);
+                                transition: all 350ms ease-in-out;
+                            }
+
+                            .quantity {
+                                font-size: 28px;
+                                font-weight: 600;
+                                margin-bottom: 10px;
+                            }
+
+                            .text {
+                                font-size: 14px;
+                                font-weight: 500;
+                                word-wrap: break-word;
+                                max-width: 100%;
+                            }
+
+                            /* Couleurs dynamiques pour les cartes */
+                            .item--1 { background: #c7c7ff; }
+                            .item--2 { background: #ffd8be; }
+                            .item--3 { background: #a9ecbf; }
+                            .item--4 { background: #f3bbe1; }
+                            /* Ajoutez plus de variations si nécessaire */
+
+                            .text--1 { color: rgba(149, 149, 255, 1); }
+                            .text--2 { color: rgba(252, 161, 71, 1); }
+                            .text--3 { color: rgba(66, 193, 110, 1); }
+                            .text--4 { color: rgba(220, 91, 183, 1); }
+                            /* Ajoutez plus de variations si nécessaire */
+                        </style>
                     </div>
                 </div>
             </div>
@@ -547,7 +600,6 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (data.success) {
 						// Suppression de la ligne du tableau
 						this.closest('tr').remove();
-						// Message de succès
 						alert('Comment deleted successfully!');
 					} else {
 						alert('Error deleting comment');
@@ -571,9 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			fetch(`/adminPolls?page=${page}&q=${encodeURIComponent(document.querySelector('#search').value)}`)
 				.then(response => response.json())
 				.then(data => {
-					// Mise à jour du tableau
 					updateTable(data.sondages);
-					// Mise à jour de la pagination
 					updatePagination(data.currentPage, data.pageCount);
 				});
 		}
