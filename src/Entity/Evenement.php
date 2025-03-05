@@ -63,9 +63,13 @@ class Evenement
     #[ORM\OneToMany(targetEntity: Like::class, mappedBy: "evenement", cascade: ["persist", "remove"])]
     private Collection $likes;
 
+    #[ORM\OneToMany(targetEntity: ParticipationEvent::class, mappedBy: "evenement", cascade: ["persist", "remove"])]
+    private Collection $participations;
+
     public function __construct()
     {
         $this->likes = new ArrayCollection();
+        $this->participations = new ArrayCollection();
     }
 
     // Getters et setters
@@ -177,6 +181,58 @@ class Evenement
     public function getLikes(): Collection
     {
         return $this->likes;
+    }
+
+    /**
+     * @return Collection<int, ParticipationEvent>
+     */
+    public function getParticipations(): Collection
+    {
+        return $this->participations;
+    }
+
+    public function addParticipation(ParticipationEvent $participation): static
+    {
+        if (!$this->participations->contains($participation)) {
+            $this->participations->add($participation);
+            $participation->setEvenement($this);
+        }
+
+        return $this;
+    }
+
+    public function removeParticipation(ParticipationEvent $participation): static
+    {
+        if ($this->participations->removeElement($participation)) {
+            // set the owning side to null (unless already changed)
+            if ($participation->getEvenement() === $this) {
+                $participation->setEvenement(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Check if a user is participating in this event
+     */
+    public function isUserParticipating(User $user): bool
+    {
+        foreach ($this->participations as $participation) {
+            if ($participation->getUser() === $user) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Get the number of participants
+     */
+    public function getParticipantsCount(): int
+    {
+        return $this->participations->count();
     }
 
     // Méthode de validation pour comparer startDate et endDate

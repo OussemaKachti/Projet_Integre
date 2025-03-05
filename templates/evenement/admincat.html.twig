@@ -4,6 +4,8 @@
 <main>
     <!-- Inclusion de Font Awesome pour les icônes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Inclusion de Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 
     <style>
         /* Style pour le titre */
@@ -51,22 +53,57 @@
             background-color: #e74c3c;
             border: none;
         }
+        /* Style pour le conteneur du graphique */
+        .chart-container {
+            width: 50%;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        /* Flex layout pour les statistiques */
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+        .stats-card {
+            flex: 0 0 45%;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        /* Aucune catégorie message */
+        .no-data-message {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
     </style>
+
+    <!-- Dashboard Summary -->
+   
 
     <!-- Category Table -->
     <div class="col-lg-12 stretch-card">
         <div class="card">
             <div class="card-body">
                 <h4 class="card-title" style="text-align: center; font-size: 32px; font-weight: bold; color:rgb(24, 5, 83); margin-bottom: 20px;">
-    Category Table
-</h4>
+                    Liste des catégories
+                </h4>
 
                 <table class="table-improved">
                     <thead>
                         <tr>
                             <th style="width: 150px;font-size: 18px;">ID</th>
-                            <th style="width: 250px;font-size: 18px;">Category</th>
-                            <th style="width: 200px;font-size: 18px;">Actions</th>
+                            <th style="width: 250px;font-size: 18px;">Catégorie</th>
+                            <th style="width: 200px;font-size: 18px;">Nombre d'évènements</th>
+                            <th style="width: 150px;font-size: 18px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -74,6 +111,7 @@
                             <tr>
                                 <td>{{ categorie.id }}</td>
                                 <td>{{ categorie.nomCat }}</td>
+                                <td class="event-count" data-category="{{ categorie.nomCat }}">0</td>
                                 <td>
                                     <form method="post" action="{{ path('app_categorie_delete', {'id': categorie.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer cette catégorie ?');">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ categorie.id) }}">
@@ -85,7 +123,7 @@
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="3">No categories found</td>
+                                <td colspan="4">Aucune catégorie trouvée</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -93,5 +131,109 @@
             </div>
         </div>
     </div>
+
+<div class="col-lg-12 stretch-card">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Tableau de bord des catégories</h4>
+                
+                <!-- Stats Container -->
+                <div class="stats-container">
+                    <!-- Chart for Category Statistics -->
+                    <div class="stats-card">
+                        <h5 style="text-align: center; color: rgb(24, 5, 83);">Distribution des événements par catégorie</h5>
+                        {% if categoryData is not empty %}
+                            <div class="chart-container">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        {% else %}
+                            <div class="no-data-message">Aucune donnée disponible pour le graphique</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Total Categories Card -->
+                    <div class="stats-card">
+                        <h5 style="text-align: center; color: rgb(24, 5, 83);">Statistiques générales</h5>
+                        <div style="display: flex; justify-content: space-around; margin-top: 30px;">
+                            <div style="text-align: center;">
+                                <i class="fas fa-tags" style="font-size: 48px; color: rgb(31, 16, 143);"></i>
+                                <h3>{{ categories|length }}</h3>
+                                <p>Catégories totales</p>
+                            </div>
+                            <div style="text-align: center;">
+                                <i class="fas fa-trophy" style="font-size: 48px; color: rgb(31, 16, 143);"></i>
+                                <h3 id="topCategory">-</h3>
+                                <p>Catégorie la plus utilisée</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Parse JSON data in JavaScript
+        const categoryLabels = {{ categoryLabels|raw }};
+        const categoryData = {{ categoryData|raw }};
+        const backgroundColors = {{ backgroundColors|raw }};
+        
+        // Remplir les compteurs d'événements dans le tableau
+        const eventCountCells = document.querySelectorAll('.event-count');
+        eventCountCells.forEach(cell => {
+            const categoryName = cell.getAttribute('data-category');
+            const index = categoryLabels.indexOf(categoryName);
+            if (index !== -1) {
+                cell.textContent = categoryData[index];
+            }
+        });
+        
+        // Afficher la catégorie la plus utilisée
+        if (categoryLabels.length > 0) {
+            document.getElementById('topCategory').textContent = categoryLabels[0];
+        }
+        
+        // Check if data exists before creating the chart
+        if (categoryLabels.length > 0) {
+            // Get the canvas element
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            
+            // Create the pie chart
+            const categoryChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        data: categoryData,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+    </script>
 </main>
 {% endblock %}

@@ -39,6 +39,62 @@ public function searchEvents(?string $nomEvent, ?int $categorieId)
     return $queryBuilder->getQuery()->getResult();
 }
 
+// src/Repository/EvenementRepository.php
+
+public function findEventsByFilters(?string $search = null, ?string $type = null, ?\DateTime $date = null)
+{
+    $queryBuilder = $this->createQueryBuilder('e');
+    
+    if ($search) {
+        $queryBuilder->andWhere('e.nomEvent LIKE :search')
+                     ->setParameter('search', '%' . $search . '%');
+    }
+    
+    if ($type) {
+        $queryBuilder->andWhere('e.type = :type')
+                     ->setParameter('type', $type);
+    }
+    
+    if ($date) {
+        $startOfDay = (clone $date)->setTime(0, 0, 0);
+        $endOfDay = (clone $date)->setTime(23, 59, 59);
+        
+        $queryBuilder->andWhere('e.startDate BETWEEN :startOfDay AND :endOfDay')
+                     ->setParameter('startOfDay', $startOfDay)
+                     ->setParameter('endOfDay', $endOfDay);
+    }
+    
+    return $queryBuilder->getQuery()->getResult();
+}
+
+public function findEventsForCalendar()
+{
+    return $this->createQueryBuilder('e')
+        ->select('e.id', 'e.nomEvent', 'e.startDate', 'e.endDate', 'e.lieux')
+        ->getQuery()
+        ->getResult();
+}
+
+public function findEventsByClub(int $clubId)
+{
+    return $this->createQueryBuilder('e')
+        ->andWhere('e.club = :clubId')
+        ->setParameter('clubId', $clubId)
+        ->getQuery()
+        ->getResult();
+}
+
+public function findUpcomingEvents(int $limit = 5)
+{
+    return $this->createQueryBuilder('e')
+        ->andWhere('e.startDate >= :now')
+        ->setParameter('now', new \DateTime())
+        ->orderBy('e.startDate', 'ASC')
+        ->setMaxResults($limit)
+        ->getQuery()
+        ->getResult();
+}
+
 
 //    /**
 //     * @return Evenement[] Returns an array of Evenement objects

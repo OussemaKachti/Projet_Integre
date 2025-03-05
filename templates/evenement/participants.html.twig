@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Participants - {{ evenement.nomEvent }}{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2>Participants de l'événement : {{ evenement.nomEvent }}</h2>
+
+    {% if participants is empty %}
+        <p>Aucun participant pour cet événement.</p>
+    {% else %}
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Date d'inscription</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for participation in participants %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ participation.user.nom }}</td>
+                        <td>{{ participation.user.email }}</td>
+                        <td>{{ participation.dateparticipation|date('d/m/Y H:i') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <a href="{{ path('eventdetails', { id: evenement.id }) }}" class="btn btn-secondary mt-3">Retour à l'événement</a>
+</div>
+{% endblock %}

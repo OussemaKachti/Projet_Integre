@@ -4,6 +4,33 @@
 
 {% block body %}
 <main>
+    {# Ajout de l'affichage des messages flash #}
+    {% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endfor %}
+
+{# Boutons d'action pour l'événement - version simplifiée #}
+<div class="event-actions">
+    {% if app.user %}
+        {% if participation is defined and participation %}
+            {# L'utilisateur participe déjà à l'événement #}
+            <div class="participation-confirmed">
+             
+                {# Bouton de téléchargement déplacé vers la sidebar #}
+            </div>
+        {% else %}
+            {# L'utilisateur ne participe pas encore - optionnel si vous préférez n'avoir que le bouton dans la sidebar #}
+       
+        {% endif %}
+    {% else %}
+        <a href="{{ path('app_login') }}" class="btn btn-secondary">Connectez-vous pour participer</a>
+    {% endif %}
+</div>
+
     <section class="event__area pt-115 p-relative">
         <div class="container">
             <div class="row">
@@ -25,7 +52,7 @@
                             {% endif %}
                         </div>
 
-                        <div class="course__update mr-80 mb-30">
+                      <div class="course__update mr-80 mb-30">
                             {% if evenement.club %}
                                 <div class="course__category" style="display: inline-flex; align-items: center; background-color: #e0f7fa; padding: 8px 20px; border-radius: 25px;">
                                     <span style="color: #021715; font-weight: bold; font-size: 16px; margin-right: 10px;">Creator:</span>
@@ -35,7 +62,9 @@
                             {% endif %}
                         </div>
 
+
                         <div class="event__details mb-35">
+                            {# Vérifiez si l'image de la description existe #}
                             {% if evenement.imageDescription %}
                                 <div class="event__image-container">
                                     <img src="{{ asset('uploads/events/' ~ evenement.imageDescription) }}" alt="Image de la description" style="max-width: 750px; max-height: 550px; width: auto; height: auto; object-fit: cover;">
@@ -51,6 +80,7 @@
                 </div>
 
                 <!-- Sidebar -->
+                <!-- Sidebar (Les deux sont maintenant dans la même colonne) -->
                 <div class="col-xxl-4 col-xl-4 col-lg-4">
                     <div class="event__sidebar pl-70">
                         <div class="event__sidebar-widget white-bg mb-20">
@@ -85,87 +115,304 @@
                                         </ul>
                                     </div>
 
-                                    <div class="event__join-btn">
-                                       <a href="#" id="inscrire-btn" class="tp-btn text-center w-100">
-                                          Register <i class="far fa-arrow-right"></i>
-                                       </a>
-
-                                        <style>
-                                       /* Styling des icônes pour chaque section */
-                                       .event__info-icon i {
-                                          font-size: 22px;
-                                          margin-right: 10px;
-                                       }
-                                    
-                                       /* Icône pour End (fin de l'événement) */
-                                       .event-icon-end {
-                                          color: #e74c3c; /* Rouge pour la fin */
-                                          transition: transform 0.3s ease-in-out;
-                                       }
-                                       .event-icon-end:hover {
-                                          transform: scale(1.2); /* Effet de zoom au survol */
-                                       }
-                                    
-                                       /* Icône pour Time (heure de l'événement) */
-                                       .event-icon-time {
-                                          color: #f39c12; /* Jaune pour l'heure */
-                                          transition: transform 0.3s ease-in-out;
-                                       }
-                                       .event-icon-time:hover {
-                                          transform: scale(1.2); /* Effet de zoom au survol */
-                                       }
-                                    
-                                       /* Icône pour Venue (lieu de l'événement) */
-                                       .event-icon-venue {
-                                          color: #3498db; /* Bleu pour le lieu */
-                                          transition: transform 0.3s ease-in-out;
-                                       }
-                                       .event-icon-venue:hover {
-                                          transform: scale(1.2); /* Effet de zoom au survol */
-                                       }
-                                    
-                                       /* Style général pour les éléments info */
-                                       .event__info-item h5 {
-                                          font-size: 16px;
-                                          color: #333;
-                                          font-weight: 500;
-                                       }
-                                       .event__info-item span {
-                                          color: #555;
-                                          font-weight: 700;
-                                       }
-                                    </style>
-                                    
+                                    <div class="event__participation-btn mt-3 text-center">
+                                        {% if app.user %}
+                                            {% if participation is defined and participation %}
+                                                {# L'utilisateur participe déjà - afficher le bouton de téléchargement #}
+                                                <p class="participation-status">Vous êtes inscrit à cet événement</p>
+                                                <a href="{{ path('download_ticket', {'id': participation.id}) }}" class="btn btn-download">
+                                                    <i class="fas fa-download"></i> Télécharger mon ticket
+                                                </a>
+                                            {% else %}
+                                                {# L'utilisateur ne participe pas encore #}
+                                                <form action="{{ path('event_join', {'id': evenement.id}) }}" method="post">
+                                                    <button type="submit" class="btn btn-participate">Join</button>
+                                                </form>
+                                            {% endif %}
+                                        {% else %}
+                                            <a href="{{ path('app_login') }}" class="btn btn-secondary">Connectez-vous pour participer</a>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Sidebar Admin pour gestion -->
+                        {% if canManageEvent %}
+                        <div class="event__admin-sidebar white-bg mt-20">
+                            <h4 class="admin-title">Event Management</h4>
+                            <div class="admin-buttons">
+                                <a href="{{ path('app_evenement_edit', {'id': evenement.id}) }}" class="btn btn-warning text-white">
+                                    <i class="fas fa-edit"></i> Modify
+                                </a>
+                                <a href="{{ path('event_participants', { id: evenement.id }) }}" class="admin-btn participants-btn">
+                                    <i class="fas fa-users"></i> View Participants
+                                </a>
+                                <form method="post" action="{{ path('delete_pres', {'id': evenement.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer cet événement ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
+                                    <button class="admin-btn delete-btn">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
-.
 
-           
-               
+
+                <style>
+                    /* Amélioration du style du bouton "Join" */
+                    .btn-participate {
+                        display: inline-block;
+                        padding: 12px 30px;
+                        font-size: 16px;
+                        font-weight: 800;
+                        color: #fff;
+                        background-color: #28a745; /* Couleur verte dynamique */
+                        border: 2px solid #28a745;
+                        border-radius: 50px; /* Bord arrondi pour un aspect moderne */
+                        text-align: center;
+                        text-decoration: none;
+                        cursor: pointer;
+                        transition: all 0.3s ease-in-out;
+                        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+                    }
+
+                    .btn-participate:hover {
+                        background-color: #218838; /* Changement de couleur au survol */
+                        border-color: #218838;
+                        box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.2); /* Ombre plus marquée au survol */
+                        transform: translateY(-3px); /* Légère élévation lors du survol */
+                    }
+
+                    .btn-participate:active {
+                        background-color: #1e7e34; /* Couleur lors du clic */
+                        border-color: #1e7e34;
+                        transform: translateY(2px); /* Enfoncement léger lors du clic */
+                    }
+
+                    /* Style pour le bouton télécharger ticket */
+                    .btn-download {
+                        display: inline-block;
+                        padding: 12px 30px;
+                        font-size: 16px;
+                        font-weight: 800;
+                        color: #fff;
+                        background-color: #007bff; /* Couleur bleue professionnelle */
+                        border: 2px solid #007bff;
+                        border-radius: 50px;
+                        text-align: center;
+                        text-decoration: none;
+                        cursor: pointer;
+                        transition: all 0.3s ease-in-out;
+                        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+                        margin-top: 10px; /* Espacement par rapport au texte */
+                        width: 100%; /* Prend toute la largeur disponible */
+                    }
+
+                    .btn-download:hover {
+                        background-color: #0056b3;
+                        border-color: #0056b3;
+                        box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.2);
+                        transform: translateY(-3px);
+                    }
+
+                    .btn-download:active {
+                        background-color: #004085;
+                        border-color: #004085;
+                        transform: translateY(2px);
+                    }
+
+                    .btn-download i {
+                        margin-right: 8px;
+                    }
+
+                    /* Style pour le texte de confirmation de participation */
+                    .participation-status {
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: #28a745;
+                        margin-bottom: 10px;
+                    }
+
+                    /* Pour les petits écrans, ajustement de la taille du bouton */
+                    @media (max-width: 768px) {
+                        .btn-participate, .btn-download {
+                            padding: 10px 20px;
+                            font-size: 14px;
+                        }
+                    }
+
+                    /* Sidebar Admin */
+                    .event__admin-sidebar {
+                        margin-top: 10px; /* Ajoute de l'espace entre la sidebar event et la sidebar admin */
+                    }
+                    /* Sidebar Admin */
+                    .event__admin-sidebar {
+                        padding: 20px;
+                        border: 1px solid #ddd;
+                        border-radius: 10px;
+                        background: #ffffff;
+                        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+                        text-align: center;
+                        max-width: 100%; /* On permet à la sidebar de prendre toute la largeur disponible */
+                        margin-top: 10px; 
+                        float: right; 
+                        width: 100%; /* Assurez-vous que la sidebar admin ait la même largeur */
+                    }
+
+                    .admin-title {
+                        font-size: 20px;
+                        font-weight: 600;
+                        margin-bottom: 15px;
+                        color: #333;
+                    }
+                    
+                    /* Boutons Admin */
+                    .admin-buttons {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 12px;
+                    }
+                    
+                    .admin-btn {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 12px;
+                        border: none;
+                        border-radius: 6px;
+                        font-size: 16px;
+                        font-weight: 500;
+                        text-decoration: none;
+                        transition: all 0.3s ease-in-out;
+                        cursor: pointer;
+                        color: white;
+                        width: 100%;
+                    }
+                    
+                    .admin-btn i {
+                        margin-right: 8px;
+                    }
+                    
+                    /* Bouton Edit */
+                    .edit-btn {
+                        background: #007bff;
+                    }
+                    
+                    .edit-btn:hover {
+                        background: #0056b3;
+                    }
+                    
+                    /* Bouton View Participants */
+                    .participants-btn {
+                        background: #17a2b8;
+                    }
+                    
+                    .participants-btn:hover {
+                        background: #138496;
+                    }
+                    
+                    /* Bouton Delete */
+                    .delete-btn {
+                        background: #dc3545;
+                    }
+                    
+                    .delete-btn:hover {
+                        background: #c82333;
+                    }
+                </style>
+                
+                <style>
+                    /* Styling des icônes pour chaque section */
+                    .event__info-icon i {
+                        font-size: 22px;
+                        margin-right: 10px;
+                    }
+                
+                    /* Icône pour End (fin de l'événement) */
+                    .event-icon-end {
+                        color: #e74c3c; /* Rouge pour la fin */
+                        transition: transform 0.3s ease-in-out;
+                    }
+                    .event-icon-end:hover {
+                        transform: scale(1.2); /* Effet de zoom au survol */
+                    }
+                
+                    /* Icône pour Time (heure de l'événement) */
+                    .event-icon-time {
+                        color: #f39c12; /* Jaune pour l'heure */
+                        transition: transform 0.3s ease-in-out;
+                    }
+                    .event-icon-time:hover {
+                        transform: scale(1.2); /* Effet de zoom au survol */
+                    }
+                
+                    /* Icône pour Venue (lieu de l'événement) */
+                    .event-icon-venue {
+                        color: #3498db; /* Bleu pour le lieu */
+                        transition: transform 0.3s ease-in-out;
+                    }
+                    .event-icon-venue:hover {
+                        transform: scale(1.2); /* Effet de zoom au survol */
+                    }
+                
+                    /* Style général pour les éléments info */
+                    .event__info-item h5 {
+                        font-size: 16px;
+                        color: #333;
+                        font-weight: 500;
+                    }
+                    .event__info-item span {
+                        color: #555;
+                        font-weight: 700;
+                    }
+                </style>
+            </div>
+        </div>
     </section>
 </main>
-
-<script>
-    // Modifier le texte du bouton d'inscription et désactiver le clic après l'inscription
-    document.getElementById("inscrire-btn").addEventListener("click", function (event) {
-        event.preventDefault();
-        this.innerHTML = "Inscrit ✔️";
-        this.style.pointerEvents = "none"; // Désactive le bouton une fois cliqué
-    });
-</script>
-
 {% endblock %}
 
 {% block styles %}
 <style>
+    /* Styles pour les alertes */
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
 
+    .alert-dismissible {
+        padding-right: 35px;
+    }
 
-    
-   
+    .alert-info {
+        color: #31708f;
+        background-color: #d9edf7;
+        border-color: #bce8f1;
+    }
+
+    .alert-warning {
+        color: #8a6d3b;
+        background-color: #fcf8e3;
+        border-color: #faebcc;
+    }
+
+    .alert-success {
+        color: #3c763d;
+        background-color: #dff0d8;
+        border-color: #d6e9c6;
+    }
+
+    .alert-error, .alert-danger {
+        color: #a94442;
+        background-color: #f2dede;
+        border-color: #ebccd1;
+    }
+
     /* Nouveau style pour la catégorie avec un fond coloré */
     .course__category {
         display: inline-flex;
@@ -187,16 +434,5 @@
         color: #00796b;
         font-size: 18px;
     }
-
-    .event__image-container {
-        width: 100%;
-        max-width: 100px;  /* Limite la largeur du conteneur */
-        height: auto;
-        margin: 20px 0;
-        margin: 20px 20px 20px 0;
-        overflow: hidden;
-    }
-
-
 </style>
 {% endblock %}

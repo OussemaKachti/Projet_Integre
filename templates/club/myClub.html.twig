@@ -1,0 +1,106 @@
+
+     {% extends 'base.html.twig' %}
+
+
+{% block title %}Club{% endblock %}
+
+      
+{% block body %}
+
+      <main>
+
+         <!-- breadcrumb area start -->
+         <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="assets/img/lions.png">
+            <div class="container">
+               <div class="row">
+                  <div class="col-xxl-12">
+                     <div class="breadcrumb__content text-center p-relative z-index-1">
+                        <h3 class="breadcrumb__title">My club </h3>
+                        <div class="breadcrumb__list">
+                           <span><a href="index.html">Home</a></span>
+                           <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
+                           <span>club</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+         <!-- breadcrumb area end -->
+
+         <!-- about area start -->
+          
+        <!-- Memories & Competitions Section -->
+<section class="memories-competitions pt-115 pb-90 grey-bg-3">
+   <div class="container">
+      <div class="row d-flex align-items-start">
+         
+         <!-- Competitions Section (Left) -->
+         <div class="col-xxl-4 col-xl-4 col-lg-4 col-md-12">
+            <div class="competition__area white-bg p-4 rounded shadow-sm h-100">
+               <h3 class="competition__title mb-3 text-center">Competitions</h3>
+               <ul class="list-group">
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                     Coding Hackathon 
+                     <span class="badge bg-primary rounded-pill">Points: 120</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                     Robotics Challenge 
+                     <span class="badge bg-primary rounded-pill">Points: 90</span>
+                  </li>
+               </ul>
+               <div class="text-center mt-3">
+                  <a href="competition.html" class="tp-btn tp-btn-2" style="display: flex; align-items: center; justify-content: center; width: 100%;">Competition List</a>
+               </div>
+            </div>
+         </div>
+         
+         <!-- Memories Section (Right) -->
+         <div class="col-xxl-8 col-xl-8 col-lg-8 col-md-12">
+            <div class="row">
+              <!-- Carte 1 : Women's Day -->
+            <div class="col-xxl-4 col-xxl-5 col-lg-6 col-md-6">
+               <div class="course__item white-bg transition-3 mb-30">
+                  <div class="course__thumb w-img fix">
+                     <img src="{{ asset('front_assets/img/img3.jpg') }}" alt="Women's Day">
+                  </div>
+                  <div class="course__content p-relative">
+                     <h3 class="course__title">
+                        <a>Women's Day</a>
+                     </h3>
+                     <p>Celebrating strength, inspiring change. Together, we uplift women everywhere.</p>
+                     <div class="course__bottom d-sm-flex align-items-center justify-content-between">
+                        <!-- Contenu supplémentaire ici -->
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <!-- Carte 2 : University Integration Day -->
+            <div class="col-xxl-4 col-xxl-6 col-lg-6 col-md-6">
+               <div class="course__item white-bg transition-3 mb-30">
+                  <div class="course__thumb w-img fix">
+<img src="{{ asset('front_assets/img/img2.jpg') }}" alt="University Integration Day">
+                  </div>
+                  <div class="course__content p-relative">
+                     <h3 class="course__title">
+                        <a>University Integration Day</a>
+                     </h3>
+                     <p>Empowering the next generation through unity, knowledge, and service.</p>
+                     <div class="course__bottom d-sm-flex align-items-center justify-content-between">
+                        <!-- Contenu supplémentaire ici -->
+                     </div>
+                  </div>
+               </div>
+            </div>
+            </div>
+         </div>
+
+      </div>
+   </div>
+</section>
+
+      </main>
+      {% endblock %}
+
+       

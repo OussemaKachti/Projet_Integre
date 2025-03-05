@@ -13,6 +13,8 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+            entry_point: App\Security\LoginFormAuthenticator
+            access_denied_handler: App\Security\AccessDeniedHandler
         main:
             lazy: true
             provider: app_user_provider
@@ -32,23 +34,42 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        
-        # - { path: ^/login, roles: PUBLIC_ACCESS, allow_if: "not is_authenticated()" }
-        # - { path: ^/user/sign-up, roles: PUBLIC_ACCESS, allow_if: "not is_authenticated()" }
+          - { path: ^/admin, roles: ROLE_ADMINISTRATEUR }
+    
+    # Public areas - available to everyone (even non-logged in)
           - { path: ^/login$, roles: PUBLIC_ACCESS }
+          - { path: ^/logout$, roles: PUBLIC_ACCESS }
           - { path: ^/user/sign-up, roles: PUBLIC_ACCESS }
           - { path: ^/home$, roles: PUBLIC_ACCESS }
           - { path: ^/presi, roles: ROLE_PRESIDENT_CLUB }
           
           - { path: ^/admin, roles: ROLE_ADMINISTRATEUR }
           - { path: ^/, roles: PUBLIC_ACCESS }
-        #   - { path: ^/contact$, roles: PUBLIC_ACCESS }
+          - { path: ^/access-denied, roles: PUBLIC_ACCESS }
+          - { path: ^/confirm-email, roles: PUBLIC_ACCESS }
+          - { path: ^/assets/, roles: PUBLIC_ACCESS }
+          
+    
+              # Member-only areas (if you have any)
+              # - { path: ^/member-only/, roles: ROLE_MEMBRE }
+    
+              # For the rest of the site, only require the user to be logged in
+              # This includes users with NON_MEMBRE role
+          - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
+        #   - { path: ^/admin, roles: ROLE_ADMINISTRATEUR }
+        # # - { path: ^/login, roles: PUBLIC_ACCESS, allow_if: "not is_authenticated()" }
+        # # - { path: ^/user/sign-up, roles: PUBLIC_ACCESS, allow_if: "not is_authenticated()" }
+        #   - { path: ^/login$, roles: PUBLIC_ACCESS }
         
     role_hierarchy:
         ROLE_MEMBRE: ROLE_USER
         ROLE_PRESIDENT_CLUB: ROLE_MEMBRE
         ROLE_ADMINISTRATEUR: [ROLE_PRESIDENT_CLUB, ROLE_ALLOWED_TO_SWITCH]
    
+        #   - { path: ^/user/sign-up, roles: PUBLIC_ACCESS }
+        #   - { path: ^/home$, roles: PUBLIC_ACCESS }
+        # #   - { path: ^/contact$, roles: PUBLIC_ACCESS }
+        # #   - { path: ^/, roles: is_authenticated() }
 
 when@test:
     security:

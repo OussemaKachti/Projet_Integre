@@ -1,0 +1,9 @@
+fos_ck_editor:
+    configs:
+        main_config:
+            toolbar:
+                - { name: 'styles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'Blockquote'] }
+                - { name: 'links', items: ['Link', 'Unlink'] }
+                - { name: 'paragraph', items: ['NumberedList', 'BulletedList'] }
+            height: 150
+            removePlugins: 'elementspath,resize' 

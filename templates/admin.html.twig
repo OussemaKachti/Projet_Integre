@@ -1,340 +1,674 @@
 {% extends 'baseAdmin.html.twig' %}
-{% block title %}Admin's Dashboard
-{% endblock %}
+{% block title %}Admin's Dashboard{% endblock %}
 {% block body %}
-	<div class="content-wrapper p-0">
-		<div class="row m-0">
-			<div class="col-12 p-0">
-				<div class="card h-100">
-					<div class="card-body">
-						<h4 class="card-title">Admin's Dashboard</h4>
-						{% for message in app.flashes('success') %}
-							<div class="alert alert-success">
-								{{ message }}
-							</div>
-						{% endfor %}
+<div class="content-wrapper p-0">
+    <div class="row m-0">
+        <div class="col-12 p-0">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="card-title mb-0">Admin's Dashboard</h4>
+                        
+                        <!-- Export Button -->
+                        <a href="{{ path('app_admin_export_users', app.request.query.all|default({})) }}" class="btn btn-outline-primary">
+                            <i class="mdi mdi-file-export"></i> Export Users
+                        </a>
+                    </div>
+                    
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
 
-						<p class="card-description mb-4">List of users</p>
+                    {% for message in app.flashes('warning') %}
+                        <div class="alert alert-warning">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
 
-						<!-- Search and Filters -->
-						<div class="row mb-4">
-							<div class="col-md-6">
-								<div class="form-group">
-									<div class="input-group">
-										<input type="text" id="search-input" class="form-control" placeholder="Search by name, email or phone..." value="{{ searchQuery }}">
-										<div class="input-group-append">
-											<button id="search-button" class="btn btn-primary" type="button">
-												<i class="mdi mdi-magnify"></i>
-											</button>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="col-md-6">
-								<div class="row">
-									<div
-										class="col-md-4">
-										{# Example filter HTML in admin.html.twig #}
-										<select id="role-filter" class="form-select">
-											<option value="">All Roles</option>
-											{% for role in availableRoles %}
-												<option value="{{ role }}" {% if roleFilter == role %} selected {% endif %}>{{ role }}</option>
-											{% endfor %}
-										</select>
-									</div>
-									<div class="col-md-4">
-										<select id="status-filter" class="form-control">
-											<option value="">All Statuses</option>
-											<option value="active" {% if statusFilter == 'active' %} selected {% endif %}>Active</option>
-											<option value="disabled" {% if statusFilter == 'disabled' %} selected {% endif %}>Disabled</option>
-										</select>
-									</div>
-									<div class="col-md-4">
-										<select id="verification-filter" class="form-control">
-											<option value="">All Verification</option>
-											<option value="verified" {% if verificationFilter == 'verified' %} selected {% endif %}>Verified</option>
-											<option value="not-verified" {% if verificationFilter == 'not-verified' %} selected {% endif %}>Not Verified</option>
-										</select>
-									</div>
-								</div>
-							</div>
-						</div>
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
 
-						<!-- Loading Indicator -->
-						<div id="loading-indicator" class="text-center mb-3" style="display: none;">
-							<div class="spinner-border text-primary" role="status">
-								<span class="sr-only">Loading...</span>
-							</div>
-						</div>
+                    <p class="card-description mb-4">List of users</p>
 
-						<div class="table-responsive">
-							<table class="table table-hover w-100">
-								<thead>
-									<tr>
-										<th>Name</th>
-										<th>Email</th>
-										<th>Phone Number</th>
-										<th>Role</th>
-										<th>Verification</th>
-										<th>Status</th>
-										<th>Actions</th>
-									</tr>
-								</thead>
-								<tbody id="user-table-body">
-									{% include '_table_body.html.twig' with {'pagination': pagination} %}
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                    <!-- Search Component (Inline to avoid missing templates) -->
+                    <div class="card mb-4">
+                      <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Search Users</h5>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedSearchCollapse">
+                          <i class="mdi mdi-chevron-down"></i>
+                        </button>
+                      </div>
+                      <div class="collapse show" id="advancedSearchCollapse">
+                        <div class="card-body">
+                          <form id="advanced-search-form">
+                            <div class="row g-3">
+                              <!-- Basic Search -->
+                              <div class="col-md-12">
+                                <div class="input-group">
+                                  <input type="text" id="global-search" class="form-control" placeholder="Search by name, email or phone..." value="{{ searchQuery }}">
+                                  <div class="input-group-append">
+                                    <button id="search-button" class="btn btn-primary" type="button">
+                                      <i class="mdi mdi-magnify"></i>
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <!-- Search Type -->
+                              <div class="col-md-6">
+                                <label for="search-type" class="form-label">Search Type</label>
+                                <select id="search-type" class="form-select">
+                                  <option value="contains" {% if searchType == 'contains' %}selected{% endif %}>Contains</option>
+                                  <option value="exact" {% if searchType == 'exact' %}selected{% endif %}>Exact Match</option>
+                                  <option value="starts" {% if searchType == 'starts' %}selected{% endif %}>Starts With</option>
+                                  <option value="ends" {% if searchType == 'ends' %}selected{% endif %}>Ends With</option>
+                                </select>
+                              </div>
+                              
+                              <!-- Search Field -->
+                              <div class="col-md-6">
+                                <label for="search-field" class="form-label">Search In</label>
+                                <select id="search-field" class="form-select">
+                                  <option value="all" {% if searchField == 'all' %}selected{% endif %}>All Fields</option>
+                                  <option value="name" {% if searchField == 'name' %}selected{% endif %}>Name</option>
+                                  <option value="email" {% if searchField == 'email' %}selected{% endif %}>Email</option>
+                                  <option value="phone" {% if searchField == 'phone' %}selected{% endif %}>Phone</option>
+                                </select>
+                              </div>
+                              
+                              <!-- Date Range - Show only if createdAt field exists -->
+                              {% if field_exists is defined and field_exists.createdAt %}
+                              <div class="col-md-6">
+                                <label for="date-range" class="form-label">Registration Date</label>
+                                <select id="date-range" class="form-select">
+                                  <option value="">Any Time</option>
+                                  <option value="today" {% if dateRange == 'today' %}selected{% endif %}>Today</option>
+                                  <option value="week" {% if dateRange == 'week' %}selected{% endif %}>This Week</option>
+                                  <option value="month" {% if dateRange == 'month' %}selected{% endif %}>This Month</option>
+                                  <option value="custom" {% if dateRange == 'custom' %}selected{% endif %}>Custom Range</option>
+                                </select>
+                              </div>
+                              
+                              <!-- Custom Date Range (shown only if dateRange = 'custom') -->
+                              <div class="col-md-6 date-range-custom" {% if dateRange != 'custom' %}style="display: none;"{% endif %}>
+                                <div class="row">
+                                  <div class="col-md-6">
+                                    <label for="date-from" class="form-label">From</label>
+                                    <input type="date" id="date-from" class="form-control" value="{{ dateFrom }}">
+                                  </div>
+                                  <div class="col-md-6">
+                                    <label for="date-to" class="form-label">To</label>
+                                    <input type="date" id="date-to" class="form-control" value="{{ dateTo }}">
+                                  </div>
+                                </div>
+                              </div>
+                              {% endif %}
+                              
+                              <div class="col-12 d-flex justify-content-end mt-3">
+                                <button type="button" id="clear-search" class="btn btn-outline-secondary me-2">Clear</button>
+                                <button type="submit" class="btn btn-primary">Search</button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Filters Component (Inline to avoid missing templates) -->
+                    <div class="card mb-4">
+                      <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Filters</h5>
+                        <div>
+                          <span id="filter-count" class="badge bg-primary me-2" style="display: none;">0</span>
+                          <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
+                            <i class="mdi mdi-filter-outline"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="collapse show" id="filtersCollapse">
+                        <div class="card-body">
+                          <div class="row g-3">
+                            <!-- Roles with multi-select -->
+                            <div class="col-md-4">
+                              <label for="role-filter" class="form-label">Roles</label>
+                              <select id="role-filter" class="form-select">
+                                <option value="">All Roles</option>
+                                {% for role in availableRoles %}
+                                  <option value="{{ role }}" {% if roleFilter == role %} selected {% endif %}>{{ role }}</option>
+                                {% endfor %}
+                              </select>
+                            </div>
+                            
+                            <!-- Status with icons -->
+                            <div class="col-md-4">
+                              <label for="status-filter" class="form-label">Status</label>
+                              <select id="status-filter" class="form-select">
+                                <option value="">All Statuses</option>
+                                <option value="active" {% if statusFilter == 'active' %} selected {% endif %}>
+                                  Active
+                                </option>
+                                <option value="disabled" {% if statusFilter == 'disabled' %} selected {% endif %}>
+                                  Disabled
+                                </option>
+                              </select>
+                            </div>
+                            
+                            <!-- Verification -->
+                            <div class="col-md-4">
+                              <label for="verification-filter" class="form-label">Verification</label>
+                              <select id="verification-filter" class="form-select">
+                                <option value="">All Verification</option>
+                                <option value="verified" {% if verificationFilter == 'verified' %} selected {% endif %}>Verified</option>
+                                <option value="not-verified" {% if verificationFilter == 'not-verified' %} selected {% endif %}>Not Verified</option>
+                              </select>
+                            </div>
+                            
+                            <!-- Activity Filter - Show only if lastLoginAt field exists -->
+                            {% if field_exists is defined and field_exists.lastLoginAt %}
+                            <div class="col-md-4">
+                              <label for="activity-filter" class="form-label">Last Activity</label>
+                              <select id="activity-filter" class="form-select">
+                                <option value="">Any Time</option>
+                                <option value="today" {% if activityFilter == 'today' %}selected{% endif %}>Today</option>
+                                <option value="week" {% if activityFilter == 'week' %}selected{% endif %}>This Week</option>
+                                <option value="month" {% if activityFilter == 'month' %}selected{% endif %}>This Month</option>
+                                <option value="inactive" {% if activityFilter == 'inactive' %}selected{% endif %}>Inactive (30+ days)</option>
+                              </select>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="col-12 d-flex justify-content-end mt-3">
+                              <button type="button" id="clear-filters" class="btn btn-outline-secondary me-2">Clear Filters</button>
+                              <button type="button" id="apply-filters" class="btn btn-primary">Apply Filters</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-	<!-- Pagination Controls -->
-	<div class="mt-4 d-flex justify-content-center">
-		{{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig', {}, {
-        'q': app.request.query.get('q'),
-        'role': app.request.query.get('role'),
-        'status': app.request.query.get('status'),
-        'verification': app.request.query.get('verification')
-    }) }}
-	</div>
+                    <!-- Loading Indicator -->
+                    <div id="loading-indicator" class="text-center mb-3" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Active Filters Display -->
+                    <div id="active-filters" class="mb-3">
+                        {% if searchQuery or roleFilter or statusFilter or verificationFilter or dateRange or activityFilter %}
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <span class="text-muted">Active filters:</span>
+                                
+                                {% if searchQuery %}
+                                    <span class="badge bg-primary">Search: {{ searchQuery }}</span>
+                                {% endif %}
+                                
+                                {% if roleFilter %}
+                                    <span class="badge bg-info">Role: {{ roleFilter }}</span>
+                                {% endif %}
+                                
+                                {% if statusFilter %}
+                                    <span class="badge bg-secondary">Status: {{ statusFilter }}</span>
+                                {% endif %}
+                                
+                                {% if verificationFilter %}
+                                    <span class="badge bg-warning text-dark">Verification: {{ verificationFilter }}</span>
+                                {% endif %}
+                                
+                                {% if dateRange %}
+                                    <span class="badge bg-success">Date: {{ dateRange }}</span>
+                                {% endif %}
+                                
+                                {% if activityFilter %}
+                                    <span class="badge bg-danger">Activity: {{ activityFilter }}</span>
+                                {% endif %}
+                                
+                                <a href="{{ path('app_admin_dashboard') }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="mdi mdi-close"></i> Clear All Filters
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
 
-	<style>
-		.content-wrapper {
-			padding: 0 !important;
-			margin: 0 !important;
-			width: 100% !important;
-		}
-		.card {
-			margin: 0 !important;
-			border-radius: 0 !important;
-		}
-		.table-responsive {
-			margin: -1rem !important; /* Compensate for card-body padding */
-			padding: 1rem !important;
-		}
-		.table {
-			margin-bottom: 0 !important;
-		}
+                    <div class="table-responsive">
+                        <table class="table table-hover w-100">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone Number</th>
+                                    <th>Role</th>
+                                    <th>Verification</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-table-body">
+                                {% include '_table_body.html.twig' with {'pagination': pagination} %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-		.footer {
-			position: fixed;
-			bottom: 0;
-			right: 0;
-			width: calc(100% - 260px); /* Adjust for sidebar width */
-			background: white;
-			z-index: 1;
-			padding: 1rem;
-			border-top: 1px solid #e5e5e5;
-		}
+<!-- Pagination Controls -->
+<div class="mt-4 d-flex justify-content-center pagination-container">
+    {% if pagination.pageCount > 0 %}
+        {{ knp_pagination_render(pagination, 'custom_template.html.twig', {}, {
+            'q': app.request.query.get('q'),
+            'role': app.request.query.get('role'),
+            'status': app.request.query.get('status'),
+            'verification': app.request.query.get('verification'),
+            'searchType': app.request.query.get('searchType'),
+            'searchField': app.request.query.get('searchField'),
+            'dateRange': app.request.query.get('dateRange'),
+            'dateFrom': app.request.query.get('dateFrom'),
+            'dateTo': app.request.query.get('dateTo'),
+            'activity': app.request.query.get('activity')
+        }) }}
+    {% endif %}
+</div>
 
-		.main-panel {
-			padding-bottom: 60px; /* Add padding to prevent content from being hidden behind footer */
-		}
+<!-- Modal templates (inline) -->
+<!-- User Details Modal -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="userDetailsModalLabel">User Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="userDetailsContent">
+        <div class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-		/* Adjust footer width when sidebar is collapsed */
-		.sidebar-icon-only .footer {
-			width: calc(100% - 70px);
-		}
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Delete</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete this user? This action cannot be undone.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <a href="#" id="confirmDeleteBtn" class="btn btn-danger">Delete</a>
+      </div>
+    </div>
+  </div>
+</div>
 
+<style>
+    .content-wrapper {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+    .card {
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+    .table-responsive {
+        margin: -1rem !important; /* Compensate for card-body padding */
+        padding: 1rem !important;
+    }
+    .table {
+        margin-bottom: 0 !important;
+    }
 
-		.actions-column {
-			text-align: center;
-		}
+    .footer {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        width: calc(100% - 260px); /* Adjust for sidebar width */
+        background: white;
+        z-index: 1;
+        padding: 1rem;
+        border-top: 1px solid #e5e5e5;
+    }
 
-		.action-buttons {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			gap: 10px;
-		}
+    .main-panel {
+        padding-bottom: 60px; /* Add padding to prevent content from being hidden behind footer */
+    }
 
-		.plusButton {
-			position: relative;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			border: 1px solid white;
-			width: 1.8rem;
-			height: 1.8rem;
-			background-color: #000;
-			overflow: hidden;
-		}
+    /* Adjust footer width when sidebar is collapsed */
+    .sidebar-icon-only .footer {
+        width: calc(100% - 70px);
+    }
 
-		.bin-button {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			width: 25px;
-			height: 25px;
-			border-radius: 5px;
-			background-color: rgb(255, 95, 95);
-			cursor: pointer;
-			border: 3px solid rgb(255, 201, 201);
-			transition-duration: 0.3s;
-		}
+    .actions-column {
+        text-align: center;
+    }
 
-		.bin-button:hover {
-			background-color: rgb(255, 0, 0);
-		}
-	</style>
+    .action-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
 
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-const searchInput = document.getElementById('search-input');
-const roleFilter = document.getElementById('role-filter');
-const statusFilter = document.getElementById('status-filter');
-const verificationFilter = document.getElementById('verification-filter');
-const tableBody = document.getElementById('user-table-body');
-const loadingIndicator = document.getElementById('loading-indicator');
-const paginationContainer = document.querySelector('.mt-4.d-flex.justify-content-center');
+    /* Badge styling */
+    .badge {
+        font-size: 0.8rem;
+        padding: 0.35em 0.65em;
+    }
+    
+    /* Improve filter display */
+    #active-filters .badge {
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    /* Gap utility */
+    .gap-2 {
+        gap: 0.5rem;
+    }
+</style>
 
-let timeoutId;
-
-function fetchResults(page = null) {
-console.log('Fetching results with filters:');
-console.log('Search:', searchInput ? searchInput.value : 'not found');
-console.log('Role:', roleFilter ? roleFilter.value : 'not found');
-console.log('Status:', statusFilter ? statusFilter.value : 'not found');
-console.log('Verification:', verificationFilter ? verificationFilter.value : 'not found');
-
-if (loadingIndicator) {
-loadingIndicator.style.display = 'block';
-}
-
-const params = new URLSearchParams();
-
-if (searchInput && searchInput.value.trim() !== '') {
-params.append('q', searchInput.value.trim());
-}
-
-if (roleFilter && roleFilter.value !== '') {
-params.append('role', roleFilter.value);
-}
-
-if (statusFilter && statusFilter.value !== '') {
-params.append('status', statusFilter.value);
-}
-
-if (verificationFilter && verificationFilter.value !== '') {
-params.append('verification', verificationFilter.value);
-}
-
-if (page) {
-params.append('page', page);
-}
-
-const url = '/admin?' + params.toString();
-console.log('Request URL:', url);
-
-// Update URL in browser without page reload
-window.history.replaceState(null, '', url);
-
-// Fetch the results via AJAX
-fetch(url, {
-headers: {
-'X-Requested-With': 'XMLHttpRequest'
-}
-}).then(response => {
-if (!response.ok) {
-throw new Error('Network response was not ok');
-}
-return response.text();
-}).then(html => {
-if (tableBody) {
-tableBody.innerHTML = html;
-}
-
-if (loadingIndicator) {
-loadingIndicator.style.display = 'none';
-}
-
-// Get updated pagination from server
-const paginationUrl = url + '&pagination_only=1';
-console.log('Pagination URL:', paginationUrl);
-
-fetch(paginationUrl, {
-headers: {
-'X-Requested-With': 'XMLHttpRequest'
-}
-}).then(response => response.text()).then(paginationHtml => {
-if (paginationContainer) {
-paginationContainer.innerHTML = paginationHtml;
-attachPaginationHandlers();
-}
-}).catch(error => {
-console.error('Error fetching pagination:', error);
+<script>
+// Enhanced AJAX Search and Filter functionality with fixed pagination
+document.addEventListener('DOMContentLoaded', function() {
+  // Elements
+  const searchForm = document.getElementById('advanced-search-form');
+  const globalSearch = document.getElementById('global-search');
+  const searchType = document.getElementById('search-type');
+  const searchField = document.getElementById('search-field');
+  const dateRange = document.getElementById('date-range');
+  const dateFrom = document.getElementById('date-from');
+  const dateTo = document.getElementById('date-to');
+  const roleFilter = document.getElementById('role-filter');
+  const statusFilter = document.getElementById('status-filter');
+  const verificationFilter = document.getElementById('verification-filter');
+  const activityFilter = document.getElementById('activity-filter');
+  const tableBody = document.getElementById('user-table-body');
+  const loadingIndicator = document.getElementById('loading-indicator');
+  const clearSearch = document.getElementById('clear-search');
+  const clearFilters = document.getElementById('clear-filters');
+  const applyFilters = document.getElementById('apply-filters');
+  
+  // Initialize variables
+  let debounceTimeout;
+  let activeFilters = 0;
+  
+  // Event listeners
+  if (searchForm) {
+    searchForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      fetchResults();
+    });
+  }
+  
+  if (globalSearch) {
+    globalSearch.addEventListener('input', debounceSearch);
+  }
+  
+  if (dateRange) {
+    dateRange.addEventListener('change', function() {
+      const customDateFields = document.querySelectorAll('.date-range-custom');
+      if (this.value === 'custom') {
+        customDateFields.forEach(field => field.style.display = 'block');
+      } else {
+        customDateFields.forEach(field => field.style.display = 'none');
+      }
+    });
+  }
+  
+  if (clearSearch) {
+    clearSearch.addEventListener('click', clearSearchFields);
+  }
+  
+  if (clearFilters) {
+    clearFilters.addEventListener('click', clearFilterFields);
+  }
+  
+  if (applyFilters) {
+    applyFilters.addEventListener('click', fetchResults);
+  }
+  
+  // Attach handlers to pagination links on initial load
+  attachPaginationHandlers();
+  
+  // Functions
+  function debounceSearch() {
+    clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(() => {
+      if (globalSearch.value.length >= 2 || globalSearch.value.length === 0) {
+        fetchResults();
+      }
+    }, 400);
+  }
+  
+  function countActiveFilters() {
+    activeFilters = 0;
+    
+    // Check search
+    if (globalSearch && globalSearch.value) activeFilters++;
+    
+    // Check filters
+    if (roleFilter && roleFilter.value) activeFilters++;
+    if (statusFilter && statusFilter.value) activeFilters++;
+    if (verificationFilter && verificationFilter.value) activeFilters++;
+    if (dateRange && dateRange.value) activeFilters++;
+    if (activityFilter && activityFilter && activityFilter.value) activeFilters++;
+    
+    // Update UI
+    const filterCount = document.getElementById('filter-count');
+    if (filterCount) {
+      if (activeFilters > 0) {
+        filterCount.textContent = activeFilters;
+        filterCount.style.display = 'inline-block';
+      } else {
+        filterCount.style.display = 'none';
+      }
+    }
+  }
+  
+  function clearSearchFields() {
+    if (globalSearch) globalSearch.value = '';
+    if (searchType) searchType.value = 'contains';
+    if (searchField) searchField.value = 'all';
+    if (dateRange) dateRange.value = '';
+    if (dateFrom) dateFrom.value = '';
+    if (dateTo) dateTo.value = '';
+    
+    // Hide custom date range fields
+    const customDateFields = document.querySelectorAll('.date-range-custom');
+    customDateFields.forEach(field => field.style.display = 'none');
+    
+    // Update count and fetch results
+    countActiveFilters();
+    fetchResults();
+  }
+  
+  function clearFilterFields() {
+    if (roleFilter) roleFilter.value = '';
+    if (statusFilter) statusFilter.value = '';
+    if (verificationFilter) verificationFilter.value = '';
+    if (activityFilter) activityFilter.value = '';
+    
+    // Update count and fetch results
+    countActiveFilters();
+    fetchResults();
+  }
+  
+  function fetchResults(page = 1) {
+    if (loadingIndicator) {
+      loadingIndicator.style.display = 'block';
+    }
+    
+    countActiveFilters();
+    
+    const params = new URLSearchParams();
+    
+    // Always include page parameter with default of 1
+    params.append('page', page);
+    
+    // Add search parameters
+    if (globalSearch && globalSearch.value.trim() !== '') {
+      params.append('q', globalSearch.value.trim());
+      
+      if (searchType && searchType.value !== 'contains') {
+        params.append('searchType', searchType.value);
+      }
+      
+      if (searchField && searchField.value !== 'all') {
+        params.append('searchField', searchField.value);
+      }
+    }
+    
+    // Add date range parameters
+    if (dateRange && dateRange.value) {
+      params.append('dateRange', dateRange.value);
+      
+      if (dateRange.value === 'custom') {
+        if (dateFrom && dateFrom.value) {
+          params.append('dateFrom', dateFrom.value);
+        }
+        
+        if (dateTo && dateTo.value) {
+          params.append('dateTo', dateTo.value);
+        }
+      }
+    }
+    
+    // Add filter parameters
+    if (roleFilter && roleFilter.value !== '') {
+      params.append('role', roleFilter.value);
+    }
+    
+    if (statusFilter && statusFilter.value !== '') {
+      params.append('status', statusFilter.value);
+    }
+    
+    if (verificationFilter && verificationFilter.value !== '') {
+      params.append('verification', verificationFilter.value);
+    }
+    
+    // Add activity filter
+    if (activityFilter && activityFilter.value !== '') {
+      params.append('activity', activityFilter.value);
+    }
+    
+    const url = '/admin?' + params.toString();
+    console.log('Fetching:', url);
+    
+    // Update URL in browser without page reload
+    window.history.replaceState(null, '', url);
+    
+    // Fetch the results via AJAX
+    fetch(url, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.text();
+    })
+    .then(html => {
+      if (tableBody) {
+        tableBody.innerHTML = html;
+      }
+      
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+      
+      // Get updated pagination from server
+      const paginationUrl = url + '&pagination_only=1';
+      console.log('Fetching pagination:', paginationUrl);
+      
+      return fetch(paginationUrl, {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+    })
+    .then(response => response.text())
+    .then(paginationHtml => {
+      // Insert the new pagination HTML
+      const paginationContainer = document.querySelector('.pagination-container');
+      if (paginationContainer) {
+        paginationContainer.innerHTML = paginationHtml;
+        console.log('Pagination HTML updated');
+        
+        // Re-attach handlers to new pagination elements
+        attachPaginationHandlers();
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+      
+      if (tableBody) {
+        tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error loading data: ' + error.message + '</td></tr>';
+      }
+    });
+  }
+  
+  // Fixed pagination click handler
+  function attachPaginationHandlers() {
+    const paginationLinks = document.querySelectorAll('.pagination a.page-link');
+    
+    paginationLinks.forEach(link => {
+      // Remove any existing event listeners to avoid duplicates
+      const clonedLink = link.cloneNode(true);
+      link.parentNode.replaceChild(clonedLink, link);
+      
+      clonedLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Extract page number from href attribute
+        try {
+          // Get the URL from the href attribute
+          const hrefUrl = this.getAttribute('href');
+          if (!hrefUrl) throw new Error('No href found');
+          
+          // Parse the URL to extract the page parameter
+          const urlObj = new URL(hrefUrl, window.location.origin);
+          const pageParam = urlObj.searchParams.get('page');
+          
+          // Convert to number and validate
+          const pageNumber = parseInt(pageParam);
+          if (isNaN(pageNumber) || pageNumber < 1) {
+            console.error('Invalid page number:', pageParam);
+            return;
+          }
+          
+          console.log('Navigating to page:', pageNumber);
+          fetchResults(pageNumber);
+        } catch (error) {
+          console.error('Error parsing pagination URL:', error);
+        }
+      });
+    });
+  }
 });
-}).catch(error => {
-console.error('Error fetching results:', error);
-
-if (loadingIndicator) {
-loadingIndicator.style.display = 'none';
-}
-
-if (tableBody) {
-tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No results found or an error occurred.</td></tr>';
-}
-});
-}
-
-function attachPaginationHandlers() {
-const paginationLinks = document.querySelectorAll('.pagination a.page-link');
-console.log('Attaching handlers to pagination links:', paginationLinks.length);
-
-paginationLinks.forEach(link => {
-link.addEventListener('click', function (e) {
-e.preventDefault();
-console.log('Pagination link clicked:', this.href);
-const url = new URL(this.href);
-const page = url.searchParams.get('page');
-fetchResults(page);
-});
-});
-}
-
-// Initial pagination handlers
-attachPaginationHandlers();
-
-if (searchInput) {
-searchInput.addEventListener('input', function () {
-console.log('Search input changed:', this.value);
-clearTimeout(timeoutId);
-timeoutId = setTimeout(() => fetchResults(), 300);
-});
-}
-
-if (roleFilter) {
-roleFilter.addEventListener('change', function () {
-console.log('Role filter changed:', this.value);
-fetchResults();
-});
-}
-
-if (statusFilter) {
-statusFilter.addEventListener('change', function () {
-console.log('Status filter changed:', this.value);
-fetchResults();
-});
-}
-
-if (verificationFilter) {
-verificationFilter.addEventListener('change', function () {
-console.log('Verification filter changed:', this.value);
-fetchResults();
-});
-}
-
-const searchButton = document.getElementById('search-button');
-if (searchButton) {
-searchButton.addEventListener('click', function () {
-console.log('Search button clicked');
-fetchResults();
-});
-}
-});
-	</script>
+</script>
 {% endblock %}

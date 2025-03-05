@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html class="no-js" lang="zxx">
    
@@ -41,6 +42,7 @@
 		<link rel="stylesheet" href="{{ asset('front_assets/css/font-awesome-pro.css') }}">
 		<link rel="stylesheet" href="{{ asset('front_assets/css/spacing.css') }}">
 		<link rel="stylesheet" href="{{ asset('front_assets/css/style.css') }}">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 		<style></style>
 	</head>
 	<body>
@@ -243,13 +245,21 @@
 												<a href="listeClub.html">Clubs</a>
 												<ul class="submenu">
 													<li>
-														<a href="listeClub.html">Our clubs</a>
+													<a href="{{ path('app_club_index')}}">Our clubs</a>
+											
 													</li>
 													<li>
-														<a href="myclub.html">My club</a>
+													<a href="{{ path('myclub')}}">my club</a>
+														
 													</li>
+													{% if app.user and (app.user.role.value == 'presidentClub' or app.user.role.value == 'membre') %}
+												<li>
+													<a href="{{ path('app_sondage_index') }}">Polls</a>
+												</li>
+											{% endif %}
 												</ul>
 											</li>
+											
 											<li class="has-dropdown">
 												<a href="event.html">Events</a>
 												<ul class="submenu">
@@ -257,7 +267,7 @@
 														<a href="{{path('event')}}">Our Events</a>
 													</li>
 													<li>
-														<a href="eventclub.html">Clubs Events</a>
+														<a href="{{path('my_events')}}">My Events</a>
 													</li>
 
 												</ul>
