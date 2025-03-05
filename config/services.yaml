@@ -6,6 +6,16 @@
 
 parameters:
     event_images_directory: '%kernel.project_dir%/public/uploads/events'
+    uploads_directory: "%kernel.project_dir%/public/uploads"
+    
+    profile_pictures_directory: "%kernel.project_dir%/public/uploads/profiles"
+    huggingface_api_key: "%env(HUGGINGFACE_API_KEY)%"
+    llava_model_endpoint: "%env(default:llava_model_default:LLAVA_MODEL_ENDPOINT)%"
+    # CHANGED: Use a smaller model instead of the 14GB LLaVA model
+    llava_model_default: "Xenova/llava-7b" # Smaller model that should work with free tier
+    nsfw_detection_model: "Falconsai/nsfw_image_detection"
+    kernel.logs_dir: "%kernel.project_dir%/var/log"
+    club_images_directory: '%kernel.project_dir%/public/uploads/clubs'
 
 
 services:
@@ -57,6 +67,6 @@ services:
       $cache: "@cache.app"
       $nsfwModelEndpoint: "%nsfw_detection_model%"
 
-    Tecnickcom\Tcpdf\Tcpdf:
-        public: true
-        autowire: true
+  ecnickcom\Tcpdf\Tcpdf:
+      public: true
+      autowire: true
