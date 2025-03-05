@@ -169,7 +169,7 @@ public function commande(EntityManagerInterface $entityManager,
 }
 
 
-#[Route('/commande/valider/{id}', name: 'commande_validate', methods: ['GET'])]
+/*#[Route('/commande/valider/{id}', name: 'commande_validate', methods: ['GET'])]
 public function validateCommande(int $id, EntityManagerInterface $entityManager): Response
 {
     // Récupérer la commande par ID
@@ -197,7 +197,7 @@ public function validateCommande(int $id, EntityManagerInterface $entityManager)
 
     // Rediriger vers la liste des commandes ou une page de confirmation
     return $this->redirectToRoute('presi_commandes');
-}
+}*/
     
 
     #[Route('/admin/supprimer/{id}', name: 'admin_commande_supprimer', methods: ['POST', 'GET'])]
