@@ -277,46 +277,89 @@
         </div>
     </section>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add smooth scrolling to alerts when they exist
-        const alertsContainer = document.getElementById('alerts-container');
-        if (alertsContainer && alertsContainer.children.length > 0) {
-            alertsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Debug field detection to confirm field names
+    console.log("First name field (nom):", document.querySelector('input[name="user[nom]"]'));
+    console.log("Last name field (prenom):", document.querySelector('input[name="user[prenom]"]'));
     
-        // Find the password field directly using its class/structure
-        const passwordField = document.querySelector('.password-field input[type="password"]');
-        const toggleButton = document.querySelector('.toggle-password');
+    // Form field identification - CORRECTLY identify which is which
+    // IMPORTANT: In this implementation:
+    // The field named 'user[nom]' is used for LAST NAME 
+    // The field named 'user[prenom]' is used for FIRST NAME
+    // This is opposite of what the French names suggest but matches your implementation
+    const lastNameInput = document.querySelector('input[name="user[nom]"]'); // nom = last name field
+    const firstNameInput = document.querySelector('input[name="user[prenom]"]'); // prenom = first name field
+    const signupForm = document.querySelector('.signup-form');
+    
+    if (firstNameInput && lastNameInput && signupForm) {
+        // Add input validation with the CORRECT labels
+        firstNameInput.addEventListener('input', function() {
+            validateName(this, 'First name');
+        });
         
-        if (passwordField && toggleButton) {
-            toggleButton.addEventListener('click', function() {
-                // Toggle the password field visibility
-                if (passwordField.type === 'password') {
-                    passwordField.type = 'text';
-                    toggleButton.querySelector('i').classList.remove('fa-eye');
-                    toggleButton.querySelector('i').classList.add('fa-eye-slash');
-                } else {
-                    passwordField.type = 'password';
-                    toggleButton.querySelector('i').classList.remove('fa-eye-slash');
-                    toggleButton.querySelector('i').classList.add('fa-eye');
-                }
-            });
+        lastNameInput.addEventListener('input', function() {
+            validateName(this, 'Last name');
+        });
+        
+        // Form submission validation
+        signupForm.addEventListener('submit', function(e) {
+            const isFirstNameValid = validateName(firstNameInput, 'First name');
+            const isLastNameValid = validateName(lastNameInput, 'Last name');
+            
+            if (!isFirstNameValid || !isLastNameValid) {
+                e.preventDefault();
+            }
+        });
+        
+        // Validation function
+        function validateName(input, fieldName) {
+            const inputWrapper = input.closest('.sign__input-wrapper');
+            let errorElement = inputWrapper.querySelector('.form-error-message');
+            
+            // Create error element if it doesn't exist
+            if (!errorElement) {
+                errorElement = document.createElement('div');
+                errorElement.className = 'form-error-message';
+                inputWrapper.appendChild(errorElement);
+            }
+            
+            const value = input.value.trim();
+            
+            // Reset existing errors
+            errorElement.innerHTML = '';
+            input.classList.remove('input-error');
+            
+            let isValid = true;
+            let errors = [];
+            
+            // Check if empty
+            if (!value) {
+                errors.push(fieldName + ' cannot be empty');
+                isValid = false;
+            } 
+            // Check if contains numbers
+            else if (/\d/.test(value)) {
+                errors.push(fieldName + ' cannot contain numbers');
+                isValid = false;
+            } 
+            // Check for valid characters
+            else if (!/^[a-zA-ZÀ-ÿ\s\'-]+$/u.test(value)) {
+                errors.push(fieldName + ' can only contain letters, spaces, hyphens and apostrophes');
+                isValid = false;
+            }
+            
+            // Update UI based on validation
+            if (!isValid) {
+                // Display each error on a new line
+                errorElement.innerHTML = errors.join('<br>');
+                input.classList.add('input-error');
+            }
+            
+            return isValid;
         }
-        
-        // Required checkbox validation
-        const form = document.querySelector('.signup-form');
-        const agreeCheckbox = document.getElementById('m-agree');
-        
-        if (form && agreeCheckbox) {
-            form.addEventListener('submit', function(event) {
-                if (!agreeCheckbox.checked) {
-                    event.preventDefault();
-                    alert('You must agree to the Terms & Conditions to proceed.');
-                }
-            });
-        }
-    });
-    </script>
+    }
+});
+</script>
     {% include 'user/terms-modal.html.twig' %}
 {% endblock %}
