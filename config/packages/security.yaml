@@ -43,7 +43,7 @@ security:
           - { path: ^/home$, roles: PUBLIC_ACCESS }
           - { path: ^/presi, roles: ROLE_PRESIDENT_CLUB }
           
-          - { path: ^/admin, roles: ROLE_ADMINISTRATEUR }
+         
           - { path: ^/, roles: PUBLIC_ACCESS }
           - { path: ^/access-denied, roles: PUBLIC_ACCESS }
           - { path: ^/confirm-email, roles: PUBLIC_ACCESS }
