@@ -7,13 +7,17 @@
         "php": ">=8.1",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "bacon/bacon-qr-code": "^2.0",
         "doctrine/dbal": "^3",
         "doctrine/doctrine-bundle": "^2.13",
         "doctrine/doctrine-migrations-bundle": "^3.4",
         "doctrine/orm": "*",
         "dompdf/dompdf": "^3.1",
+        "endroid/qr-code": "^4.8",
+        "endroid/qr-code-bundle": "^4.1",
         "firebase/php-jwt": "^6.11",
         "guzzlehttp/guzzle": "^7.9",
+        "intervention/image": "*",
         "knplabs/knp-paginator-bundle": "^6.6",
         "mpdf/mpdf": "^6.1",
         "phpdocumentor/reflection-docblock": "^5.6",
@@ -51,6 +55,7 @@
         "symfony/web-link": "6.4.*",
         "symfony/yaml": "6.4.*",
         "symfonycasts/reset-password-bundle": "^1.14",
+        "tecnickcom/tcpdf": "^6.8",
         "twig/extra-bundle": "^2.12|^3.0",
         "twig/twig": "^2.12|^3.0",
         "vich/uploader-bundle": "^2.5"
@@ -59,7 +64,8 @@
         "allow-plugins": {
             "php-http/discovery": true,
             "symfony/flex": true,
-            "symfony/runtime": true
+            "symfony/runtime": true,
+            "endroid/installer": true
         },
         "sort-packages": true
     },

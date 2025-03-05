@@ -16,8 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Repository\ClubRepository;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 use Knp\Component\Pager\PaginatorInterface;
 use App\Enum\RoleEnum;
 use App\Entity\User;
@@ -330,37 +329,175 @@ public function show(EvenementRepository $evenementRepository, EntityManagerInte
      */
     private function generateTicketPdf(ParticipationEvent $participation): Response
     {
-        // Configuration de DomPDF
+        // Options personnalisées pour DomPDF
         $pdfOptions = new Options();
-        $pdfOptions->set('defaultFont', 'Arial');
+        $pdfOptions->set('defaultFont', 'DejaVu Sans');
         $pdfOptions->set('isHtml5ParserEnabled', true);
         $pdfOptions->set('isRemoteEnabled', true);
         
         $dompdf = new Dompdf($pdfOptions);
         
-        // Récupérer les données pour le template
+        // Récupérer les données de l'événement et du participant
         $evenement = $participation->getEvenement();
         $user = $participation->getUser();
+        
+        // Générer un ID de ticket unique
         $ticketId = 'TICKET-' . $participation->getId() . '-' . time();
         
-        // Générer le HTML du ticket
-        $html = $this->renderView('evenement/ticketPdf.html.twig', [
-            'participation' => $participation,
-            'evenement' => $evenement,
-            'user' => $user,
-            'ticketId' => $ticketId,
-        ]);
+        // Palette de couleurs personnalisée
+        $primaryColor = '#3498db';  // Bleu
+        $secondaryColor = '#2ecc71';  // Vert
+        $backgroundColor = '#f1f2f6';  // Gris clair
+        
+        // Chemin vers le logo
+        $logoPath = $this->getParameter('kernel.project_dir') . '/public/front_assets/img/logo/logo2000000.jpg';
+        
+        // Vérifier si le logo existe et le convertir en base64
+        $logoBase64 = '';
+        $logoImg = '';
+        if (file_exists($logoPath)) {
+            $logoData = file_get_contents($logoPath);
+            $logoBase64 = base64_encode($logoData);
+            $logoImg = "<img src='data:image/png;base64,{$logoBase64}' ' style='max-width: 300px; max-height: 250px; margin-bottom: 1px; display: block; margin-top: 0;'>";
+        } else {
+            error_log('Logo file not found at: ' . $logoPath);
+        }
+        
+        // HTML personnalisé avec du style inline
+        $html = "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+                
+                body {
+                    font-family: 'Montserrat', sans-serif;
+                    background-color: {$backgroundColor};
+                    margin: 0;
+                    padding: 20px;
+                    color: #2c3e50;
+                }
+                
+                .ticket-container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                    background-color: white;
+                    border-radius: 15px;
+                    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+                    overflow: hidden;
+                    border: 3px solid {$primaryColor};
+                }
+                
+                .ticket-header {
+    background: linear-gradient(to right, {$primaryColor}, {$secondaryColor});
+    color: white;
+    text-align: center;
+    padding: 10px; /* Réduire le padding vertical */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ticket-logo {
+    margin-bottom: 5px; /* Très petit espace */
+}
+                
+                .ticket-header h1 {
+                    margin: 0;
+                    font-size: 28px;
+                    text-transform: uppercase;
+                    letter-spacing: 2px;
+                }
+                
+                .ticket-body {
+                    padding: 30px;
+                }
+                
+                .ticket-logo {
+                    text-align: center;
+                    margin-bottom: 20px;
+                }
+                
+                .ticket-detail {
+                    margin-bottom: 20px;
+                    padding: 15px;
+                    background-color: #f8f9fa;
+                    border-radius: 10px;
+                }
+                
+                .ticket-detail label {
+                    display: block;
+                    color: #7f8c8d;
+                    margin-bottom: 5px;
+                    text-transform: uppercase;
+                    font-size: 12px;
+                }
+                
+                .ticket-detail .value {
+                    font-weight: bold;
+                    color: #2c3e50;
+                    font-size: 16px;
+                }
+                
+                .ticket-footer {
+                    background-color: {$primaryColor};
+                    color: white;
+                    text-align: center;
+                    padding: 15px;
+                    font-size: 14px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class='ticket-container'>
+                <div class='ticket-header'>
+                    <div class='ticket-logo'>
+                        {$logoImg}
+                    </div>
+                    <h1>{$evenement->getNomEvent()}</h1>
+                </div>
+                
+                <div class='ticket-body'>
+                    <div class='ticket-detail'>
+                        <label>Participant</label>
+                        <div class='value'>{$user->getPrenom()} {$user->getNom()}</div>
+                    </div>
+                    
+                    <div class='ticket-detail'>
+                        <label>Date de l'événement</label>
+                        <div class='value'>{$evenement->getStartDate()->format('d/m/Y H:i')}</div>
+                    </div>
+                    
+                    <div class='ticket-detail'>
+                        <label>Lieu</label>
+                        <div class='value'>{$evenement->getLieux()}</div>
+                    </div>
+                    
+                    <div class='ticket-detail'>
+                        <label>Numéro de ticket</label>
+                        <div class='value'>{$ticketId}</div>
+                    </div>
+                </div>
+                
+                <div class='ticket-footer'>
+                    Merci pour votre participation !
+                </div>
+            </div>
+        </body>
+        </html>
+        ";
         
         // Générer le PDF
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
         
-        // Générer le nom du fichier
+        // Nom de fichier personnalisé
         $eventName = preg_replace('/[^a-zA-Z0-9_-]/', '', $evenement->getNomEvent());
         $fileName = 'ticket-' . $eventName . '-' . time() . '.pdf';
         
-        // Retourner le PDF en tant que réponse à télécharger
+        // Retourner le PDF
         return new Response(
             $dompdf->output(),
             Response::HTTP_OK,
@@ -368,12 +505,9 @@ public function show(EvenementRepository $evenementRepository, EntityManagerInte
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
                 'Cache-Control' => 'no-cache, no-store, must-revalidate',
-                'Pragma' => 'no-cache',
-                'Expires' => '0'
             ]
         );
     }
-    
         #[Route('/event/{id}/participants', name: 'event_participants', methods: ['GET'])]
         public function viewParticipants(int $id, EvenementRepository $evenementRepository, EntityManagerInterface $entityManager): Response
         {
