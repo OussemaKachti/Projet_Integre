@@ -61,7 +61,7 @@ class Competition
     private ?int $points = null;
     
     #[ORM\Column(type: "string", length: 20, options: ["default" => "pending"])]
-    #[Assert\Choice(choices: ["pending", "activated", "expired"], message: "Invalid status.")] // ✅ Updated choices
+    #[Assert\Choice(choices: ["pending", "activated", "desactivated", "expired"], message: "Invalid status.")] // ✅ Updated choices
     private string $status = "pending";
 
 

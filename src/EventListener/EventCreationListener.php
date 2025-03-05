@@ -3,57 +3,88 @@
 namespace App\EventListener;
 
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
-use Symfony\Component\HttpKernel\Event\TerminateEvent;
-use Symfony\Component\HttpKernel\KernelEvents;
+
+use Doctrine\ORM\Event\LifecycleEventArgs;
+use Doctrine\ORM\Mapping as ORM;
+use Psr\Log\LoggerInterface;
+
 use App\Entity\Evenement;
 use App\Repository\MissionProgressRepository;
+use App\Repository\CompetitionRepository;
 use App\Service\MissionCompletionChecker;
 use Doctrine\ORM\EntityManagerInterface;
-
+use App\Enum\GoalTypeEnum;
 class EventCreationListener
 {
     private MissionProgressRepository $progressRepository;
-    private MissionCompletionChecker $missionChecker;
+    private CompetitionRepository $competitionRepository;
     private EntityManagerInterface $entityManager;
+    private LoggerInterface $logger;
 
     public function __construct(
         MissionProgressRepository $progressRepository,
-        MissionCompletionChecker $missionChecker,
-        EntityManagerInterface $entityManager
+        CompetitionRepository $competitionRepository,
+        EntityManagerInterface $entityManager,
+        LoggerInterface $logger
     ) {
         $this->progressRepository = $progressRepository;
-        $this->missionChecker = $missionChecker;
+        $this->competitionRepository = $competitionRepository;
         $this->entityManager = $entityManager;
+        $this->logger = $logger;
     }
 
-    public function onKernelTerminate(TerminateEvent $event)
+    public function postPersist(LifecycleEventArgs $args): void
     {
-        // Get the newly created event from the request
-        $request = $event->getRequest();
-        $eventEntity = $request->attributes->get('event');
+        $event = $args->getObject();
 
-        if (!$eventEntity instanceof Event) {
-            return; // Not an event, ignore
+        // Only proceed if the entity is an Evenement
+        if (!$event instanceof Evenement) {
+            return;
+        }
+        $this->logger->info('EventCreationListener triggered for event: ' . $event->getId());
+        $club = $event->getClub();
+
+        if (!$club) {
+            $this->logger->warning('Event has no associated club.');
+            return; // No club, nothing to update
         }
 
-        $club = $eventEntity->getClub(); // Assuming the Event entity has a club relation
-
-        // Get the active mission progress for this club
-        $progress = $this->progressRepository->findOneBy([
-            'club' => $club,
-            'isCompleted' => false
+        // Find all activated competitions for this club with EVENT_COUNT goal type
+        $competitions = $this->competitionRepository->findBy([
+            'status' => 'activated',
+            'goalType' => GoalTypeEnum::EVENT_COUNT, // Ensure this matches your enum
         ]);
 
-        if ($progress) {
-            // Increase progress by 1
-            $progress->setProgress($progress->getProgress() + 1);
+        foreach ($competitions as $competition) {
+            // Find the MissionProgress for this club and competition
+            $progress = $this->progressRepository->findOneBy([
+                'club' => $club,
+                'competition' => $competition,
+                'isCompleted' => false,
+            ]);
 
-            // Persist update
-            $this->entityManager->persist($progress);
-            $this->entityManager->flush();
+            if ($progress) {
+                // Increment progress
+                $progress->setProgress($progress->getProgress() + 1);
 
-            // Check if mission is completed
-            $this->missionChecker->checkAndUpdateMissionStatus();
+                // Persist changes
+                $this->entityManager->persist($progress);
+
+                // Check if the mission is completed
+                if ($progress->getProgress() >= $competition->getGoal()) {
+                    $progress->setIsCompleted(true);
+                    $club->setPoints($club->getPoints() + $competition->getPoints());
+                    $this->entityManager->persist($club);
+                }
+            }
+
+        
         }
+
+
+        // Flush changes to the database
+        $this->entityManager->flush();
+
     }
+
 }

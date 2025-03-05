@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Competition;
+use App\Entity\Club;
 use App\Form\CompetitionType;
 use App\Form\EditCompetitionType;
 use App\Repository\CompetitionRepository;
@@ -13,6 +14,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\MissionCompletionChecker;
 use App\Repository\ClubRepository;
+use App\Repository\MissionProgressRepository;
+use App\Entity\MissionProgress;
+use App\Enum\GoalTypeEnum;
+
+
 #[Route('/competition')]
 class CompetitionController extends AbstractController
 {
@@ -48,6 +54,10 @@ class CompetitionController extends AbstractController
             $entityManager->persist($competition);
             $entityManager->flush();
 
+             // Only create MissionProgress if competition is activated
+        if ($competition->getStatus() === 'activated') {
+            $this->initializeMissionProgress($competition,$entityManager);
+        }
             return $this->redirectToRoute('app_competition_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -74,6 +84,11 @@ class CompetitionController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
             $this->addFlash('success', 'Mission updated successfully!');
+            
+            // Re-activate MissionProgress if status changed to activated
+            if ($competition->getStatus() === 'activated') {
+                $this->initializeMissionProgress($competition, $entityManager);
+            }
 
             return $this->redirectToRoute('app_competition_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -104,37 +119,64 @@ class CompetitionController extends AbstractController
         return new Response("Competition statuses updated successfully!");
     }
 
-    public function activateCompetition(
-        Competition $competition, 
-        EntityManagerInterface $entityManager, 
-        ClubRepository $clubRepository,
-        MissionProgressRepository $missionProgressRepository
-    ): Response {
-        if ($competition->getStatus() !== 'activated') {
-            $competition->setStatus('activated');
-            $clubs = $clubRepository->findAll();
-    
-            foreach ($clubs as $club) {
-                $progress = $missionProgressRepository->findOneBy([
-                    'club' => $club,
-                    'competition' => $competition
-                ]);
-    
-                if (!$progress) {
-                    $progress = new MissionProgress();
-                    $progress->setClub($club);
-                    $progress->setCompetition($competition);
-                    $entityManager->persist($progress);
-                } else {
-                    $progress->setProgress(0); // ✅ Reset progress if reactivating
-                }
-            }
-    
-            $entityManager->flush();
-        }
-    
-        return $this->redirectToRoute('app_competition_index');
-    }
+   // Method to create MissionProgress for all clubs
+   public function initializeMissionProgress(Competition $competition, EntityManagerInterface $entityManager): void
+   {
+    $clubRepository = $entityManager->getRepository(Club::class);
+    $missionProgressRepository = $entityManager->getRepository(MissionProgress::class);
+       $clubs = $clubRepository->findAll();
+
+       foreach ($clubs as $club) {
+           $existingProgress = $missionProgressRepository->findOneBy([
+               'competition' => $competition,
+               'club' => $club
+           ]);
+
+           if (!$existingProgress) {
+               $progress = new MissionProgress();
+               $progress->setCompetition($competition);
+               $progress->setClub($club);
+               $progress->setProgress(0, $entityManager);
+               $progress->setIsCompleted(false);
+               $entityManager->persist($progress);
+           }
+       }
+
+       $entityManager->flush();
+   }
+
+   // Activate competition and create missing MissionProgress entries
+   public function activateCompetition(
+       Competition $competition, 
+       EntityManagerInterface $entityManager, 
+       ClubRepository $clubRepository,
+       MissionProgressRepository $missionProgressRepository
+   ): Response {
+       if ($competition->getStatus() !== 'activated') {
+           $competition->setStatus('activated');
+           $clubs = $clubRepository->findAll();
+   
+           foreach ($clubs as $club) {
+               $progress = $missionProgressRepository->findOneBy([
+                   'club' => $club,
+                   'competition' => $competition
+               ]);
+   
+               if (!$progress) {
+                   $progress = new MissionProgress();
+                   $progress->setClub($club);
+                   $progress->setCompetition($competition);
+                   $entityManager->persist($progress);
+               } else {
+                   $progress->setProgress(0); // Reset progress if reactivating
+               }
+           }
+   
+           $entityManager->flush();
+       }
+   
+       return $this->redirectToRoute('app_competition_index');
+   }
     
 
 #[Route('/admin/check-expired-competitions', name: 'check_expired_competitions')]
@@ -151,6 +193,14 @@ public function checkExpiredCompetitions(EntityManagerInterface $entityManager, 
 
     foreach ($expiredCompetitions as $competition) {
         $competition->setStatus('expired'); // ✅ Mark as expired
+
+        // Reset progress for all clubs in this competition
+        foreach ($competition->getMissionProgresses() as $progress) {
+            $progress->setProgress(0);
+            $progress->setIsCompleted(false);
+            $entityManager->persist($progress);
+        }
+
     }
 
     $entityManager->flush();

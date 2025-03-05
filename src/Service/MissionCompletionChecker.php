@@ -24,15 +24,13 @@ class MissionCompletionChecker
 
     public function checkAndUpdateMissionStatus(): void
     {
-        $competitions = $this->competitionRepository->findAll();
+        // ✅ Get all activated competitions
+        $competitions = $this->competitionRepository->findBy(['status' => 'activated']);
 
         foreach ($competitions as $competition) {
-            // 🔴 **NEW: Skip inactive competitions**
-            if ($competition->getStatus() !== 'activated') {
-                continue; 
-            }
+            // Get all progress entries for this competition
+            $progressEntries = $this->progressRepository->findBy(['competition' => $competition]);
 
-            $progressEntries = $competition->getMissionProgresses();
             $updated = false; // ✅ Track if we need to flush
 
             foreach ($progressEntries as $progress) {
@@ -51,7 +49,6 @@ class MissionCompletionChecker
                     $updated = true; // ✅ We made changes, so we need to flush
 
                     // ✅ Log the update (optional)
-                    $this->logger->info("Club {$club->getId()} completed competition {$competition->getId()} and received {$competition->getPoints()} points.");
                 }
             }
 

@@ -23,6 +23,24 @@
                                 <div class="card-body">
                                     <h5 class="card-title">{{ mission.nomComp }}</h5>
                                     <p class="card-text">{{ mission.descComp }}</p>
+
+                                    <!-- Display additional info -->
+                                    <p><strong>Goal:</strong> {{ mission.goal }} </p>
+                                    <p><strong>Goal Type:</strong> 
+                                    {% if mission.goalType.value == 'EVENT_COUNT' %}
+                                        Event Count
+                                    {% elseif mission.goalType.value == 'EVENT_LIKES' %}
+                                        Event Likes
+                                    {% elseif mission.goalType.value == 'MEMBER_COUNT' %}
+                                        Member Count
+                                    {% else %}
+                                        Unknown
+                                    {% endif %}
+                                    </p>
+
+                                    <p><strong>Status:</strong> <span class="badge {% if mission.status == 'activated' %}badge-success{% else %}badge-secondary{% endif %}">{{ mission.status }}</span></p>
+
+
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="badge badge-success">{{ mission.points }} Points</span>
                                         <div>
@@ -70,6 +88,11 @@
                     {{ form_row(form.startDate, {'attr': {'class': 'form-control'}}) }}
                     {{ form_row(form.endDate, {'attr': {'class': 'form-control'}}) }}
                     {{ form_row(form.saison, {'attr': {'class': 'form-select'}}) }}
+
+                    <!-- New Fields -->
+                    {{ form_row(form.goal, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_row(form.goalType, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_row(form.status, {'attr': {'class': 'form-select'}}) }}
 
                     {{ form_row(form._token, {'attr': {'class': 'd-none'}}) }} {# Ensures CSRF token is included #}
                     <button type="submit" class="btn btn-primary w-100">Create Mission</button>
