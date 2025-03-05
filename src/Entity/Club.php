@@ -43,7 +43,8 @@ class Club
     #[ORM\OneToMany(targetEntity: ParticipationMembre::class, mappedBy: "club", cascade: ["persist", "remove"])]
     private Collection $participations;
     #[ORM\ManyToMany(targetEntity: Competition::class, mappedBy: "clubs")]
-private Collection $competitions;
+    private Collection $competitions;
+    
 
 
     #[ORM\OneToMany(mappedBy: "club", targetEntity: MissionProgress::class, cascade: ["persist", "remove"])]
@@ -63,6 +64,7 @@ private Collection $competitions;
         $this->produits = new ArrayCollection();
         $this->participations = new ArrayCollection();
         $this->missionProgresses = new ArrayCollection();
+        $this->competitions = new ArrayCollection();
 
 
     }
@@ -160,16 +162,4 @@ private Collection $competitions;
     {
         return $this->participations;
     }
-    public function getPresident(): ?User
-    {
-        return $this->president;
-    }
-    
-    public function setPresident(User $president): static
-    {
-        $this->president = $president;
-        return $this;
-    }
-
-
 }

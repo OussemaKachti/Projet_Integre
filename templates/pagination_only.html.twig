@@ -1,7 +1,15 @@
 {# In pagination_only.html.twig #}
-{{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig', {}, {
-    'q': searchQuery,
-    'role': roleFilter,
-    'status': statusFilter,
-    'verification': verificationFilter
-}) }}
+{% if pagination.pageCount > 0 %}
+    {{ knp_pagination_render(pagination, 'custom_template.html.twig', {}, {
+        'q': searchQuery|default(''),
+        'role': roleFilter|default(''),
+        'status': statusFilter|default(''),
+        'verification': verificationFilter|default(''),
+        'searchType': searchType|default('contains'),
+        'searchField': searchField|default('all'),
+        'dateRange': dateRange|default(''),
+        'dateFrom': dateFrom|default(''),
+        'dateTo': dateTo|default(''),
+        'activity': activityFilter|default('')
+    }) }}
+{% endif %}

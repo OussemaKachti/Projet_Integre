@@ -53,7 +53,7 @@
 								<img src=" {{asset('../../back_assets/images/faces/user.png')}}" alt="profile"/>
 							</a>
 							<div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
-								<a class="dropdown-item" href="{{path('app_profile')}}">
+								<a class="dropdown-item" href="{{path('app_admin_profile')}}">
 									<i class="ti-settings text-primary"></i>
 									Profile
 								</a>
@@ -73,13 +73,21 @@
 			<div
 				class="container-fluid page-body-wrapper">
 				<!-- partial:../../partials/_sidebar.html -->
-				<nav class="sidebar sidebar-offcanvas" id="sidebar">
-					<ul class="nav">
+				<nav class="sidebar sidebar-offcanvas" id="sidebar" style="width: 260px !important; min-width: 260px !important;">
+					<ul
+						class="nav">
+						{# <li class="nav-item">
+																																																																																																													<a class="nav-link" href={{ path('app_admin_dashboard') }}>
+																																																																																																														<i class="icon-columns menu-icon"></i>
+																																																																																																														<span class="menu-title">User</span>
+																																																																																																													</a>
+																																																																																																												</li> #}
 						<li class="nav-item">
 							<a class="nav-link" href={{ path('app_admin_dashboard') }}>
-								<i class="icon-columns menu-icon"></i>
+								<i class="icon-head menu-icon"></i>
 								<span class="menu-title">User</span>
 							</a>
+
 						</li>
 						 <li class="nav-item">
               <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic" >
@@ -241,13 +249,13 @@ return;
 const searchForm = document.createElement('div');
 searchForm.className = 'mb-3';
 searchForm.innerHTML = `
-            <div class="input-group">
-                <input type="text" id="custom-search-input" class="form-control" placeholder="Search users...">
-                <button class="btn btn-primary" type="button" id="search-button">
-                    <i class="mdi mdi-magnify"></i>
-                </button>
-            </div>
-        `;
+															<div class="input-group">
+																<input type="text" id="custom-search-input" class="form-control" placeholder="Search users...">
+																<button class="btn btn-primary" type="button" id="search-button">
+																	<i class="mdi mdi-magnify"></i>
+																</button>
+															</div>
+														`;
 
 tableContainer.parentNode.insertBefore(searchForm, tableContainer);
 
@@ -322,33 +330,89 @@ searchIcon.className = 'icon-search';
 					</script>
 				</nav>
 
+				<!-- main content area -->
+				<br>
+				<br>
+				<br>
+				<div class="main-panel" style="flex: 1; width: auto !important; margin-left: 0 !important;">
+					<div class="content-wrapper" style="padding: 70px 20px 0 20px !important;"> {% block body %}{% endblock %}
+						</div>
 
-				<main>
-					{% block body %}{% endblock %}
-				</main>
+						<footer class="footer">
+							<div class="d-sm-flex justify-content-center justify-content-sm-between">
+								<span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2023. Premium
+									<a href="https://www.bootstrapdash.com/" target="_blank">Bootstrap admin template</a>
+									from BootstrapDash. All rights reserved.</span>
+								<span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Hand-crafted & made with
+									<i class="ti-heart text-danger ms-1"></i>
+								</span>
+							</div>
+						</footer>
+					</div>
+				</div>
+			</div>
 
-				
-
-				<!-- container-scroller -->
-				<!-- plugins:js --><script src=" {{asset('../../back_assets/vendors/js/vendor.bundle.base.js')}}"> </script>
-				<!-- endinject -->
-				<!-- Plugin js for this page -->
-				<!-- End plugin js for this page -->
-				<!-- inject:js --><script src=" {{asset('../../back_assets/js/off-canvas.js')}}"> </script>
-				<script src=" {{asset('../../back_assets/js/template.js')}}"></script>
-				<script src=" {{asset('../../back_assets/js/settings.js')}}"></script>
-				<script src=" {{asset('../../back_assets/js/todolist.js')}}"></script>
-				<script src=" {{asset('../../back_assets/js/chart.js')}}"></script>
-				<script src=" {{asset('../../back_assets/vendors/chart.js/chart.umd.js')}}"></script>
-				<script src="{{ asset('back_assets/vendors/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-
-
-				<!-- endinject -->
-			<!-- Custom js for this page-->
-				<!-- End custom js for this page-->
-			</body>
 			<style>
+				.container-fluid.page-body-wrapper {
+					display: flex !important;
+					width: 100% !important;
+					padding: 0 !important;
+					margin: 0 !important;
+				}
 
+				.sidebar {
+					width: 180px !important;
+					min-width: 180px !important;
+					position: fixed;
+					top: 55px !important; /* Ajout de la marge top pour commencer après la navbar */
+					height: calc(100vh - 50px) !important; /* Ajustement de la hauteur */
+					overflow-y: auto !important; /* Pour permettre le défilement si nécessaire */
+					left: 0;
+
+				}
+
+				.main-panel {
+					margin-left: 280px !important; /* Augmenté de 260px à 280px pour plus d'espace */
+					width: calc(100% - 300px) !important; /* Ajusté pour le nouveau margin */
+				}
+
+				.content-wrapper {
+					padding: 40px 40px 0 !important; /* Augmenté le padding des côtés */
+					width: 100% !important;
+				}
+
+				/* Reste des styles inchangés */
+				.sidebar .nav .nav-item .nav-link {
+					color: #6C7383 !important;
+					background: transparent !important;
+				}
+
+				.sidebar .nav .nav-item.active .nav-link {
+					background: #4B49AC !important;
+					color: #ffffff !important;
+				}
+
+				.sidebar .nav.sub-menu {
+					padding-left: 1.5rem !important;
+					background: transparent !important;
+				}
+
+				/* Responsive */
+				@media(max-width: 991px) {
+					.main-panel {
+						margin-left: 0 !important;
+						width: 100% !important;
+					}
+
+					.sidebar {
+						top: 70px !important;
+						z-index: 999;
+					}
+
+					.content-wrapper {
+						padding: 40px 20px 0 !important; /* Padding réduit en mode mobile */
+					}
+				}
 				.table-striped th:nth-child(2), /* Colonne "Question" */
 				.table-striped td:nth-child(2),
 				.table-striped th:nth-child(3), /* Colonne "Options" */
@@ -465,6 +529,23 @@ searchIcon.className = 'icon-search';
 					transform: scale(0.9);
 				}
 			</style>
-		</html>
-	</body>
-</html>
+
+			<!-- plugins:js -->
+			<script src=" {{asset('../../back_assets/vendors/js/vendor.bundle.base.js')}}"></script>
+			<!-- endinject -->
+			<!-- Plugin js for this page -->
+			<!-- End plugin js for this page -->
+			<!-- inject:js --><script src=" {{asset('../../back_assets/js/off-canvas.js')}}"> </script>
+			<script src=" {{asset('../../back_assets/js/template.js')}}"></script>
+			<script src=" {{asset('../../back_assets/js/settings.js')}}"></script>
+			<script src=" {{asset('../../back_assets/js/todolist.js')}}"></script>
+			<script src=" {{asset('../../back_assets/js/chart.js')}}"></script>
+			<script src=" {{asset('../../back_assets/vendors/chart.js/chart.umd.js')}}"></script>
+				<script src="{{ asset('back_assets/vendors/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+
+			<!-- endinject -->
+		<!-- Custom js for this page-->
+			<!-- End custom js for this page-->
+		</body>
+	</html>

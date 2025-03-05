@@ -65,6 +65,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         message: 'Invalid phone number'
     )]
     private ?string $tel = null;
+    
+    // Profile picture field
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $profilePicture = null;
 
     // account disabling : 
     public const STATUS_ACTIVE = 'active';
@@ -78,8 +82,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 64, nullable: true)]
     private ?string $confirmationToken = null;
 
+
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $confirmationTokenExpiresAt = null;
+    #[ORM\Column(type: 'datetime_immutable',nullable: true)]
+    private \DateTimeImmutable $createdAt;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $lastLoginAt = null;
 
 
 
@@ -101,18 +111,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, ParticipationEvent>
      */
-    #[ORM\OneToMany(targetEntity: ParticipationEvent::class, mappedBy: 'user_id')]
-    private Collection $no;
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: ParticipationEvent::class)]
+    private Collection $participationEvents;
 
-   
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Commande::class)]
+    private Collection $commandes;
+
+
 
     public function __construct()
     {
         $this->participations = new ArrayCollection();
         $this->commentaires = new ArrayCollection();
         $this->likes = new ArrayCollection();
-        $this->no = new ArrayCollection();
         $this->sondages = new ArrayCollection();
+        $this->commandes = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->participationEvents = new ArrayCollection();
     }
     public function getId(): ?int
     {
@@ -177,6 +192,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->tel = $tel;
         return $this;
     }
+    
+    public function getProfilePicture(): ?string
+    {
+        return $this->profilePicture;
+    }
+
+    public function setProfilePicture(?string $profilePicture): static
+    {
+        $this->profilePicture = $profilePicture;
+        return $this;
+    }
 
     public function getRole(): RoleEnum
     {
@@ -202,6 +228,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getLikes(): Collection
     {
         return $this->likes;
+    }
+    /**
+     * @return Collection|Commande[]
+     */
+    public function getCommandes(): Collection
+    {
+        return $this->commandes;
+    }
+
+    public function addCommande(Commande $commande): self
+    {
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes[] = $commande;
+            $commande->setUser($this); // Lien inverse
+        }
+
+        return $this;
+    }
+
+    public function removeCommande(Commande $commande): self
+    {
+        if ($this->commandes->removeElement($commande)) {
+            // Lien inverse
+            if ($commande->getUser() === $this) {
+                $commande->setUser(null);
+            }
+        }
+
+        return $this;
     }
     public function getFullName()
     {
@@ -246,9 +301,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->role === RoleEnum::ADMINISTRATEUR;
     }
     public function __toString(): string
-{
-    return $this->getFullName();
-}
+    {
+        return $this->getFullName();
+    }
     //account dfisabling : 
     public function getStatus(): string
     {
@@ -311,31 +366,51 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @return Collection<int, ParticipationEvent>
      */
-    public function getNo(): Collection
+    public function getParticipationEvents(): Collection
     {
-        return $this->no;
+        return $this->participationEvents;
     }
-    //IMEN //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // public function addNo(ParticipationEvent $no): static
-    // {
-    //     if (!$this->no->contains($no)) {
-    //         $this->no->add($no);
-    //         $no->setId($this);
-    //     }
+    public function addParticipationEvent(ParticipationEvent $participationEvent): self
+    {
+        if (!$this->participationEvents->contains($participationEvent)) {
+            $this->participationEvents->add($participationEvent);
+            $participationEvent->setUser($this);
+        }
+        return $this;
+    }
 
-    //     return $this;
-    // }
+    public function removeParticipationEvent(ParticipationEvent $participationEvent): self
+    {
+        if ($this->participationEvents->removeElement($participationEvent)) {
+            if ($participationEvent->getUser() === $this) {
+                $participationEvent->setUser(null);
+            }
+        }
+        return $this;
+    }
 
-    // public function removeNo(ParticipationEvent $no): static
-    // {
-    //     if ($this->no->removeElement($no)) {
-    //         // set the owning side to null (unless already changed)
-    //         if ($no->getId() === $this) {
-    //             $no->setId(null);
-    //         }
-    //     }
-
-    //     return $this;
-    // }
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+    public function getLastLoginAt(): ?\DateTime
+    {
+        return $this->lastLoginAt;
+    }
+    public function setLastLoginAt(?\DateTime $lastLoginAt): self
+    {
+        $this->lastLoginAt = $lastLoginAt;
+        return $this;
+    }
+    public function updateLastLogin(): self
+    {
+        $this->lastLoginAt = new \DateTime();
+        return $this;
+    }
 }

@@ -1,0 +1,136 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ProduitController!{% endblock %}
+
+{% block body %}
+         <!-- breadcrumb area start -->
+         <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="https://img.freepik.com/premium-photo/background-shopping_931878-79292.jpg">
+            <div class="container">
+               <div class="row">
+                  <div class="col-xxl-12">
+                     <div class="breadcrumb__content text-center p-relative z-index-1">
+                        <h3 class="breadcrumb__title">Our Products</h3>
+                        
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+         <!-- breadcrumb area end -->
+
+
+         <!-- course area start -->
+         <section class="course__area pt-115 pb-90">
+            <div class="container">
+                <div class="row">
+                
+                    <!-- Colonne gauche (Image du produit) -->
+                    <div class="col-lg-6 d-flex justify-content-center">
+                        <div class="course__img w-img mb-30" style="max-width: 100%;">
+                             <a href="{{ path('app_produit_show', {'id': produit.id})}}">
+                        <img src="{{ asset('uploads/' ~ produit.imgProd) }}" alt="">
+                    </a>
+                        </div>
+                    </div>
+                    <!-- Colonne droite (Formulaire) -->
+                    <div class="col-lg-6">
+                        <div class="product-info p-5 border rounded shadow-lg bg-light">
+                            <h3 class="text-primary">{{ produit.nomProd }}</h3>
+                            <p class="mt-3"><strong>Description :</strong>{{ produit.descProd }} </p>
+                            <p><strong>Prix :</strong> <span id="product-price" class="text-danger font-weight-bold">{{ produit.prix }} TND</span></p>
+        
+                            <!-- Sélecteur de quantité -->
+                            <div class="quantity-box d-flex align-items-center mb-4">
+                                <button class="btn btn-outline-secondary" id="decrease"><a href="{{ path('cart_decrease', {'id': produit.id }) }}">-</a></button>
+                                <input type="text" id="quantity" class="form-control text-center mx-3" value="1" min="1" readonly style="width: 60px;">
+                                <button class="btn btn-outline-secondary" id="increase"><a href="{{ path('cart_increase', {'id': produit.id }) }}">+</a></button>
+                            </div>
+        
+                            <!-- Bouton de commande -->
+                            
+                            <a class="btn btn-success" href="{{ path('cart_add', {'id': produit.id}) }}">Order</a>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </section>
+        
+      
+        
+        
+        
+     
+     <!-- Produits liés -->
+     
+  
+  <!-- Produits liés -->
+  <section class="related-products pt-30">
+      <div class="container">
+          <div class="section__title-wrapper mb-20 text-center">
+              <h2 class="section__title">related products</h2>
+          </div>
+          <div class="row">
+              
+              <div class="col-md-4">
+                  <div class="course__item-2 white-bg mb-20 fix">
+                      <div class="course__thumb-2 w-img fix">
+                          <a href="course-details2.html">
+                              <img src="https://th.bing.com/th/id/R.0d8f357219aadc2af81cee6c61e0bcf7?rik=peyE1WHucKOfSQ&pid=ImgRaw&r=0" alt="">
+                          </a>
+                      </div>
+                      <div class="course__content-2 text-center">
+                          <div class="course__tag-2">
+                              <a href="#">HOODIE</a>
+                          </div>
+                          <div class="course__price-2">
+                              <span>80TND</span>
+                          </div>
+                          <h3 class="course__title-2">
+                              <a href="course-details2.html">Enactus black Hoodie</a>
+                          </h3>
+                          <div class="course__bottom-2 d-flex align-items-center justify-content-between">
+                           <div class="course__action">
+                              <ul>
+                                 <li>
+                                    <div class="course__action-item d-flex align-items-center">
+                                       <div class="course__action-icon mr-5">
+                                          
+                                       </div>
+                                       
+                                    </div>
+                                 </li>
+                                 <li>
+                                    <div class="course__action-item d-flex align-items-center">
+                                       <div class="course__action-icon mr-5">
+                                          
+                                       </div>
+                                      
+                                    </div>
+                                 </li>
+                                 <li>
+                                    <div class="course__bottom d-sm-flex align-items-center justify-content-between">
+                                       <div class="course__tutor">
+                                          <a href="#"><img src="https://th.bing.com/th/id/R.5bc4766e1952de3c211b759326797e94?rik=J1cfDDY834mH2A&pid=ImgRaw&r=0" alt="">ENACTUS</a>
+                                       </div>
+                                    <div class="course__lesson">
+                                       <a href="#"><svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                          <path d="M1 12.2V4.49999C1 1.7 1.70588 1 4.52941 1H9.47059C12.2941 1 13 1.7 13 4.49999V11.5C13 11.598 13 11.696 12.9929 11.794" stroke="#49535B" stroke-linecap="round" stroke-linejoin="round"/>
+                                          <path d="M3.01176 10.0999H13V12.5498C13 13.9008 11.8918 14.9998 10.5294 14.9998H3.47059C2.10824 14.9998 1 13.9008 1 12.5498V12.0948C1 10.9959 1.90353 10.0999 3.01176 10.0999Z" stroke="#49535B" stroke-linecap="round" stroke-linejoin="round"/>
+                                          <path d="M4.17647 4.5H9.82353" stroke="#49535B" stroke-linecap="round" stroke-linejoin="round"/>
+                                          <path d="M4.17647 6.94995H7.70589" stroke="#49535B" stroke-linecap="round" stroke-linejoin="round"/>
+                                          </svg>
+                                          12 
+                                       </a>
+                                    </div>
+                                 </li>
+                              </ul>
+                           </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+      
+  </section>
+{% endblock %}

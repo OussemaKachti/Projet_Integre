@@ -81,4 +81,15 @@ public function findById(int $id): ?Club
         ->getQuery()
         ->getOneOrNullResult();
 }
+
+    public function findMostActiveClub(): ?Club
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.sondages', 's')
+            ->groupBy('c.id')
+            ->orderBy('COUNT(s.id)', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

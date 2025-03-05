@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Produit{% endblock %}
+
+{% block body %}
+    <!-- breadcrumb area start -->
+    <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="https://img.freepik.com/premium-photo/background-shopping_931878-79292.jpg">
+        <div class="container">
+            <div class="row">
+                <div class="col-xxl-12">
+                    <div class="breadcrumb__content text-center p-relative z-index-1">
+                        <h3 class="breadcrumb__title">Our products</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- breadcrumb area end -->
+
+    <!-- course area start -->
+    <section class="course__area pt-115 pb-90 grey-bg-3">
+        <div class="container">
+            <div class="course__tab-inner white-bg mb-50">
+                <div class="row align-items-center">
+                    <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6">
+                        <div class="course__tab-wrapper d-flex align-items-center">
+                            <div class="course__tab-btn">
+                                <ul class="nav nav-tabs" id="courseTab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="grid-tab" data-bs-toggle="tab" data-bs-target="#grid" type="button" role="tab" aria-controls="grid" aria-selected="true">
+                                            <svg class="grid" viewBox="0 0 24 24">
+                                                <rect x="3" y="3" class="st0" width="7" height="7"/>
+                                                <rect x="14" y="3" class="st0" width="7" height="7"/>
+                                                <rect x="14" y="14" class="st0" width="7" height="7"/>
+                                                <rect x="3" y="14" class="st0" width="7" height="7"/>
+                                            </svg>
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link list" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button" role="tab" aria-controls="list" aria-selected="false">
+                                            <svg class="list" viewBox="0 0 512 512">
+                                                <g id="Layer_2_1_">
+                                                    <path class="st0" d="M448,69H192c-17.7,0-32,13.9-32,31s14.3,31,32,31h256c17.7,0,32-13.9,32-31S465.7,69,448,69z"/>
+                                                    <circle class="st0" cx="64" cy="100" r="31"/>
+                                                    <path class="st0" d="M448,225H192c-17.7,0-32,13.9-32,31s14.3,31,32,31h256c17.7,0,32-13.9,32-31S465.7,225,448,225z"/>
+                                                    <circle class="st0" cx="64" cy="256" r="31"/>
+                                                    <path class="st0" d="M448,381H192c-17.7,0-32,13.9-32,31s14.3,31,32,31h256c17.7,0,32-13.9,32-31S465.7,381,448,381z"/>
+                                                    <circle class="st0" cx="64" cy="412" r="31"/>
+                                                </g>
+                                            </svg>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="course__view">
+                                <h4>Showing product details</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xxl-6 col-xl-6 col-lg-6 col-md-6 col-sm-6">
+                        <div class="course__sort d-flex justify-content-sm-end">
+                            <div class="course__sort-inner">
+                                <select class="custom-select" onchange="if(this.value) window.location.href=this.value">
+                                    <option value="">{{ 'Choose a club' }}</option>
+                                    {% for club in clubs %}
+                                        <option value="{{ path('app_produits_par_club', { id: club.id }) }}">{{ club.nomC }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Affichage du produit unique -->
+            <div class="row">
+                <div class="col-xxl-12">
+                    <div class="course__item white-bg transition-3 mb-30">
+                        <div class="course__thumb w-img fix">
+                            <img src="https://th.bing.com/th/id/OIP.jzNV4d-xQqYp6jo_m3ScUAHaHa?rs=1&pid=ImgDetMain" alt="">
+                        </div>
+                        <div class="course__content p-relative">
+                            <div class="course__price">
+                                <span>{{ produit.prix }} TND</span>
+                            </div>
+                            <div class="course__tag">
+                                <a href="#">{{ produit.club.nomC }}</a>
+                            </div>
+                            <h3 class="course__title">
+                                {{ produit.descProd }}
+                            </h3>
+                            <p>{{ produit.descProd }}</p>
+                            <div class="course__bottom d-sm-flex align-items-center justify-content-between">
+                                <div class="course__tutor">
+                                    <a href="#">
+                                        <img src="https://logos-world.net/wp-content/uploads/2023/08/AIESEC-Logo.png" alt="">
+                                        {{ produit.club.nomC }}
+                                    </a>
+                                </div>
+                                <div class="course__lesson">
+                                    <a href="#">
+                                        <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M1 12.2V4.49999C1 1.7 1.70588 1 4.52941 1H9.47059C12.2941 1 13 1.7 13 4.49999V11.5C13 11.598 13 11.696 12.9929 11.794" stroke="#49535B" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M3.01176 10.0999H13V12.5498C13 13.9008 11.8918 14.9998 10.5294 14.9998H3.47059C2.10824 14.9998 1 13.9008 1 12.5498V12.0948C1 10.9959 1.90353 10.0999 3.01176 10.0999Z" stroke="#49535B" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M4.17647 4.5H9.82353" stroke="#49535B" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M4.17647 6.94995H7.70589" stroke="#49535B" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        {{ produit.quantity }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination (si nécessaire) -->
+            <div class="row">
+                <div class="col-xxl-12">
+                    <div class="basic-pagination">
+                        <nav>
+                            <ul>
+                                <li>
+                                    <a href="course-v1.html">
+                                        <i class="far fa-angle-left"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="course-v1.html">1</a>
+                                </li>
+                                <li>
+                                    <span class="current">2</span>
+                                </li>
+                                <li>
+                                    <a href="course-v1.html">3</a>
+                                </li>
+                                <li>
+                                    <a href="course-v1.html">
+                                        <i class="far fa-angle-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- course area end -->
+{% endblock %}

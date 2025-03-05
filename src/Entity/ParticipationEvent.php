@@ -14,9 +14,7 @@ class ParticipationEvent
     #[ORM\Column]
     private ?int $id = null;
 
-   
-
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'participationEvents')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 

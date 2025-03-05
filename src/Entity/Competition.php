@@ -62,10 +62,14 @@ class Competition
     #[ORM\Column(type: "string", length: 20)]
     #[Assert\Choice(choices: ["pending", "in_progress", "completed"], message: "Invalid status.")]
     private ?string $status = "pending";
+
+    #[ORM\ManyToMany(targetEntity: Club::class, inversedBy: "competitions")]
+    private Collection $clubs;
     
 
     public function __construct() {
         $this->missionProgresses = new ArrayCollection();
+        $this->clubs = new ArrayCollection();
 
     }
 
