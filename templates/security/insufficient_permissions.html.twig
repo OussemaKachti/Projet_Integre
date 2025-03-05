@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Access Denied - Insufficient Permissions{% endblock %}
+
+{% block body %}
+<section class="error__area pt-120 pb-120">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xxl-6 col-xl-6 col-lg-8">
+                <div class="error__wrapper text-center">
+                    <div class="error__thumb mb-45">
+                        <img src="{{ asset('front_assets/img/error/error.png') }}" alt="error image">
+                    </div>
+                    <div class="error__content">
+                        <h3 class="error__title">Access Denied</h3>
+                        <p>You don't have sufficient permissions to access this page.</p>
+                        
+                        {% if app.user %}
+                            <p class="mt-3">You are logged in as: <strong>{{ app.user.email }}</strong></p>
+                            <p>Your role: <strong>{{ app.user.role.value }}</strong></p>
+                        {% endif %}
+                        
+                        <div class="error__btn">
+                            <a href="{{ path('app_home') }}" class="tp-btn">Back to Home</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,20 +1,55 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ParticipationMembreController!{% endblock %}
-
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+<div class="container mt-5">
+    <h1 class="text-center mb-4 text-primary fw-bold">📋 Members list</h1>
+    <!-- Barre de recherche améliorée -->
+                        <div class="search-bar-container d-flex justify-content-center">
+                            <form action="{{ path('index2') }}" method="get" class="d-flex align-items-center search-bar">
+    <input type="text" name="query" class="form-control search-input" placeholder="🔍 Rechercher un club..." value="{{ keyword }}">
+    <button type="submit" class="btn btn-primary search-btn">
+        <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+</form>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+                        </div>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/OUSSEMA-KACHTI/OneDrive/Bureau/piApp/src/Controller/ParticipationMembreController.php</code></li>
-        <li>Your template at <code>C:/Users/OUSSEMA-KACHTI/OneDrive/Bureau/piApp/templates/participation_membre/index.html.twig</code></li>
-    </ul>
+    {% if pagination is empty %}
+        <div class="alert alert-warning text-center fw-bold">🚨 Aucun participation_membres pour le moment.</div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped table-bordered shadow-lg rounded">
+                <thead class="bg-primary text-white text-center">
+                    <tr>
+                        <th class="py-3">👤 Nom</th>
+                        <th class="py-3">📧 Email</th>
+                        <th class="py-3">📞 Phone Number</th>
+                        <th class="py-3">🏛 Club</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">
+                    {% for participation_membre in pagination %}
+                        <tr class="align-middle">
+                            <td class="fw-bold">{{ participation_membre.user.nom }}</td>
+                            <td>{{ participation_membre.user.email }}</td>
+                            <td>{{ participation_membre.user.tel }}</td>
+                            <td class="text-uppercase fw-bold">{{ participation_membre.club.nomC }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Pagination with Better Spacing -->
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-xxl-12 d-flex justify-content-center">
+            <div class="pagination">
+                {{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig') }}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

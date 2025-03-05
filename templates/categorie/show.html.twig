@@ -1,26 +1,63 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Categorie{% endblock %}
+{% block title %}Liste des catégories{% endblock %}
 
 {% block body %}
-    <h1>Categorie</h1>
+<div class="container mt-5">
+  <h1 class="text-center mb-4" style="color::rgb(10, 54, 101);">List of Categories</h1> <!-- Bleu standard -->
 
-    <table class="table">
+
+    <!-- Table pour afficher la liste des catégories -->
+ <style>
+    .custom-table {
+        width: 600px; /* Largeur fixe du tableau */
+        margin: 0 auto; /* Centrer le tableau horizontalement */
+    }
+</style>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover table-sm shadow-sm custom-table" style="background-color: #f8f9fa;">
+        <thead class="table-dark">
+            <tr>
+             <th style="background-color:rgb(26, 11, 96);; color: white; text-align: center;">Category</th>
+
+            </tr>
+        </thead>
         <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ categorie.id }}</td>
-            </tr>
-            <tr>
-                <th>NomCat</th>
-                <td>{{ categorie.nomCat }}</td>
-            </tr>
+            {% for categorie in categories %}
+                <tr>
+                    <td>{{ categorie.nomCat }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td class="text-center text-muted">Aucune catégorie trouvée.</td>
+                </tr>
+            {% endfor %}
         </tbody>
     </table>
+</div>
 
-    <a href="{{ path('app_categorie_index') }}">back to list</a>
 
-    <a href="{{ path('app_categorie_edit', {'id': categorie.id}) }}">edit</a>
+    <!-- Formulaire pour ajouter une nouvelle catégorie -->
+    <div class="card shadow-sm mt-4">
+    <div class="card-body">
+        <h2 class="text-center mb-4" style="color:rgb(10, 54, 101);">Add New Category</h2>
+    
+        {{ form_start(form) }}
+    
+        <div class="mb-3 text-center"> <!-- Ajout du centre pour le champ -->
+            {{ form_label(form.nomCat, 'Nom de la catégorie') }}
+            {{ form_widget(form.nomCat, {'attr': {'class': 'form-control mx-auto', 'style': 'width: 80%; max-width: 400px;'}}) }} <!-- Ajustement de la largeur du champ -->
+            {{ form_errors(form.nomCat) }}
+        </div>
 
-    {{ include('categorie/_delete_form.html.twig') }}
+        <div class="d-grid gap-2 text-center"> <!-- Centrer le bouton -->
+       <button class="btn mx-auto" style="width: 80%; max-width: 400px; background-color:rgb(26, 11, 96); color: white;">Add Category</button>
+<!-- Ajustement de la largeur du bouton -->
+        </div>
+    
+        {{ form_end(form) }}
+    </div>
+</div>
+
 {% endblock %}

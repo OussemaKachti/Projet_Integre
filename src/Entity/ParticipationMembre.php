@@ -25,8 +25,18 @@ class ParticipationMembre
     private User $user;
 
     #[ORM\ManyToOne(targetEntity: Club::class, inversedBy: "participations")]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private Club $club;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $description = null;
+    
+
+    public function __construct()
+    {
+        // Set the current date and time as the default value for dateRequest
+        $this->dateRequest = new \DateTime();
+    }
 
     public function getId(): ?int
     {
@@ -55,18 +65,38 @@ class ParticipationMembre
         $this->statut = $statut;
         return $this;
     }
-    public function getClub(): Club
-    {
-        return $this->club;
-    }
+
     public function getUser(): User
     {
         return $this->user;
     }
-    
+
     public function setUser(User $user): self
     {
         $this->user = $user;
+        return $this;
+    }
+
+    public function getClub(): Club
+    {
+        return $this->club;
+    }
+
+    public function setClub(Club $club): self
+    {
+        $this->club = $club;
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
+
         return $this;
     }
 }

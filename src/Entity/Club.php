@@ -23,6 +23,7 @@ class Club
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
+    
 
     #[ORM\Column(type: "string", enumType: StatutClubEnum::class)]
     private StatutClubEnum $status;
@@ -42,7 +43,8 @@ class Club
     #[ORM\OneToMany(targetEntity: ParticipationMembre::class, mappedBy: "club", cascade: ["persist", "remove"])]
     private Collection $participations;
     #[ORM\ManyToMany(targetEntity: Competition::class, mappedBy: "clubs")]
-private Collection $competitions;
+    private Collection $competitions;
+    
 
 
     #[ORM\OneToMany(mappedBy: "club", targetEntity: MissionProgress::class, cascade: ["persist", "remove"])]
@@ -55,13 +57,14 @@ private Collection $competitions;
     private ?User $president = null;
 
 
-
+    
     public function __construct()
     {
         $this->evenements = new ArrayCollection();
         $this->produits = new ArrayCollection();
         $this->participations = new ArrayCollection();
         $this->missionProgresses = new ArrayCollection();
+        $this->competitions = new ArrayCollection();
 
 
     }
@@ -87,6 +90,17 @@ private Collection $competitions;
     {
         $this->nomC = $nomC;
 
+        return $this;
+    }
+
+    public function getNomClub(): ?string // Getter pour la propriété nomClub
+    {
+        return $this->nomC;
+    }
+
+    public function setNomClub(string $nomClub): self // Setter pour la propriété nomClub
+    {
+        $this->nomC = $nomClub;
         return $this;
     }
 
@@ -148,23 +162,14 @@ private Collection $competitions;
     {
         return $this->participations;
     }
-
-
-
     public function getPresident(): ?User
     {
         return $this->president;
     }
-
+    
     public function setPresident(User $president): static
     {
         $this->president = $president;
         return $this;
-    }
-
-    //*****************************compitition function *****************************/
-    public function getMissionProgresses(): Collection 
-    {
-        return $this->missionProgresses;
     }
 }

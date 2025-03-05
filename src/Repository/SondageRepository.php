@@ -99,6 +99,50 @@ public function advancedSearch(string $query, array $dateFilter, ?string $clubNa
     return $qb->getQuery()->getResult();
 }
 
+public function count(array $criteria = []): int
+{
+    $qb = $this->createQueryBuilder('s');
+    
+    foreach ($criteria as $field => $value) {
+        $qb->andWhere("s.$field = :$field")
+           ->setParameter($field, $value);
+    }
+    
+    return $qb->select('COUNT(s.id)')
+        ->getQuery()
+        ->getSingleScalarResult();
+}
 
+public function getWeeklyStats(): array
+{
+    $stats = [
+        'polls' => array_fill(0, 7, 0),
+        'votes' => array_fill(0, 7, 0)
+    ];
+    
+    // Récupérer les données brutes des 7 derniers jours
+    $qb = $this->createQueryBuilder('s')
+        ->select('s.createdAt, COUNT(s.id) as polls, COUNT(r.id) as votes')
+        ->leftJoin('s.reponses', 'r')
+        ->where('s.createdAt >= :weekAgo')
+        ->setParameter('weekAgo', new \DateTime('-7 days'))
+        ->groupBy('s.createdAt')
+        ->orderBy('s.createdAt', 'ASC');
+
+    $results = $qb->getQuery()->getResult();
+
+    // Traiter les résultats et les formater par jour
+    foreach ($results as $result) {
+        $date = $result['createdAt']->format('Y-m-d');
+        $dayIndex = (new \DateTime($date))->diff(new \DateTime('-7 days'))->days;
+        
+        if ($dayIndex >= 0 && $dayIndex < 7) {
+            $stats['polls'][$dayIndex] = (int)$result['polls'];
+            $stats['votes'][$dayIndex] = (int)$result['votes'];
+        }
+    }
+
+    return $stats;
+}
 
 }

@@ -17,8 +17,12 @@ class OpenAIClient
 
     public function summarizeComments(array $comments): string
     {
-        $prompt = "Summarize the following user comments into a concise paragraph:\n\n" . implode("\n", $comments);
+        $prompt = "Summarize these comments in 2 to 3 sentences in a clear and impactful way.  
+- Identify the main topic.  
+- Capture general opinions (positive, negative, mixed).  
+- Provide a smooth and readable summary, as if writing a professional article.  
 
+Comments to analyze:\n\n" . implode("\n", $comments);
         $response = $this->client->request('POST', 'https://api.openai.com/v1/chat/completions', [
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->apiKey,

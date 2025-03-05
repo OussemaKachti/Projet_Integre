@@ -1,37 +1,52 @@
-{% extends 'base.html.twig' %}
-
-{% block title %}ParticipationMembre index{% endblock %}
+{% extends 'baseAdmin.html.twig' %}
 
 {% block body %}
-    <h1>ParticipationMembre index</h1>
+    <h1 class="mb-4">Join Requests</h1>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>DateRequest</th>
-                <th>Statut</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for participation_membre in participation_membres %}
-            <tr>
-                <td>{{ participation_membre.id }}</td>
-                <td>{{ participation_membre.dateRequest ? participation_membre.dateRequest|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ participation_membre.statut }}</td>
-                <td>
-                    <a href="{{ path('app_participation_membre_show', {'id': participation_membre.id}) }}">show</a>
-                    <a href="{{ path('app_participation_membre_edit', {'id': participation_membre.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Date Request</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for participation_membre in pagination %}
+                    <tr>
+                        <td>{{ participation_membre.id }}</td>
+                        <td>{{ participation_membre.dateRequest ? participation_membre.dateRequest|date('Y-m-d H:i:s') : 'N/A' }}</td>
+                        <td>
+                            {% if participation_membre.statut == 'Accepted' %}
+                                <span class="badge bg-success text-white">Accepted</span>
+                            {% elseif participation_membre.statut == 'Pending' %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% else %}
+                                <span class="badge bg-secondary text-white">{{ participation_membre.statut }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('accepte', {'id': participation_membre.id}) }}" class="btn btn-success btn-sm">
+    <i class="fas fa-check-circle"></i> Accept
+</a>
+                            <a href="{{ path('app_club_delete', {'id': participation_membre.id}) }}" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">No records found</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-    <a href="{{ path('app_participation_membre_new') }}">Create new</a>
+    <!-- Pagination -->
+    <div class="pagination">
+        {{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig') }}
+    </div>
 {% endblock %}

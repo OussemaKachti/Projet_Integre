@@ -1,0 +1,153 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Cart{% endblock %}
+
+{% block body %}
+<!-- breadcrumb area start -->
+<section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="https://img.freepik.com/premium-photo/background-shopping_931878-79292.jpg">
+    <div class="container">
+        <div class="row">
+            <div class="col-xxl-12">
+                <div class="breadcrumb__content text-center p-relative z-index-1">
+                    <h3 class="breadcrumb__title">My Cart</h3>
+                    <div class="breadcrumb__list">
+                        <span><a href="index.html">Home</a></span>
+                        <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
+                        <span>Cart</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- breadcrumb area end -->
+
+<!-- cart-area start -->
+<section class="cart-area pt-120 pb-120">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <form action="#">
+                    <div class="table-content table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th class="product-thumbnail">Image</th>
+                                    <th class="cart-product-name">Name</th>
+                                    <th class="product-quantity">Name Club</th>
+                                    <th class="product-price">Price</th>
+                                    <th class="product-quantity">Quantity</th>
+                                    <th class="product-total">Total</th>
+                                    <th class="product-remove">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cartProduits %}
+                                <tr>
+                                    <td class="product-thumbnail">
+                                        <a href="course-details.html">
+                                            <img src="{{ asset('uploads/' ~ item.produit.imgProd) }}" alt="">
+                                        </a>
+                                    </td>
+                                    <td class="product-name"><a href="course-details.html">{{ item.produit.nomProd }}</a></td>
+                                    <td class="product-club"><span class="amount">{{ item.produit.club.nomC }}</span></td>
+                                    <td class="product-price"><span class="amount">{{ item.produit.prix }} TND</span></td>
+                                    <td class="product-quantity">
+                                        <div class="cart-plus-minus">
+                                            <input type="text" value="{{ item.quantity }}" readonly>
+                                            <div class="dec qtybutton">
+                                                <a href="{{ path('cart_decrease', {'id': item.produit.id }) }}">-</a>
+                                            </div>
+                                            <div class="inc qtybutton">
+                                                <a href="{{ path('cart_increase', {'id': item.produit.id }) }}">+</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="product-total">
+                                        <span class="amount" id="product-total-{{ item.produit.id }}">
+                                            {{ item.produit.prix * item.quantity }} TND
+                                        </span>
+                                    </td>
+                                    <td class="product-remove">
+                                        <form action="{{ path('cart_remove', {'id': item.produit.id}) }}" method="post" onsubmit="return confirm('Are you sure you want to remove this product?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ item.produit.id) }}">
+                                            <button type="submit" class="tp-btn btn-create">Remove</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7">Le panier est vide.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5"></td>
+                                    <td>Total: <span id="cart-total">{{ total }} TND</span></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="coupon-all">
+                                <div class="coupon2">
+                                    <a href="{{ path('order_create') }}" class="btn btn-primary">Confirm Order</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- cart-area end -->
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const increaseButtons = document.querySelectorAll('.inc a');
+    const decreaseButtons = document.querySelectorAll('.dec a');
+    const cartTotalElement = document.getElementById('cart-total');
+
+    function updateCartTotals(response) {
+        if (response.success) {
+            // Mettre à jour le total général du panier
+            cartTotalElement.textContent = response.total.toFixed(2) + ' TND';
+
+            // Mettre à jour les prix individuels des produits
+            {% for item in cartProduits %}
+            const productElement = document.querySelector(`#product-total-{{ item.produit.id }}`);
+            if (productElement) {
+                const productPrice = {{ item.produit.prix }};
+                const newQuantity = response.quantities['{{ item.produit.id }}'] || 0;
+                const newTotal = (productPrice * newQuantity).toFixed(2);
+                productElement.textContent = newTotal + ' TND';
+            }
+            {% endfor %}
+        }
+    }
+
+    increaseButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            fetch(button.getAttribute('href'))
+                .then(response => response.json())
+                .then(data => updateCartTotals(data));
+        });
+    });
+
+    decreaseButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            fetch(button.getAttribute('href'))
+                .then(response => response.json())
+                .then(data => updateCartTotals(data));
+        });
+    });
+});
+</script>
+{% endblock %}

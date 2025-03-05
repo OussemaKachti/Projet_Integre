@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ProduitController!{% endblock %}
+
+{% block body %}
+         <!-- breadcrumb area start -->
+         <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="https://img.freepik.com/premium-photo/background-shopping_931878-79292.jpg">
+            <div class="container">
+               <div class="row">
+                  <div class="col-xxl-12">
+                     <div class="breadcrumb__content text-center p-relative z-index-1">
+                        <h3 class="breadcrumb__title">Our Products</h3>
+                        
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+         <!-- breadcrumb area end -->
+
+
+         <!-- course area start -->
+         <section class="course__area pt-115 pb-90">
+            <div class="container">
+                <div class="row">
+                
+                    <!-- Colonne gauche (Image du produit) -->
+                    <div class="col-lg-6 d-flex justify-content-center">
+                        <div class="course__img w-img mb-30" style="max-width: 100%;">
+                             <a href="{{ path('app_produit_show', {'id': produit.id})}}">
+                        <img src="{{ asset('uploads/' ~ produit.imgProd) }}" alt="">
+                    </a>
+                        </div>
+                    </div>
+                    <!-- Colonne droite (Formulaire) -->
+                    <div class="col-lg-6">
+                        <div class="product-info p-5 border rounded shadow-lg bg-light">
+                            <h3 class="text-primary">{{ produit.nomProd }}</h3>
+                            <p class="mt-3"><strong>Description :</strong>{{ produit.descProd }} </p>
+                            <p><strong>Prix :</strong> <span id="product-price" class="text-danger font-weight-bold">{{ produit.prix }} TND</span></p>
+        
+                            
+        
+                            <!-- Bouton de commande -->
+                            
+                            <a class="btn btn-success" href="{{ path('cart_add', {'id': produit.id}) }}">Order</a>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </section>
+        
+      
+        
+        
+        
+     
+    
+  
+{% endblock %}

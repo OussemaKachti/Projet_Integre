@@ -1,11 +1,22 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New ParticipationMembre{% endblock %}
+{% block title %}Join Us{% endblock %}
 
 {% block body %}
-    <h1>Create new ParticipationMembre</h1>
+<div class="container mt-5">
+    <div class="card shadow-lg p-4 rounded">
+        <h1 class="text-center text-primary mb-4">Join Us</h1>
 
-    {{ include('participation_membre/_form.html.twig') }}
+        <div class="mb-4">
+            {{ include('participation_membre/_form.html.twig') }}
+        </div>
 
-    <a href="{{ path('app_participation_membre_index') }}">back to list</a>
+        <div class="text-center">
+            <a href="{{ path('app_club_index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+</div>
 {% endblock %}
+

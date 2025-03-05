@@ -8,6 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\UserRepository;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 
@@ -34,16 +35,30 @@ class SecurityController extends AbstractController
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
     #[Route('/access-denied', name: 'access_denied')]
-    public function accessDenied(): Response
+    public function accessDenied(Request $request): Response
     {
         // Check if user is logged in
         if ($this->getUser()) {
+            // Get the requested URL that was denied (if available)
+            $deniedUrl = $request->query->get('returnUrl', null);
+            
+            // Check if the denied URL was an admin path 
+            $isAdminPath = $deniedUrl && strpos($deniedUrl, '/admin') === 0;
+            
             // If logged in but access denied, it's a permission issue
-            return $this->render('security/insufficient_permissions.html.twig');
+            return $this->render('security/insufficient_permissions.html.twig', [
+                'isAdminPath' => $isAdminPath,
+                'deniedUrl' => $deniedUrl
+            ]);
         }
         
+        // Get the return URL if provided
+        $returnTo = $request->query->get('returnTo', null);
+        
         // If not logged in, show the login required page
-        return $this->render('security/access_denied.html.twig');
+        return $this->render('security/access_denied.html.twig', [
+            'returnTo' => $returnTo
+        ]);
     }
     #[Route('/confirm-email/{token}', name: 'confirm_email')]
     public function confirmEmail(

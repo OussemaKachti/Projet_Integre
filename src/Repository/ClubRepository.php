@@ -5,6 +5,10 @@ namespace App\Repository;
 use App\Entity\Club;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
+
+
 
 /**
  * @extends ServiceEntityRepository<Club>
@@ -21,6 +25,18 @@ class ClubRepository extends ServiceEntityRepository
         parent::__construct($registry, Club::class);
     }
 
+    
+
+public function searchByKeyword(string $keyword): Query
+{
+    return $this->createQueryBuilder('c')
+        ->leftJoin('c.club', 'c')  // Joindre la table Club
+        ->where('c.nomC LIKE :keyword')
+        ->setParameter('keyword', '%' . $keyword . '%')
+        ->orderBy('c.id', 'ASC') // Optionnel : trier par ID
+        ->getQuery();
+        
+}
 //    /**
 //     * @return Club[] Returns an array of Club objects
 //     */
@@ -45,4 +61,35 @@ class ClubRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+// src/Repository/ClubRepository.php
+
+public function findByName(string $name): array
+{
+    return $this->createQueryBuilder('c')
+        ->andWhere('c.nomC LIKE :name')
+        ->setParameter('name', '%' . $name . '%')
+        ->getQuery()
+        ->getResult();
+}
+
+public function findById(int $id): ?Club
+{
+    return $this->createQueryBuilder('c')
+        ->andWhere('c.id = :id')
+        ->setParameter('id', $id)
+        ->getQuery()
+        ->getOneOrNullResult();
+}
+
+    public function findMostActiveClub(): ?Club
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.sondages', 's')
+            ->groupBy('c.id')
+            ->orderBy('COUNT(s.id)', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

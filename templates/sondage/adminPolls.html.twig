@@ -3,12 +3,90 @@
 
 {% block javascripts %}
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 {% block title %}Sondage
 {% endblock %}
 {% block body %}
 	<div class="main-panel" style="width: 100%; max-width: 1500px; margin: 0 auto 0 20px;">
 		<div class="content-wrapper">
+			<div class="row">
+				<div class="col-xl-3 col-md-6 mb-4">
+					<div class="card border-left-primary shadow h-100 py-2">
+						<div class="card-body">
+							<div class="row no-gutters align-items-center">
+								<div class="col mr-2">
+									<div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Polls</div>
+									<div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_polls }}</div>
+								</div>
+								<div class="col-auto">
+									<i class="fas fa-poll fa-2x text-gray-300"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-xl-3 col-md-6 mb-4">
+					<div class="card border-left-success shadow h-100 py-2">
+						<div class="card-body">
+							<div class="row no-gutters align-items-center">
+								<div class="col mr-2">
+									<div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Votes</div>
+									<div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_votes }}</div>
+								</div>
+								<div class="col-auto">
+									<i class="fas fa-vote-yea fa-2x text-gray-300"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-xl-3 col-md-6 mb-4">
+					<div class="card border-left-info shadow h-100 py-2">
+						<div class="card-body">
+							<div class="row no-gutters align-items-center">
+								<div class="col mr-2">
+									<div class="text-xs font-weight-bold text-info text-uppercase mb-1">Active Polls</div>
+									<div class="row no-gutters align-items-center">
+										<div class="col-auto">
+											<div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ active_polls }}</div>
+										</div>
+										<div class="col">
+											<div class="progress progress-sm mr-2">
+												<div class="progress-bar bg-info" role="progressbar" 
+													 style="width: {{ (active_polls / total_polls) * 100 }}%"></div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-auto">
+									<i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-xl-3 col-md-6 mb-4">
+					<div class="card border-left-warning shadow h-100 py-2">
+						<div class="card-body">
+							<div class="row no-gutters align-items-center">
+								<div class="col mr-2">
+									<div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Most Active Club</div>
+									<div class="h5 mb-0 font-weight-bold text-gray-800">{{ most_active_club }}</div>
+									<div class="small text-muted">{{ most_active_club_polls }} polls</div>
+								</div>
+								<div class="col-auto">
+									<i class="fas fa-trophy fa-2x text-gray-300"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<div class="row">
 				<div class="col-lg-12 grid-margin stretch-card">
 					<div class="card">
@@ -30,392 +108,430 @@
 										</tr>
 									</thead>
 									<tbody id="sondageTableBody">
-            {% for sondage in sondages %}
-                <tr>
-                    <td>{{ sondage.id }}</td>
-                    <td>{{ sondage.question }}</td>
-                    <td>{{ sondage.choix|join(', ') }}</td>
-                    <td>{{ sondage.club_name }}</td>
-                    <td>{{ sondage.created_at }}</td>
-                    <td class="actions-column">
-                        <div class="action-buttons">
-                            <button onclick="window.location.href='{{ path('app_poll_details', {'id': sondage.id}) }}'" type="button" class="btn btn-primary btn-sm">see details</button>
-                            <button class="bin-button" data-id="{{ sondage.id }}">
-                                <svg class="bin-top" viewbox="0 0 39 7" fill="none">
-                                    <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
-                                    <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
-                                </svg>
-                                <svg class="bin-bottom" viewbox="0 0 33 39" fill="none">
-                                    <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
-                                    <path d="M21 6V29" stroke="white" stroke-width="4"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
+										{% for sondage in sondages %}
+											<tr>
+												<td>{{ sondage.id }}</td>
+												<td>{{ sondage.question }}</td>
+												<td>{{ sondage.choix|join(', ') }}</td>
+												<td>{{ sondage.club.nomC }}</td>
+												<td>{{ sondage.createdAt|date('Y-m-d H:i:s') }}</td>
+												<td class="actions-column">
+													<div class="action-buttons">
+														<button onclick="window.location.href='{{ path('app_poll_details', {'id': sondage.id}) }}'" type="button" class="btn btn-primary btn-sm">see details</button>
+														<button class="bin-button" data-id="{{ sondage.id }}">
+															<svg class="bin-top" viewbox="0 0 39 7" fill="none">
+																<line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+																<line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
+															</svg>
+															<svg class="bin-bottom" viewbox="0 0 33 39" fill="none">
+																<path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+																<path d="M21 6V29" stroke="white" stroke-width="4"></path>
+															</svg>
+														</button>
+													</div>
+												</td>
+											</tr>
+										{% endfor %}
 
 										<div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
 
 									</tbody>
 
 									<script>
-										function updateResults(searchValue) {
-fetch (`/sondage/adminPolls?q=${
-encodeURIComponent(searchValue)
-}`, {
-headers: {
-'X-Requested-With': 'XMLHttpRequest'
-}
-}).then(response => response.json()).then(data => {
-tableBody.innerHTML = '';
+										document.addEventListener("DOMContentLoaded", function () {
+											const searchInput = document.getElementById('searchInput');
+											const tableBody = document.getElementById('sondageTableBody');
+											let debounceTimer;
 
-data.sondages.forEach(sondage => {
-const row = `
-                <tr>
-                    <td>${
-sondage.id
-}</td>
-                    <td>${
-sondage.question
-}</td>
-                    <td>${
-sondage.choix.join(', ')
-}</td>
-                    <td>${
-sondage.club_name
-}</td>
-                    <td>${
-sondage.created_at
-}</td>
-                    <td class="actions-column">
-                        <div class="action-buttons">
-                            <button onclick="window.location.href='/sondage/poll/details/${
-sondage.id
-}'" type="button" class="btn btn-primary btn-sm">see details</button>
-                            <button class="bin-button" data-id="${
-sondage.id
-}">
-                                <svg class="bin-top" viewbox="0 0 39 7" fill="none">
-                                    <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
-                                    <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
-                                </svg>
-                                <svg class="bin-bottom" viewbox="0 0 33 39" fill="none">
-                                    <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
-                                    <path d="M21 6V29" stroke="white" stroke-width="4"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-tableBody.insertAdjacentHTML('beforeend', row);
-})
-);
-}
-/* */
-document.addEventListener("DOMContentLoaded", function () {
-const searchInput = document.getElementById('searchInput');
-const tableBody = document.getElementById('sondageTableBody');
-let debounceTimer;
+											function attachDeleteEventListeners() {
+												document.querySelectorAll(".bin-button").forEach(button => {
+													button.addEventListener("click", function () {
+														const sondageId = this.getAttribute("data-id");
+														console.log("Button clicked for sondage ID:", sondageId);
 
-function attachDeleteEventListeners() { // Sélectionner tous les boutons de suppression
-document.querySelectorAll(".bin-button").forEach(button => {
-button.addEventListener("click", function () {
-const sondageId = this.getAttribute("data-id");
-console.log("Button clicked for sondage ID:", sondageId); // Log pour vérifier si l'événement est déclenché
+														if (! sondageId) {
+															console.error("ID du sondage non trouvé !");
+															showToast("Erreur : ID du sondage introuvable.", "danger");
+															return;
+														}
 
-if (! sondageId) {
-console.error("ID du sondage non trouvé !");
-showToast("Erreur : ID du sondage introuvable.", "danger");
-return;
-}
+														if (confirm("Are you sure you want to delete this poll?")) {
+															console.log (`Deleting poll with ID: ${sondageId}`);
 
-if (confirm("Are you sure you want to delete this poll?")) {
-console.log (`Deleting poll with ID: ${sondageId}`); // Log pour vérifier si la suppression est lancée
+															fetch (`/sondage/deleteAdmin/${sondageId}`, {
+																method: "POST",
+																headers: {
+																	"Content-Type": "application/json"
+																}
+															}).then(response => response.json()).then(data => {
+																if (data.message) {
+																	showToast("Poll successfully deleted!", "success");
+																	setTimeout(() => location.reload(), 1000);
+																} else {
+																	showToast(data.error || "Erreur lors de la suppression", "danger");
+																}
+															}).catch(error => {
+																console.error("Erreur:", error);
+																showToast("Une erreur est survenue", "danger");
+															});
+														}
+													});
+												});
+											}
 
-fetch (`/sondage/deleteAdmin/${sondageId}`, {
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-}
-}).then(response => response.json()).then(data => {
-if (data.message) {
-showToast("Poll successfully deleted!", "success");
-setTimeout(() => location.reload(), 1000);
-} else {
-showToast(data.error || "Erreur lors de la suppression", "danger");
-}
-}).catch(error => {
-console.error("Erreur:", error);
-showToast("Une erreur est survenue", "danger");
-});
-}
-});
-});
-}
+											function updateResults(searchValue, page = 1) {
+												fetch(`/sondage/adminPolls?q=${encodeURIComponent(searchValue)}&page=${page}`, {
+													headers: {
+														'X-Requested-With': 'XMLHttpRequest'
+													}
+												})
+												.then(response => response.json())
+												.then(data => {
+													tableBody.innerHTML = '';
+													
+													data.sondages.forEach(sondage => {
+														const row = `
+															<tr>
+																<td>${parseInt(sondage.id)}</td>
+																<td>${sondage.question}</td>
+																<td>${sondage.choix.join(', ')}</td>
+																<td>${sondage.club_name}</td>
+																<td>${sondage.created_at}</td>
+																<td class="actions-column">
+																	<div class="action-buttons">
+																		<button onclick="window.location.href='/sondage/poll/details/${parseInt(sondage.id)}'" 
+																				type="button" 
+																				class="btn btn-primary btn-sm">see details</button>
+																		<button class="bin-button" data-id="${parseInt(sondage.id)}">
+																			<svg class="bin-top" viewbox="0 0 39 7" fill="none">
+																				<line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+																				<line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
+																			</svg>
+																			<svg class="bin-bottom" viewbox="0 0 33 39" fill="none">
+																				<path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+																				<path d="M21 6V29" stroke="white" stroke-width="4"></path>
+																			</svg>
+																		</button>
+																	</div>
+																</td>
+															</tr>
+														`;
+														tableBody.insertAdjacentHTML('beforeend', row);
+													});
 
-function updateResults(searchValue) {
-fetch (`/sondage/adminPolls?q=${
-encodeURIComponent(searchValue)
-}`, {
-headers: {
-'X-Requested-With': 'XMLHttpRequest'
-}
-}).then(response => response.json()).then(data => {
-tableBody.innerHTML = '';
-// Vider le tableau
+													const paginationWrapper = document.querySelector('.pagination-wrapper');
+													if (paginationWrapper && data.pagination) {
+														paginationWrapper.innerHTML = data.pagination;
+														
+														document.querySelectorAll('.pagination a').forEach(link => {
+															link.addEventListener('click', function(e) {
+																e.preventDefault();
+																const pageUrl = new URL(this.href);
+																const pageNum = pageUrl.searchParams.get('page') || 1;
+																updateResults(searchInput.value, pageNum);
+																
+																window.history.pushState({}, '', this.href);
+															});
+														});
+													}
 
-// Ajouter les nouveaux résultats
-data.sondages.forEach(sondage => {
-const row = `
-									                    <tr>
-									                        <td>${
-sondage.id
-}</td>
-									                        <td>${
-sondage.question
-}</td>
-									                        <td>${
-sondage.choix.join(', ')
-}</td>
-									                        <td>${
-sondage.club_name
-}</td>
-									                        <td>${
-sondage.created_at
-}</td>
-									                        <td class="actions-column">
-									                            <button class="bin-button" data-id="${
-sondage.id
-}">
-									                                <svg class="bin-top" viewbox="0 0 39 7" fill="none">
-									                                    <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
-									                                    <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
-									                                </svg>
-									                                <svg class="bin-bottom" viewbox="0 0 33 39" fill="none">
-									                                    <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
-									                                    <path d="M21 6V29" stroke="white" stroke-width="4"></path>
-									                                </svg>
-									                            </button>
-									                        </td>
-									                    </tr>
-									                `;
-tableBody.insertAdjacentHTML('beforeend', row);
-});
+													attachDeleteEventListeners();
+												})
+												.catch(error => console.error('Erreur:', error));
+											}
 
-// Réattacher les événements de suppression
-attachDeleteEventListeners();
-}).catch(error => console.error('Erreur:', error));
-}
+											searchInput.addEventListener('input', function (e) {
+												clearTimeout(debounceTimer);
+												debounceTimer = setTimeout(() => {
+													updateResults(e.target.value, 1);
+												}, 300);
+											});
 
-// Écouter les changements dans l'input de recherche
-searchInput.addEventListener('input', function (e) {
-clearTimeout(debounceTimer);
-debounceTimer = setTimeout(() => {
-updateResults(e.target.value);
-}, 300); // Délai de 300ms pour éviter trop de requêtes
-});
+											const urlParams = new URLSearchParams(window.location.search);
+											const currentPage = urlParams.get('page') || 1;
+											
+											updateResults('', currentPage);
+										});
 
-// Charger tous les résultats au début
-updateResults('');
+										function showToast(message, type = "success") {
+											const toastContainer = document.getElementById("toastContainer");
+											const toast = document.createElement("div");
 
-// Réattacher les événements de suppression après le chargement initial des sondages
-attachDeleteEventListeners();
-});
+											toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
+											toast.setAttribute("role", "alert");
+											toast.setAttribute("aria-live", "assertive");
+											toast.setAttribute("aria-atomic", "true");
 
-// Fonction pour afficher un toast
-function showToast(message, type = "success") {
-const toastContainer = document.getElementById("toastContainer");
-const toast = document.createElement("div");
+											toast.innerHTML = `
+												<div class="d-flex">
+													<div class="toast-body">${message}</div>
+													<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+												</div>
+											`;
 
-toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
-toast.setAttribute("role", "alert");
-toast.setAttribute("aria-live", "assertive");
-toast.setAttribute("aria-atomic", "true");
+											toastContainer.appendChild(toast);
 
-toast.innerHTML = `
-									        <div class="d-flex">
-									            <div class="toast-body">${message}</div>
-									            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-									        </div>
-									    `;
+											setTimeout(() => {
+												toast.classList.remove("show");
+												toast.addEventListener("transitionend", () => toast.remove());
+											}, 2000);
+										}
+									</script>
 
-toastContainer.appendChild(toast);
-
-setTimeout(() => {
-toast.classList.remove("show");
-toast.addEventListener("transitionend", () => toast.remove());
-}, 2000);
-}
-</script>
+									<style>
 
 
-											<style>
+										/* */
+										/* Style pour les colonnes "Question" et "Options" */
+										.table-striped th:nth-child(2), /* Colonne "Question" */
+										.table-striped td:nth-child(2),
+										.table-striped th:nth-child(3), /* Colonne "Options" */
+										.table-striped td:nth-child(3) {
+											max-width: 200px; /* Définit la largeur maximale avant retour à la ligne */
+											word-wrap: break-word; /* Permet de couper les mots longs */
+											overflow-wrap: break-word;
+											white-space: normal; /* Permet au texte de revenir à la ligne */
+										}
+
+										/* Styles pour les boutons d'action */
+										.actions-column {
+											text-align: center;
+										}
+
+										.action-buttons {
+											display: flex;
+											align-items: center; /* Centre verticalement */
+											justify-content: center; /* Centre horizontalement */
+											gap: 10px; /* Espacement entre les boutons */
+										}
+
+										/* Style pour le bouton plus */
+										.plusButton {
+											/* Configurations de dimensions */
+											--plus_sideLength: 1.8rem;
+											--plus_topRightTriangleSideLength: 0.5rem;
+
+											position: relative;
+											display: flex;
+											justify-content: center;
+											align-items: center;
+											border: 1px solid white;
+											width: var(--plus_sideLength);
+											height: var(--plus_sideLength);
+											background-color: #000000;
+											overflow: hidden;
+										}
+
+										.plusButton::before {
+											position: absolute;
+											content: "";
+											top: 0;
+											right: 0;
+											width: 0;
+											height: 0;
+											border-width: 0 var(--plus_topRightTriangleSideLength) var(--plus_topRightTriangleSideLength) 0;
+											border-style: solid;
+											border-color: transparent white transparent transparent;
+											transition-timing-function: ease-in-out;
+											transition-duration: 0.2s;
+										}
+
+										.plusButton:hover {
+											cursor: pointer;
+										}
+
+										.plusButton:hover::before {
+											--plus_topRightTriangleSideLength: calc(var(--plus_sideLength) * 2);
+										}
+
+										.plusButton:focus-visible::before {
+											--plus_topRightTriangleSideLength: calc(var(--plus_sideLength) * 2);
+										}
+
+										.plusButton > .plusIcon {
+											fill: white;
+											width: calc(var(--plus_sideLength) * 0.7);
+											height: calc(var(--plus_sideLength) * 0.7);
+											z-index: 1;
+											transition-timing-function: ease-in-out;
+											transition-duration: 0.2s;
+										}
+
+										.plusButton:hover > .plusIcon {
+											fill: black;
+											transform: rotate(180deg);
+										}
+
+										.plusButton:focus-visible > .plusIcon {
+											fill: black;
+											transform: rotate(180deg);
+										}
+
+										/* Styles pour le bouton "bin" */
+										.bin-button {
+											display: flex;
+											flex-direction: column;
+											align-items: center;
+											justify-content: center;
+											width: 25px;
+											height: 25px;
+											border-radius: 5px;
+											background-color: rgb(255, 95, 95);
+											cursor: pointer;
+											border: 3px solid rgb(255, 201, 201);
+											transition-duration: 0.3s;
+										}
+
+										.bin-bottom {
+											width: 15px;
+										}
+
+										.bin-top {
+											width: 17px;
+											transform-origin: right;
+											transition-duration: 0.3s;
+										}
+
+										.bin-button:hover .bin-top {
+											transform: rotate(45deg);
+										}
+
+										.bin-button:hover {
+											background-color: rgb(255, 0, 0);
+										}
+
+										.bin-button:active {
+											transform: scale(0.9);
+										}
 
 
-												/* */
-												/* Style pour les colonnes "Question" et "Options" */
-												.table-striped th:nth-child(2), /* Colonne "Question" */
-												.table-striped td:nth-child(2),
-												.table-striped th:nth-child(3), /* Colonne "Options" */
-												.table-striped td:nth-child(3) {
-													max-width: 200px; /* Définit la largeur maximale avant retour à la ligne */
-													word-wrap: break-word; /* Permet de couper les mots longs */
-													overflow-wrap: break-word;
-													white-space: normal; /* Permet au texte de revenir à la ligne */
-												}
+										.filter-form {
+											display: flex;
+											align-items: center;
+											justify-content: flex-end;
+											margin-bottom: 20px;
+										}
 
-												/* Styles pour les boutons d'action */
-												.actions-column {
-													text-align: center;
-												}
+										.club-select {
+											padding: 5px;
+											font-size: 14px;
+											border: 1px solid #ccc;
+											border-radius: 5px;
+											margin-right: 10px;
+										}
 
-												.action-buttons {
-													display: flex;
-													align-items: center; /* Centre verticalement */
-													justify-content: center; /* Centre horizontalement */
-													gap: 10px; /* Espacement entre les boutons */
-												}
+										.filter-button {
+											padding: 6px 12px;
+											font-size: 14px;
+											background-color: #007bff;
+											color: white;
+											border: none;
+											border-radius: 5px;
+											cursor: pointer;
+											transition: 0.3s;
+										}
 
-												/* Style pour le bouton plus */
-												.plusButton {
-													/* Configurations de dimensions */
-													--plus_sideLength: 1.8rem;
-													--plus_topRightTriangleSideLength: 0.5rem;
-
-													position: relative;
-													display: flex;
-													justify-content: center;
-													align-items: center;
-													border: 1px solid white;
-													width: var(--plus_sideLength);
-													height: var(--plus_sideLength);
-													background-color: #000000;
-													overflow: hidden;
-												}
-
-												.plusButton::before {
-													position: absolute;
-													content: "";
-													top: 0;
-													right: 0;
-													width: 0;
-													height: 0;
-													border-width: 0 var(--plus_topRightTriangleSideLength) var(--plus_topRightTriangleSideLength) 0;
-													border-style: solid;
-													border-color: transparent white transparent transparent;
-													transition-timing-function: ease-in-out;
-													transition-duration: 0.2s;
-												}
-
-												.plusButton:hover {
-													cursor: pointer;
-												}
-
-												.plusButton:hover::before {
-													--plus_topRightTriangleSideLength: calc(var(--plus_sideLength) * 2);
-												}
-
-												.plusButton:focus-visible::before {
-													--plus_topRightTriangleSideLength: calc(var(--plus_sideLength) * 2);
-												}
-
-												.plusButton > .plusIcon {
-													fill: white;
-													width: calc(var(--plus_sideLength) * 0.7);
-													height: calc(var(--plus_sideLength) * 0.7);
-													z-index: 1;
-													transition-timing-function: ease-in-out;
-													transition-duration: 0.2s;
-												}
-
-												.plusButton:hover > .plusIcon {
-													fill: black;
-													transform: rotate(180deg);
-												}
-
-												.plusButton:focus-visible > .plusIcon {
-													fill: black;
-													transform: rotate(180deg);
-												}
-
-												/* Styles pour le bouton "bin" */
-												.bin-button {
-													display: flex;
-													flex-direction: column;
-													align-items: center;
-													justify-content: center;
-													width: 25px;
-													height: 25px;
-													border-radius: 5px;
-													background-color: rgb(255, 95, 95);
-													cursor: pointer;
-													border: 3px solid rgb(255, 201, 201);
-													transition-duration: 0.3s;
-												}
-
-												.bin-bottom {
-													width: 15px;
-												}
-
-												.bin-top {
-													width: 17px;
-													transform-origin: right;
-													transition-duration: 0.3s;
-												}
-
-												.bin-button:hover .bin-top {
-													transform: rotate(45deg);
-												}
-
-												.bin-button:hover {
-													background-color: rgb(255, 0, 0);
-												}
-
-												.bin-button:active {
-													transform: scale(0.9);
-												}
-
-
-												.filter-form {
-													display: flex;
-													align-items: center;
-													justify-content: flex-end;
-													margin-bottom: 20px;
-												}
-
-												.club-select {
-													padding: 5px;
-													font-size: 14px;
-													border: 1px solid #ccc;
-													border-radius: 5px;
-													margin-right: 10px;
-												}
-
-												.filter-button {
-													padding: 6px 12px;
-													font-size: 14px;
-													background-color: #007bff;
-													color: white;
-													border: none;
-													border-radius: 5px;
-													cursor: pointer;
-													transition: 0.3s;
-												}
-
-												.filter-button:hover {
-													background-color: #0056b3;
-												}
-											</style>
-										</table>
-									</table>
+										.filter-button:hover {
+											background-color: #0056b3;
+										}
+									</style>
 								</table>
+
+
 							</div>
+							<!-- Pagination -->
+							<div class="pagination-wrapper d-flex justify-content-center mt-3">
+								{{ knp_pagination_render(pagination) }}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{# Activity Chart Section #}
+			<div class="row mt-4">
+				<div class="col-lg-12">
+					<div class="card shadow">
+						<div class="card-header py-3">
+							<h6 class="m-0 font-weight-bold text-primary">Polls Activity Overview</h6>
+						</div>
+						<div class="card-body">
+							<canvas id="pollsActivityChart"></canvas>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-</div>{% endblock %}
+
+	<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		// Données pour le graphique (derniers 7 jours)
+		const ctx = document.getElementById('pollsActivityChart').getContext('2d');
+		
+		// Générer les 7 derniers jours
+		const labels = Array.from({length: 7}, (_, i) => {
+			const d = new Date();
+			d.setDate(d.getDate() - i);
+			return d.toLocaleDateString();
+		}).reverse();
+
+		new Chart(ctx, {
+			type: 'line',
+			data: {
+				labels: labels,
+				datasets: [{
+					label: 'Nouveaux sondages',
+					data: [{{ weekly_polls|join(',') }}],
+					borderColor: '#4e73df',
+					tension: 0.1,
+					fill: false
+				}, {
+					label: 'Votes',
+					data: [{{ weekly_votes|join(',') }}],
+					borderColor: '#1cc88a',
+					tension: 0.1,
+					fill: false
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				scales: {
+					y: {
+						beginAtZero: true
+					}
+				}
+			}
+		});
+	});
+	</script>
+
+	<style>
+	.border-left-primary { border-left: 4px solid #4e73df; }
+	.border-left-success { border-left: 4px solid #1cc88a; }
+	.border-left-info { border-left: 4px solid #36b9cc; }
+	.border-left-warning { border-left: 4px solid #f6c23e; }
+
+	.card {
+		transition: transform 0.2s ease-in-out;
+	}
+
+	.card:hover {
+		transform: translateY(-5px);
+	}
+
+	.progress {
+		height: 0.5rem;
+		border-radius: 0.25rem;
+	}
+
+	.text-xs {
+		font-size: 0.7rem;
+	}
+
+	.fa-2x {
+		color: rgba(0,0,0,0.1);
+	}
+	</style>
+{% endblock %}
