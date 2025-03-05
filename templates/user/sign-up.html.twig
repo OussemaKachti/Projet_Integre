@@ -31,78 +31,173 @@
             </div>
             <div class="row">
                 <div class="col-xxl-6 offset-xxl-3 col-xl-6 offset-xl-3 col-lg-8 offset-lg-2">
+                    <!-- CONTENT MODERATION ALERTS - Only display flash messages, not form errors -->
+                    {% for label, messages in app.flashes %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} mb-4 text-center">
+                                <strong>Content Alert:</strong> {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                    
                     <div class="sign__wrapper white-bg">
                         <div class="sign__form">
                             <style>
                                 .sign__input {
                                     position: relative;
+                                    margin-bottom: 5px;
                                 }
-                                .error-text {
-                                    color: red;
+                                .sign__input-wrapper {
+                                    margin-bottom: 15px;
+                                }
+                                .form-error-message {
+                                    color: #dc3545;
+                                    font-weight: normal;
                                     font-size: 14px;
-                                    margin-top: 5px;
+                                    margin-bottom: 10px;
+                                    display: block;
                                 }
                                 .toggle-password {
                                     position: absolute;
-                                    right: 10px;
+                                    right: 15px;
                                     top: 50%;
                                     transform: translateY(-50%);
                                     cursor: pointer;
                                     z-index: 5;
                                 }
+                                .sign__input i.fal {
+                                    position: absolute;
+                                    top: 50%;
+                                    transform: translateY(-50%);
+                                    left: 15px;
+                                    z-index: 1;
+                                }
+                                .sign__input input {
+                                    padding-left: 45px !important;
+                                    padding-right: 40px !important;
+                                }
+                                .password-requirements {
+                                    color: #6c757d;
+                                    font-size: 12px;
+                                    margin-top: 5px;
+                                    margin-bottom: 15px;
+                                }
+                                .alert {
+                                    border-radius: 5px;
+                                    padding: 12px 15px;
+                                }
+                                .alert-danger {
+                                    background-color: #f8d7da;
+                                    border-color: #f5c6cb;
+                                    color: #721c24;
+                                }
+                                .alert-success {
+                                    background-color: #d4edda;
+                                    border-color: #c3e6cb;
+                                    color: #155724;
+                                }
+                                .input-error {
+                                    border-color: #dc3545 !important;
+                                }
+                                .input-error-icon {
+                                    position: absolute;
+                                    right: 10px;
+                                    top: 50%;
+                                    transform: translateY(-50%);
+                                    color: #dc3545;
+                                }
                             </style>
                             
                             {{ form_start(form, {'attr': {'class': 'signup-form','novalidate':'novalidate'}}) }}
                             
-                            <div class="sign__input-wrapper mb-25">
+                            <!-- Hidden fields for server-side validation -->
+                            {{ form_errors(form) }}
+                            
+                            <div class="sign__input-wrapper">
                                 <h5>{{ 'First Name'|trans }}</h5>
                                 <div class="sign__input">
-                                    {{ form_widget(form.nom, {'attr': {'placeholder': 'First name', 'class': 'form-control'}}) }}
                                     <i class="fal fa-user"></i>
-                                    <span class="error-text">{{ form_errors(form.nom) }}</span>
+                                    {{ form_widget(form.nom, {'attr': {'placeholder': 'First name', 'class': form_errors(form.nom) ? 'form-control input-error' : 'form-control'}}) }}
+                                    {% if form_errors(form.nom) %}
+                                        <span class="input-error-icon">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                        </span>
+                                    {% endif %}
                                 </div>
+                                {% if form_errors(form.nom) %}
+                                    <div class="form-error-message">{{ form_errors(form.nom) }}</div>
+                                {% endif %}
                             </div>
 
-                            <div class="sign__input-wrapper mb-25">
+                            <div class="sign__input-wrapper">
                                 <h5>{{ 'Last Name'|trans }}</h5>
                                 <div class="sign__input">
-                                    {{ form_widget(form.prenom, {'attr': {'placeholder': 'Last name', 'class': 'form-control'}}) }}
                                     <i class="fal fa-user"></i>
-                                    <span class="error-text">{{ form_errors(form.prenom) }}</span>
+                                    {{ form_widget(form.prenom, {'attr': {'placeholder': 'Last name', 'class': form_errors(form.prenom) ? 'form-control input-error' : 'form-control'}}) }}
+                                    {% if form_errors(form.prenom) %}
+                                        <span class="input-error-icon">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                        </span>
+                                    {% endif %}
                                 </div>
+                                {% if form_errors(form.prenom) %}
+                                    <div class="form-error-message">{{ form_errors(form.prenom) }}</div>
+                                {% endif %}
                             </div>
 
-                            <div class="sign__input-wrapper mb-25">
+                            <div class="sign__input-wrapper">
                                 <h5>{{ form_label(form.email) }}</h5>
                                 <div class="sign__input">
-                                    {{ form_widget(form.email, {'attr': {'placeholder': 'Email address', 'class': 'form-control'}}) }}
                                     <i class="fal fa-envelope"></i>
-                                    <span class="error-text">{{ form_errors(form.email) }}</span>
+                                    {{ form_widget(form.email, {'attr': {'placeholder': 'Email address', 'class': form_errors(form.email) ? 'form-control input-error' : 'form-control'}}) }}
+                                    {% if form_errors(form.email) %}
+                                        <span class="input-error-icon">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                        </span>
+                                    {% endif %}
                                 </div>
+                                {% if form_errors(form.email) %}
+                                    <div class="form-error-message">{{ form_errors(form.email) }}</div>
+                                {% endif %}
                             </div>
 
-                            <div class="sign__input-wrapper mb-25">
+                            <div class="sign__input-wrapper">
                                 <h5>{{ form_label(form.password) }}</h5>
-                                <div class="sign__input password-field position-relative">
-                                    {{ form_widget(form.password, {'attr': {'placeholder': 'Password', 'class': 'form-control'}}) }}
+                                <div class="sign__input password-field">
                                     <i class="fal fa-lock"></i>
-                                    <span class="fa fa-fw fa-eye field-icon toggle-password"></span>
-                                    <span class="error-text">{{ form_errors(form.password) }}</span>
+                                    {{ form_widget(form.password, {'attr': {'placeholder': 'Password', 'class': form_errors(form.password) ? 'form-control input-error' : 'form-control'}}) }}
+                                    <span class="toggle-password">
+                                        <i class="fa fa-eye"></i>
+                                    </span>
                                 </div>
+                                {% if form_errors(form.password) %}
+                                    <div class="form-error-message">{{ form_errors(form.password) }}</div>
+                                {% else %}
+                                    <div class="password-requirements">
+                                        Password must include uppercase, lowercase, numbers, and special characters
+                                    </div>
+                                {% endif %}
                             </div>
 
-                            <div class="sign__input-wrapper mb-25">
+                            <div class="sign__input-wrapper">
                                 <h5>{{ 'Phone Number'|trans }}</h5>
                                 <div class="sign__input">
-                                    {{ form_widget(form.tel, {'attr': {'placeholder': 'Phone number', 'class': 'form-control'}}) }}
                                     <i class="fal fa-phone"></i>
-                                    <span class="error-text">{{ form_errors(form.tel) }}</span>
+                                    {{ form_widget(form.tel, {'attr': {'placeholder': 'Phone number', 'class': form_errors(form.tel) ? 'form-control input-error' : 'form-control'}}) }}
+                                    {% if form_errors(form.tel) %}
+                                        <span class="input-error-icon">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                        </span>
+                                    {% endif %}
                                 </div>
+                                {% if form_errors(form.tel) %}
+                                    <div class="form-error-message">{{ form_errors(form.tel) }}</div>
+                                {% endif %}
                             </div>
 
                             <div class="sign__action d-flex justify-content-between mb-30">
                                 <div class="sign__agree d-flex align-items-center">
-                                    <input class="m-check-input" type="checkbox" id="m-agree">
+                                    <input class="m-check-input" type="checkbox" id="m-agree" required>
                                     <label class="m-check-label" for="m-agree">I agree to the
                                         <a href="#">Terms & Conditions</a>
                                     </label>
@@ -111,7 +206,7 @@
 
                             <button class="tp-btn w-100" type="submit">Sign Up</button>
                             <div class="sign__new text-center mt-20">
-                                {# <p>Already in UniClubs? <a href="{{ path('app_user_login') }}">Sign In</a></p> #}
+                                <p>Already have an account? <a href="{{ path('app_login') }}">Sign In</a></p>
                             </div>
 
                             {{ form_end(form) }}
@@ -124,34 +219,36 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded');
-        
         // Find the password field directly using its class/structure
         const passwordField = document.querySelector('.password-field input[type="password"]');
         const toggleButton = document.querySelector('.toggle-password');
         
-        console.log('Password field found:', passwordField);
-        console.log('Toggle button found:', toggleButton);
-        
         if (passwordField && toggleButton) {
             toggleButton.addEventListener('click', function() {
-                console.log('Toggle button clicked');
-                
                 // Toggle the password field visibility
                 if (passwordField.type === 'password') {
                     passwordField.type = 'text';
-                    toggleButton.classList.remove('fa-eye');
-                    toggleButton.classList.add('fa-eye-slash');
+                    toggleButton.querySelector('i').classList.remove('fa-eye');
+                    toggleButton.querySelector('i').classList.add('fa-eye-slash');
                 } else {
                     passwordField.type = 'password';
-                    toggleButton.classList.remove('fa-eye-slash');
-                    toggleButton.classList.add('fa-eye');
+                    toggleButton.querySelector('i').classList.remove('fa-eye-slash');
+                    toggleButton.querySelector('i').classList.add('fa-eye');
                 }
             });
-            
-            console.log('Event listener added');
-        } else {
-            console.error('Password field or toggle button not found');
+        }
+        
+        // Required checkbox validation
+        const form = document.querySelector('.signup-form');
+        const agreeCheckbox = document.getElementById('m-agree');
+        
+        if (form && agreeCheckbox) {
+            form.addEventListener('submit', function(event) {
+                if (!agreeCheckbox.checked) {
+                    event.preventDefault();
+                    alert('You must agree to the Terms & Conditions to proceed.');
+                }
+            });
         }
     });
     </script>

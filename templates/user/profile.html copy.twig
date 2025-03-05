@@ -36,20 +36,8 @@
 					<div class="row align-items-center">
 						<div class="col-xxl-6 col-md-6">
 							<div class="profile__basic d-md-flex align-items-center">
-								<div class="profile__basic-thumb mr-30 position-relative">
-									<div class="profile-picture-container">
-										{% if user.profilePicture %}
-											<img src="{{ asset('uploads/profiles/' ~ user.profilePicture) }}" alt="{{ user.prenom }} {{ user.nom }}" class="profile-picture">
-										{% else %}
-											<img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="Default profile" class="profile-picture">
-										{% endif %}
-
-										<div class="profile-picture-overlay">
-											<button type="button" class="change-picture-btn" id="changePictureBtn">
-												<i class="fa-regular fa-camera"></i>
-											</button>
-										</div>
-									</div>
+								<div class="profile__basic-thumb mr-30">
+									<img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="">
 								</div>
 								<div class="profile__basic-content">
 									<h3 class="profile__basic-title">
@@ -444,8 +432,7 @@ e.preventDefault();
 			</section>
 			<!-- profile menu area end -->
 
-			<div
-				class="profile__edit-modal">
+			<div class="profile__edit-modal">
 				<!-- Modal -->
 				<div class="modal fade" id="profile_edit_modal" tabindex="-1" aria-hidden="true">
 					<div class="modal-dialog modal-dialog-centered">
@@ -460,7 +447,7 @@ e.preventDefault();
 									<h4 class="profile__edit-title">Update Your Profile</h4>
 									<p class="profile__edit-subtitle">Make changes to your personal information</p>
 								</div>
-
+								
 								<form action="{{ path('app_update_profile') }}" method="POST" id="profileEditForm" novalidate>
 									<div class="profile__edit-input">
 										<p>Name</p>
@@ -476,7 +463,7 @@ e.preventDefault();
 											{% endfor %}
 										</span>
 									</div>
-
+									
 									<div class="profile__edit-input">
 										<p>Email</p>
 										<div class="profile__input-wrapper">
@@ -491,7 +478,7 @@ e.preventDefault();
 											{% endfor %}
 										</span>
 									</div>
-
+									
 									<div class="profile__edit-input">
 										<p>Phone Number</p>
 										<div class="profile__input-wrapper">
@@ -506,11 +493,9 @@ e.preventDefault();
 											{% endfor %}
 										</span>
 									</div>
-
+									
 									<div class="profile__edit-input">
-										<p>Current Password
-											<span class="text-danger">*</span>
-										</p>
+										<p>Current Password <span class="text-danger">*</span></p>
 										<div class="profile__input-wrapper">
 											<i class="fa-regular fa-lock"></i>
 											<input type="password" name="current_password" id="current_password" placeholder="Enter your current password" required>
@@ -525,66 +510,6 @@ e.preventDefault();
 									</div>
 								</form>
 							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Profile Picture Update Modal -->
-			<div class="modal fade" id="profile_picture_modal" tabindex="-1" aria-hidden="true">
-				<div class="modal-dialog modal-dialog-centered">
-					<div class="modal-content">
-						<div class="profile__edit-close">
-							<button type="button" class="profile__edit-close-btn" data-bs-dismiss="modal">
-								<i class="fa-light fa-xmark"></i>
-							</button>
-						</div>
-						<div class="profile__edit-wrapper">
-							<div class="profile__edit-header">
-								<h4 class="profile__edit-title">Update Profile Picture</h4>
-								<p class="profile__edit-subtitle">Choose a new profile picture</p>
-							</div>
-
-							<form action="{{ path('app_update_profile_picture') }}" method="POST" id="profilePictureForm" enctype="multipart/form-data" novalidate>
-								<div class="profile__edit-input text-center">
-									<div class="profile-picture-preview mb-4">
-										<img id="picturePreview" src="{% if user.profilePicture %}{{ asset('uploads/profiles/' ~ user.profilePicture) }}{% else %}{{ asset('front_assets/img/blog/comments/user.png') }}{% endif %}" alt="Profile preview" style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%;">
-									</div>
-
-									<label for="new_profile_picture" class="custom-file-upload">
-										<i class="fa-regular fa-upload"></i>
-										Choose Image
-									</label>
-									<input type="file" name="profile_picture" id="new_profile_picture" accept="image/*" class="d-none">
-
-									<span class="file-selected-name d-block mt-2" id="fileSelectedName">No file selected</span>
-
-									<span class="error-message text-center" id="picture_error">
-										{% for message in app.flashes('error') %}
-											{% if message starts with 'The uploaded profile picture' or message starts with 'Failed to upload profile' %}
-												{{ message }}
-											{% endif %}
-										{% endfor %}
-									</span>
-								</div>
-
-								<div class="profile__edit-input mt-4">
-									<p>Current Password
-										<span class="text-danger">*</span>
-									</p>
-									<div class="profile__input-wrapper">
-										<i class="fa-regular fa-lock"></i>
-										<input type="password" name="current_password" id="picture_password" placeholder="Enter your current password" required>
-									</div>
-									<span class="error-message" id="picture_password_error"></span>
-									<small class="password-help-text">Please enter your current password to confirm this change</small>
-								</div>
-
-								<div class="profile__edit-actions">
-									<button type="button" class="tp-btn-grey" data-bs-dismiss="modal">Cancel</button>
-									<button type="submit" class="tp-btn" id="updatePictureBtn">Update Picture</button>
-								</div>
-							</form>
 						</div>
 					</div>
 				</div>
@@ -607,7 +532,7 @@ e.preventDefault();
 					display: block;
 					font-size: 0.875rem;
 				}
-
+				
 				/* Enhanced modal styling */
 				.profile__edit-header {
 					text-align: center;
@@ -681,8 +606,7 @@ e.preventDefault();
 					box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 				}
 
-				.password-help-text,
-				.image-help-text {
+				.password-help-text {
 					display: block;
 					color: #6c757d;
 					font-size: 12px;
@@ -704,332 +628,141 @@ e.preventDefault();
 				.modal.show .modal-dialog {
 					transform: none;
 				}
-				
-
-				.profile__basic-thumb {
-    position: relative !important;
-    width: 100px !important;
-    height: 100px !important;
-    border-radius: 50% !important;
-    overflow: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.profile__basic-thumb .profile-picture-container {
-    width: 100px !important;
-    height: 100px !important;
-    position: relative !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border-radius: 50% !important;
-    overflow: hidden !important;
-}
-
-.profile__basic-thumb img,
-.profile-picture {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100px !important;
-    height: 100px !important;
-    object-fit: cover !important;
-    border-radius: 50% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    display: block !important;
-    border: none !important;
-}
-
-.profile-picture-overlay {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100px !important;
-    height: 100px !important;
-    background-color: rgba(0, 0, 0, 0.5) !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-				.profile-picture-container:hover .profile-picture-overlay {
-					opacity: 1;
-				}
-
-				.change-picture-btn {
-					background: none;
-					border: none;
-					color: white;
-					font-size: 24px;
-					cursor: pointer;
-				}
-
-				.custom-file-upload {
-					display: inline-block;
-					padding: 10px 20px;
-					background-color: #6366f1;
-					color: white;
-					border-radius: 5px;
-					cursor: pointer;
-					transition: all 0.3s ease;
-				}
-
-				.custom-file-upload:hover {
-					background-color: #4f46e5;
-					transform: translateY(-2px);
-				}
-
-				.file-selected-name {
-					font-size: 14px;
-					color: #6c757d;
-				}
 			</style>
-
-			<script>
-				document.addEventListener('DOMContentLoaded', function (){
-					{% if app.session.get('password_tab_active') %}
-const passwordTab = document.getElementById('nav-password-tab');
-if (passwordTab) {
-passwordTab.click();
-}
-
-// Tell the server to clean up the session variable
-fetch('{{ path("app_profile") }}?cleanup=true');{% endif %}
-
-// Profile picture change functionality
-const changePictureBtn = document.getElementById('changePictureBtn');
-const profilePictureModal = new bootstrap.Modal(document.getElementById('profile_picture_modal'));
-
-// Open modal when change picture button is clicked
-if (changePictureBtn) {
-changePictureBtn.addEventListener('click', function () {
-profilePictureModal.show();
-});
-}
-
-// Preview image when selected
-const newProfilePicture = document.getElementById('new_profile_picture');
-const picturePreview = document.getElementById('picturePreview');
-const fileSelectedName = document.getElementById('fileSelectedName');
-
-if (newProfilePicture && picturePreview) {
-newProfilePicture.addEventListener('change', function (e) {
-if (this.files && this.files[0]) {
-const file = this.files[0];
-
-// Update the "file selected" text
-fileSelectedName.textContent = file.name;
-
-// Create a preview
-const reader = new FileReader();
-reader.onload = function (event) {
-picturePreview.src = event.target.result;
-}
-reader.readAsDataURL(file);
-
-// Validate the file
-validateProfilePictureFile(file);
-}
-});
-}
-
-// Picture form validation
-const profilePictureForm = document.getElementById('profilePictureForm');
-const picturePasswordInput = document.getElementById('picture_password');
-const pictureError = document.getElementById('picture_error');
-const picturePasswordError = document.getElementById('picture_password_error');
-
-function validateProfilePictureFile(file) {
-pictureError.textContent = '';
-
-if (file) {
-const fileSize = file.size / 1024 / 1024; // in MB
-const fileType = file.type;
-
-if (! fileType.startsWith('image/')) {
-pictureError.textContent = 'Please upload an image file';
-return false;
-}
-
-if (fileSize > 5) {
-pictureError.textContent = 'File size should not exceed 5MB';
-return false;
-}
-}
-return true;
-}
-
-function validatePicturePassword() {
-picturePasswordError.textContent = '';
-
-if (! picturePasswordInput.value.trim()) {
-picturePasswordError.textContent = 'Password is required to confirm changes';
-return false;
-} else if (picturePasswordInput.value.length < 8) {
-picturePasswordError.textContent = 'Password should be at least 8 characters';
-return false;
-}
-return true;
-}
-
-// Password field validation
-if (picturePasswordInput) {
-picturePasswordInput.addEventListener('input', validatePicturePassword);
-}
-
-// Form submission
-if (profilePictureForm) {
-profilePictureForm.addEventListener('submit', function (e) { // Check if an image was selected
-if (newProfilePicture.files.length === 0) {
-pictureError.textContent = 'Please select an image';
-e.preventDefault();
-return;
-}
-
-// Validate password
-const isPasswordValid = validatePicturePassword();
-if (! isPasswordValid) {
-e.preventDefault();
-picturePasswordInput.focus();
-}
-
-// Validate image file again
-const isPictureValid = validateProfilePictureFile(newProfilePicture.files[0]);
-if (! isPictureValid) {
-e.preventDefault();
-}
-});
-}
-});
-			</script>
-
+			
 			<script>
 				document.addEventListener('DOMContentLoaded', function () {
-const profileForm = document.getElementById('profileEditForm');
-const fullNameInput = document.querySelector('input[name="full_name"]');
-const emailInput = document.querySelector('input[name="email"]');
-const phoneInput = document.querySelector('input[name="phone"]');
-const currentPasswordInput = document.getElementById('current_password');
-
-const fullNameError = document.getElementById('full_name-error');
-const emailError = document.getElementById('email-error');
-const phoneError = document.getElementById('phone-error');
-const currentPasswordError = document.getElementById('current_password-error');
-
-// Add input event listeners for real-time validation
-fullNameInput.addEventListener('input', function () {
-validateName();
-});
-
-emailInput.addEventListener('input', function () {
-validateEmail();
-});
-
-phoneInput.addEventListener('input', function () {
-validatePhone();
-});
-
-currentPasswordInput.addEventListener('input', function () {
-validatePassword();
-});
-
-// Validation functions
-function validateName() {
-fullNameError.textContent = '';
-
-if (! fullNameInput.value.trim()) {
-fullNameError.textContent = 'Name cannot be empty';
-return false;
-} else {
-const nameParts = fullNameInput.value.trim().split(' ');
-if (nameParts.length < 2 || ! nameParts[0] || ! nameParts[1]) {
-fullNameError.textContent = 'Please provide both first and last name';
-return false;
-}
-}
-return true;
-}
-
-function validateEmail() {
-emailError.textContent = '';
-
-if (! emailInput.value.trim()) {
-emailError.textContent = 'Email cannot be empty';
-return false;
-} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
-emailError.textContent = 'Please enter a valid email address';
-return false;
-}
-return true;
-}
-
-function validatePhone() {
-phoneError.textContent = '';
-
-if (! phoneInput.value.trim()) {
-phoneError.textContent = 'Phone number cannot be empty';
-return false;
-} else if (!/^((\+|00)216)?([2579][0-9]{7}|(3[012]|4[01]|8[0128])[0-9]{6}|42[16][0-9]{5})$/.test(phoneInput.value)) {
-phoneError.textContent = 'Invalid phone number format';
-return false;
-}
-return true;
-}
-
-function validatePassword() {
-currentPasswordError.textContent = '';
-
-if (! currentPasswordInput.value.trim()) {
-currentPasswordError.textContent = 'Password is required to confirm changes';
-return false;
-} else if (currentPasswordInput.value.length < 8) {
-currentPasswordError.textContent = 'Password should be at least 8 characters';
-return false;
-}
-return true;
-}
-
-// Form submission handler
-profileForm.addEventListener('submit', function (e) { // Validate all fields
-const isNameValid = validateName();
-const isEmailValid = validateEmail();
-const isPhoneValid = validatePhone();
-const isPasswordValid = validatePassword();
-
-// If any validation fails, prevent form submission
-if (! isNameValid || ! isEmailValid || ! isPhoneValid || ! isPasswordValid) {
-e.preventDefault();
-
-// Highlight the first field with an error
-if (! isNameValid) 
-fullNameInput.focus();
- else if (! isEmailValid) 
-emailInput.focus();
- else if (! isPhoneValid) 
-phoneInput.focus();
- else if (! isPasswordValid) 
-currentPasswordInput.focus();
-
-
-}
-});
-
-// Show animation when modal opens
-const profileModal = document.getElementById('profile_edit_modal');
-profileModal.addEventListener('show.bs.modal', function () { // Clear previous validation errors
-fullNameError.textContent = '';
-emailError.textContent = '';
-phoneError.textContent = '';
-currentPasswordError.textContent = '';
-
-// Clear password field
-currentPasswordInput.value = '';
-});
-});
+					{% if app.session.get('password_tab_active') %}
+						const passwordTab = document.getElementById('nav-password-tab');
+						if (passwordTab) {
+							passwordTab.click();
+						}
+						
+						// Tell the server to clean up the session variable
+						fetch('{{ path("app_profile") }}?cleanup=true');
+					{% endif %}
+				});
 			</script>
-		</main>
-	{% endblock %}
+			
+			<script>
+				document.addEventListener('DOMContentLoaded', function () {
+					const profileForm = document.getElementById('profileEditForm');
+					const fullNameInput = document.querySelector('input[name="full_name"]');
+					const emailInput = document.querySelector('input[name="email"]');
+					const phoneInput = document.querySelector('input[name="phone"]');
+					const currentPasswordInput = document.getElementById('current_password');
+
+					const fullNameError = document.getElementById('full_name-error');
+					const emailError = document.getElementById('email-error');
+					const phoneError = document.getElementById('phone-error');
+					const currentPasswordError = document.getElementById('current_password-error');
+
+					// Add input event listeners for real-time validation
+					fullNameInput.addEventListener('input', function() {
+						validateName();
+					});
+
+					emailInput.addEventListener('input', function() {
+						validateEmail();
+					});
+
+					phoneInput.addEventListener('input', function() {
+						validatePhone();
+					});
+
+					currentPasswordInput.addEventListener('input', function() {
+						validatePassword();
+					});
+
+					// Validation functions
+					function validateName() {
+						fullNameError.textContent = '';
+						
+						if (!fullNameInput.value.trim()) {
+							fullNameError.textContent = 'Name cannot be empty';
+							return false;
+						} else {
+							const nameParts = fullNameInput.value.trim().split(' ');
+							if (nameParts.length < 2 || !nameParts[0] || !nameParts[1]) {
+								fullNameError.textContent = 'Please provide both first and last name';
+								return false;
+							}
+						}
+						return true;
+					}
+
+					function validateEmail() {
+						emailError.textContent = '';
+						
+						if (!emailInput.value.trim()) {
+							emailError.textContent = 'Email cannot be empty';
+							return false;
+						} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
+							emailError.textContent = 'Please enter a valid email address';
+							return false;
+						}
+						return true;
+					}
+
+					function validatePhone() {
+						phoneError.textContent = '';
+						
+						if (!phoneInput.value.trim()) {
+							phoneError.textContent = 'Phone number cannot be empty';
+							return false;
+						} else if (!/^((\+|00)216)?([2579][0-9]{7}|(3[012]|4[01]|8[0128])[0-9]{6}|42[16][0-9]{5})$/.test(phoneInput.value)) {
+							phoneError.textContent = 'Invalid phone number format';
+							return false;
+						}
+						return true;
+					}
+
+					function validatePassword() {
+						currentPasswordError.textContent = '';
+						
+						if (!currentPasswordInput.value.trim()) {
+							currentPasswordError.textContent = 'Password is required to confirm changes';
+							return false;
+						} else if (currentPasswordInput.value.length < 8) {
+							currentPasswordError.textContent = 'Password should be at least 8 characters';
+							return false;
+						}
+						return true;
+					}
+
+					// Form submission handler
+					profileForm.addEventListener('submit', function (e) {
+						// Validate all fields
+						const isNameValid = validateName();
+						const isEmailValid = validateEmail();
+						const isPhoneValid = validatePhone();
+						const isPasswordValid = validatePassword();
+
+						// If any validation fails, prevent form submission
+						if (!isNameValid || !isEmailValid || !isPhoneValid || !isPasswordValid) {
+							e.preventDefault();
+							
+							// Highlight the first field with an error
+							if (!isNameValid) fullNameInput.focus();
+							else if (!isEmailValid) emailInput.focus();
+							else if (!isPhoneValid) phoneInput.focus();
+							else if (!isPasswordValid) currentPasswordInput.focus();
+						}
+					});
+
+					// Show animation when modal opens
+					const profileModal = document.getElementById('profile_edit_modal');
+					profileModal.addEventListener('show.bs.modal', function () {
+						// Clear previous validation errors
+						fullNameError.textContent = '';
+						emailError.textContent = '';
+						phoneError.textContent = '';
+						currentPasswordError.textContent = '';
+						
+						// Clear password field
+						currentPasswordInput.value = '';
+					});
+				});
+			</script>
+	</main>
+{% endblock %}

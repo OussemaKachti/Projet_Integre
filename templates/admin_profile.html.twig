@@ -364,7 +364,7 @@
                                 <h3>Change Password</h3>
                             </div>
                             
-                            <form action="{{ path('app_change_password') }}" method="POST" id="changePasswordForm">
+                            <form action="{{ path('app_admin_password') }}" method="POST" id="changePasswordForm">
                                 <input type="hidden" name="active_tab" value="password">
                                 
                                 <div class="form-group">
@@ -412,7 +412,7 @@
                 <span class="close-modal">&times;</span>
             </div>
             <div class="modal-body">
-                <form action="{{ path('app_update_profile') }}" method="POST" id="profileEditForm">
+                <form action="{{ path('admin_update_profile') }}" method="POST" id="profileEditForm">
                     <div class="form-group">
                         <label for="full_name">Full Name</label>
                         <input type="text" name="full_name" id="full_name" value="{{ user.prenom ~ ' ' ~ user.nom }}">
