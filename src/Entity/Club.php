@@ -162,4 +162,14 @@ class Club
     {
         return $this->participations;
     }
+    public function getPresident(): ?User
+    {
+        return $this->president;
+    }
+    
+    public function setPresident(User $president): static
+    {
+        $this->president = $president;
+        return $this;
+    }
 }

@@ -14,8 +14,8 @@ parameters:
   llava_model_default: "Xenova/llava-7b" # Smaller model that should work with free tier
   nsfw_detection_model: "Falconsai/nsfw_image_detection"
   kernel.logs_dir: "%kernel.project_dir%/var/log"
-    club_images_directory: '%kernel.project_dir%/public/uploads/clubs'
-    uploads_directory: '%kernel.project_dir%/public/uploads'
+  club_images_directory: '%kernel.project_dir%/public/uploads/clubs'
+    
 
 
 services:
