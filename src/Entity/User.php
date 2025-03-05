@@ -37,6 +37,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $prenom = null;
 
     //control saisis mail
+    #[Assert\NotBlank(message: 'email cannot be empty')]
     #[Assert\Email(
         message: 'The email "{{ value }}" is not a valid email address.',
         mode: 'strict' // Enforces stricter validation (e.g., checks for valid domain names)
@@ -57,7 +58,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private RoleEnum $role;
 
     //control saisis num
-    #[ORM\Column(length: 15, nullable: true)]
+    #[ORM\Column(length: 15, nullable: true, unique:true)]
     #[Assert\NotBlank(message: 'Phone number cannot be empty')]
     // #[Assert\Length(min: 8, max: 15, minMessage: 'Phone number must be at least 8 digits', maxMessage: 'Phone number cannot exceed 15 digits')]
     #[Assert\Regex(

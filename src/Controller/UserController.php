@@ -72,9 +72,10 @@ class UserController extends AbstractController
         $form = $this->createForm(UserType::class, $user);
         // Handle form submission
         $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Check name for inappropriate content
+    
+        if ($form->isSubmitted()) {
+            // Always check name for inappropriate content when form is submitted,
+            // regardless of basic form validation
             $fullName = $user->getPrenom() . ' ' . $user->getNom();
             
             $this->logger->debug('Checking name during signup', [
@@ -87,41 +88,97 @@ class UserController extends AbstractController
             
             if ($nameCheckResult['is_inappropriate']) {
                 $this->addFlash('error', 'The provided name contains inappropriate content: ' . $nameCheckResult['explanation']);
+                // Return early, don't proceed with registration
                 return $this->render('user/sign-up.html.twig', [
                     'form' => $form->createView(),
                 ]);
             }
             
-            // Hash the password
-            $hashedPassword = $passwordHasher->hashPassword(
-                $user,
-                $form->get('password')->getData()
-            );
-            $user->setPassword($hashedPassword);
-
-            // Set the default role to NON_MEMBRE
-            $user->setRole(RoleEnum::NON_MEMBRE);
-
-            // Persist the user to the database
-            $entityManager->persist($user);
-            $entityManager->flush();
-
-            // Automatically send the confirmation email
-            try {
-                $userConfirmationService->sendConfirmationEmail($user);
-                $this->addFlash('success', 'Check your email to confirm your account!');
-            } catch (\Exception $e) {
-                $this->logger->error('Failed to send confirmation email', [
-                    'error' => $e->getMessage(),
-                    'user_id' => $user->getId()
-                ]);
-                $this->addFlash('error', 'Failed to send confirmation email. Please contact support.');
+            // Then proceed with form validation check
+            if ($form->isValid()) {
+                // Flag to track if we have validation errors
+                $hasValidationErrors = false;
+                
+                // Check for existing email before trying to persist
+                $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $user->getEmail()]);
+                if ($existingUser) {
+                    // Add error directly to the email field
+                    $form->get('email')->addError(new \Symfony\Component\Form\FormError('This email is already registered. Please use a different email or login.'));
+                    $hasValidationErrors = true;
+                }
+                
+                // Check for existing phone if phone is provided
+                if ($user->getTel()) {
+                    $existingPhone = $entityManager->getRepository(User::class)->findOneBy(['tel' => $user->getTel()]);
+                    if ($existingPhone) {
+                        $form->get('tel')->addError(new \Symfony\Component\Form\FormError('This phone number is already registered.'));
+                        $hasValidationErrors = true;
+                    }
+                }
+                
+                // If there are validation errors, return the form with all errors
+                if ($hasValidationErrors) {
+                    return $this->render('user/sign-up.html.twig', [
+                        'form' => $form->createView(),
+                    ]);
+                }
+    
+                // Hash the password
+                $hashedPassword = $passwordHasher->hashPassword(
+                    $user,
+                    $form->get('password')->getData()
+                );
+                $user->setPassword($hashedPassword);
+    
+                // Set the default role to NON_MEMBRE
+                $user->setRole(RoleEnum::NON_MEMBRE);
+    
+                try {
+                    // Persist the user to the database
+                    $entityManager->persist($user);
+                    $entityManager->flush();
+    
+                    // Automatically send the confirmation email
+                    try {
+                        $userConfirmationService->sendConfirmationEmail($user);
+                        $this->addFlash('success', 'Check your email to confirm your account!');
+                    } catch (\Exception $e) {
+                        $this->logger->error('Failed to send confirmation email', [
+                            'error' => $e->getMessage(),
+                            'user_id' => $user->getId()
+                        ]);
+                        $this->addFlash('error', 'Failed to send confirmation email. Please contact support.');
+                    }
+    
+                    // Redirect to success page
+                    return $this->redirectToRoute('app_home');
+                } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+                    // Fallback for any other unique constraint violations
+                    $this->logger->error('Unique constraint violation during registration', [
+                        'error' => $e->getMessage(),
+                        'user_email' => $user->getEmail()
+                    ]);
+                    
+                    if (strpos($e->getMessage(), 'UNIQ_8D93D649E7927C74') !== false) {
+                        // Email constraint
+                        $form->get('email')->addError(new \Symfony\Component\Form\FormError('This email is already registered. Please use a different email or login.'));
+                    } elseif (strpos($e->getMessage(), 'tel') !== false) {
+                        // Phone constraint
+                        $form->get('tel')->addError(new \Symfony\Component\Form\FormError('This phone number is already registered.'));
+                    } else {
+                        $this->addFlash('error', 'Registration failed. This account information is already in use.');
+                    }
+                } catch (\Exception $e) {
+                    // Generic exception handling
+                    $this->logger->error('Error during registration', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    $this->addFlash('error', 'An error occurred during registration. Please try again later.');
+                }
             }
-
-            // Redirect to success page
-            return $this->redirectToRoute('app_home');
         }
-
+    
         // Render the form template
         return $this->render('user/sign-up.html.twig', [
             'form' => $form->createView(),
