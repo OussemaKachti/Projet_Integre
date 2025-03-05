@@ -12,6 +12,7 @@
         "doctrine/doctrine-migrations-bundle": "^3.4",
         "doctrine/orm": "*",
         "firebase/php-jwt": "^6.11",
+        "friendsofsymfony/ckeditor-bundle": "^2.6",
         "guzzlehttp/guzzle": "^7.9",
         "knplabs/knp-paginator-bundle": "^6.6",
         "phpdocumentor/reflection-docblock": "^5.6",

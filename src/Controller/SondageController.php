@@ -33,6 +33,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Security\Core\Security;
 use Knp\Component\Pager\PaginatorInterface;
+use App\Form\CommentaireType;
 
 
 
@@ -164,12 +165,16 @@ class SondageController extends AbstractController
             $sondageResults[$sondage->getId()] = $this->getPollResults($sondage);
         }
         
+        // Create the comment form
+        $commentaire = new Commentaire();
+        $form = $this->createForm(CommentaireType::class, $commentaire);
+        
         return $this->render('sondage/ListPolls.html.twig', [
             'sondages' => $sondages,
             'reponses' => $reponses, 
-            'sondageResults' => $sondageResults ,
-            'isClubPresident' => $isClubPresident
-
+            'sondageResults' => $sondageResults,
+            'isClubPresident' => $isClubPresident,
+            'form' => $form->createView()
         ]);
     }
     public function getPollResults(Sondage $sondage): array
