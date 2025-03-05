@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Test LLaVA Content Moderation{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h1 class="mb-4">Test LLaVA Content Moderation</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            Upload Test Image
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="test_image" class="form-label">Select an image to test moderation</label>
+                    <input type="file" name="test_image" id="test_image" class="form-control" required accept="image/*">
+                </div>
+                <button type="submit" class="btn btn-primary">Test Moderation</button>
+            </form>
+        </div>
+    </div>
+    
+    {% if error %}
+        <div class="alert alert-danger">
+            <h4 class="alert-heading">Error!</h4>
+            <p>{{ error }}</p>
+        </div>
+    {% endif %}
+    
+    {% if result %}
+        <div class="card">
+            <div class="card-header">
+                Moderation Result
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">
+                    {% if result.is_inappropriate %}
+                        <span class="badge bg-danger">INAPPROPRIATE</span>
+                    {% else %}
+                        <span class="badge bg-success">APPROPRIATE</span>
+                    {% endif %}
+                </h5>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        Details
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-3">Success:</dt>
+                            <dd class="col-sm-9">{{ result.success ? 'Yes' : 'No' }}</dd>
+                            
+                            <dt class="col-sm-3">Explanation:</dt>
+                            <dd class="col-sm-9">{{ result.explanation }}</dd>
+                            
+                            {% if result.error is defined %}
+                                <dt class="col-sm-3">Error:</dt>
+                                <dd class="col-sm-9">{{ result.error }}</dd>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

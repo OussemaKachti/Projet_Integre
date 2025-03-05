@@ -3,44 +3,225 @@
 namespace App\Controller;
 
 use App\Entity\Commande;
+use App\Entity\Produit;
 use App\Form\CommandeType;
+use App\Entity\OrderDetails;
+use App\Entity\User;
+use App\Repository\ProduitRepository;
 use App\Repository\CommandeRepository;
+use App\Repository\clubRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use App\Enum\StatutCommandeEnum;
+use App\Services\OrderValidationService;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/commande')]
 class CommandeController extends AbstractController
 {
-    #[Route('/', name: 'app_commande_index', methods: ['GET'])]
-    public function index(CommandeRepository $commandeRepository): Response
-    {
-        return $this->render('commande/index.html.twig', [
-            'commandes' => $commandeRepository->findAll(),
+    
+
+    #[Route('/admin', name: 'admin_commandes')]
+public function index(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    PaginatorInterface $paginator
+): Response
+{
+    // Get search query if present
+    $keyword = $request->query->get('q', '');
+    
+    // Create query for commands
+    $commandeRepository = $entityManager->getRepository(Commande::class);
+    
+    if (!empty($keyword)) {
+        // Search query - you need to implement this in your repository
+        $query = $commandeRepository->searchByKeyword($keyword);
+    } else {
+        // Basic query to get all commands
+        $query = $commandeRepository->createQueryBuilder('c')
+            ->orderBy('c.dateComm', 'DESC')
+            ->getQuery();
+    }
+    
+    // Paginate the raw commands (we'll process them after pagination)
+    $pagination = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        2 // Number of items per page
+    );
+    
+    // Process the paginated commands
+    $data = [];
+    foreach ($pagination->getItems() as $commande) {
+        $user = $commande->getUser();
+        if (!$user) {
+            $user = null;
+        }
+        
+        $orderDetails = $commande->getOrderDetails();
+        if ($orderDetails->isEmpty()) {
+            $data[] = [
+                'user' => $user ? $user : 'Utilisateur inconnu',
+                'commande' => $commande,
+                'produit' => null,
+                'club' => null,
+                'dateComm' => $commande->getDateComm(),
+                'orderDetails' => $orderDetails,
+            ];
+        } else {
+            foreach ($orderDetails as $orderDetail) {
+                $produit = $orderDetail->getProduit();
+                $club = $produit ? $produit->getClub() : null;
+                
+                $data[] = [
+                    'user' => $user ? $user : 'Utilisateur inconnu',
+                    'commande' => $commande,
+                    'produit' => $produit,
+                    'club' => $club,
+                    'dateComm' => $commande->getDateComm(),
+                ];
+            }
+        }
+    }
+    
+    return $this->render('produit/commande_admin.html.twig', [
+        'data' => $data,
+        'pagination' => $pagination,
+        'keyword' => $keyword
+    ]);
+}
+
+    #[Route('/president', name: 'presi_commandes')]
+    public function commande(EntityManagerInterface $entityManager,
+    PaginatorInterface $paginator,Request $request,): Response
+    { 
+        // Get search query if present
+    $keyword = $request->query->get('q', '');
+    
+    // Create query for commands
+    $commandeRepository = $entityManager->getRepository(Commande::class);
+    
+    if (!empty($keyword)) {
+        // Search query - you need to implement this in your repository
+        $query = $commandeRepository->searchByKeyword($keyword);
+    } else {
+        // Basic query to get all commands
+        $query = $commandeRepository->createQueryBuilder('c')
+            ->orderBy('c.dateComm', 'DESC')
+            ->getQuery();
+    }
+    
+    // Paginate the raw commands (we'll process them after pagination)
+    $pagination = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        2 // Number of items per page
+    );
+        // Récupérer toutes les commandes
+        $commandes = $entityManager->getRepository(Commande::class)->findAll();
+    
+        $data = [];
+        foreach ($commandes as $commande) {
+            $user = $commande->getUser();
+            if (!$user) {
+                $user = null; // Correction ici pour éviter l'erreur
+            }
+    
+            $orderDetails = $commande->getOrderDetails(); // Collection d'OrderDetails
+            if ($orderDetails->isEmpty()) {
+                $data[] = [
+                    'user' => $user ? $user : 'Utilisateur inconnu',
+                    'commande' => $commande,
+                    'produit' => null, // Pas de produit
+                    'club' => null,
+                    'dateComm' => $commande->getDateComm(),
+                    'orderDetails' => $orderDetails,
+                ];
+            } else {
+                foreach ($orderDetails as $orderDetail) {
+                    $produit = $orderDetail->getProduit();
+                    $club = $produit ? $produit->getClub() : null;
+    
+                    $data[] = [
+                        'user' => $user ? $user : 'Utilisateur inconnu',
+                        'commande' => $commande,
+                        'produit' => $produit,
+                        'club' => $club,
+                        'dateComm' => $commande->getDateComm(),
+                    ];
+                }
+            }
+        }
+        
+        return $this->render('produit/index2.html.twig', [
+            'data' => $data,
+            'pagination' => $pagination,
+            'keyword' => $keyword
         ]);
     }
 
-    #[Route('/new', name: 'app_commande_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/commande/valider/{id}', name: 'commande_validate', methods: ['GET'])]
+    public function validateCommande(Commande $commande, OrderValidationService $orderValidationService): Response
     {
-        $commande = new Commande();
-        $form = $this->createForm(CommandeType::class, $commande);
-        $form->handleRequest($request);
+        try {
+            $orderValidationService->validateOrder($commande);
+            $this->addFlash('success', 'Commande validée et e-mail envoyé avec succès.');
+        } catch (\Exception $e) {
+            $this->addFlash('danger', 'Erreur lors de la validation de la commande : ' . $e->getMessage());
+        }
+        
+        // Redirige vers la liste des commandes ou une page de confirmation
+        return $this->redirectToRoute('presi_commandes');
+    }
+    
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($commande);
-            $entityManager->flush();
+    #[Route('/admin/supprimer/{id}', name: 'admin_commande_supprimer', methods: ['POST', 'GET'])]
+    public function supprimerCommande(int $id, EntityManagerInterface $entityManager): Response
+    {
+        // Récupérer la commande par ID
+        $commande = $entityManager->getRepository(Commande::class)->find($id);
 
-            return $this->redirectToRoute('app_commande_index', [], Response::HTTP_SEE_OTHER);
+        if (!$commande) {
+            $this->addFlash('danger', 'Commande non trouvée.');
+            return $this->redirectToRoute('admin_commandes');
         }
 
-        return $this->render('commande/new.html.twig', [
-            'commande' => $commande,
-            'form' => $form,
-        ]);
+        // Supprimer la commande
+        $entityManager->remove($commande);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Commande supprimée avec succès.');
+
+        return $this->redirectToRoute('admin_commandes');
     }
+
+    #[Route('/presi/supprimer/{id}', name: 'presi_commande_supprimer', methods: ['POST', 'GET'])]
+    public function supprimerCommandepresi(int $id, EntityManagerInterface $entityManager): Response
+    {
+        // Récupérer la commande par ID
+        $commande = $entityManager->getRepository(Commande::class)->find($id);
+
+        if (!$commande) {
+            $this->addFlash('danger', 'Commande non trouvée.');
+            return $this->redirectToRoute('admin_commandes');
+        }
+
+        // Supprimer la commande
+        $entityManager->remove($commande);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Commande supprimée avec succès.');
+
+        return $this->redirectToRoute('presi_commandes');
+    }
+
+    
+
 
     #[Route('/{id}', name: 'app_commande_show', methods: ['GET'])]
     public function show(Commande $commande): Response
@@ -78,4 +259,82 @@ class CommandeController extends AbstractController
 
         return $this->redirectToRoute('app_commande_index', [], Response::HTTP_SEE_OTHER);
     }
+    
+    #[Route('/commande/creer', name: 'order_create')]
+    
+    public function createOrder(
+        SessionInterface $session, 
+        ProduitRepository $produitRepository, 
+        EntityManagerInterface $entityManager
+    ): Response {
+        // Récupérer un utilisateur de test (remplacez l'ID 1 par un ID valide dans votre base)
+    $user = $entityManager->getRepository(User::class)->find(1);
+    
+    if (!$user) {
+        throw new \Exception("Utilisateur de test non trouvé !");
+    }
+    
+        // Récupérer le panier depuis la session
+        $cart = $session->get('cart', []);
+        
+    
+        // Créer une nouvelle commande
+        $commande = new Commande();
+        $commande->setUser($user);
+        $commande->setDateComm(new \DateTime());
+        
+        // Définir le statut de la commande
+        $statutCommande = StatutCommandeEnum::EN_COURS; 
+        $commande->setStatut($statutCommande);
+    
+        $orderTotal = 0;
+    
+        // Pour chaque produit dans le panier, créer une ligne de commande (OrderDetails)
+        foreach ($cart as $productId => $data) {
+            $produit = $produitRepository->find($productId);
+            if (!$produit) {
+                continue;
+            }
+            
+            // Gérer le cas où $data est un entier (ancienne structure) ou un tableau
+            $quantity = is_array($data) ? ($data['quantity'] ?? 1) : $data;
+            
+            // Créer une nouvelle ligne de commande (OrderDetails)
+            $orderDetails = new OrderDetails();
+            $orderDetails->setproduit($produit);
+            $orderDetails->setquantity($quantity);
+            $orderDetails->setprice($produit->getPrix());
+            $orderDetails->calculateTotal(); // Calcul automatique du total de la ligne
+            
+            // Associer la ligne de commande à la commande
+            $commande->addOrderDetails($orderDetails);
+            
+            // Additionner le total de la ligne au total de la commande
+            $orderTotal += $orderDetails->getTotal();
+        }
+        
+        // Si vous avez une méthode setTotal sur la commande, utilisez-la sinon stockez le total comme vous le souhaitez
+        $commande->setTotal($orderTotal);
+    
+        // Persister la commande et ses lignes dans la base de données
+        $entityManager->persist($commande);
+        $entityManager->flush();
+    
+        // Optionnel : vider le panier de la session après validation
+        $session->remove('cart');
+    
+        $this->addFlash('success', 'Commande enregistrée avec succès.');
+    
+        // Rediriger vers une page de confirmation ou vers la liste des commandes
+        return $this->redirectToRoute('order_success', ['id' => $commande->getId()]);
+    }
+    
+#[Route('/order/{id}', name: 'order_success', methods: ['GET'])]
+public function success(Commande $commande): Response
+{
+    return $this->render('commande/chekout.html.twig', [
+        'commande' => $commande,
+    ]);
+}
+
 }

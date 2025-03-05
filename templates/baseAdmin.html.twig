@@ -11,6 +11,8 @@
 		<link rel="stylesheet" href=" {{asset('../../back_assets/vendors/css/vendor.bundle.base.css')}}">
 		<link rel="stylesheet" href=" {{asset('../../back_assets/vendors/font-awesome/css/font-awesome.min.css')}}">
 		<link rel="stylesheet" href=" {{asset('../../back_assets/vendors/mdi/css/materialdesignicons.min.css')}}">
+		<link rel="stylesheet" href="{{ asset('back_assets/vendors/bootstrap/css/bootstrap.min.css') }}">
+
 		<!-- endinject -->
 		<!-- Plugin css for this page -->
 		<!-- End plugin css for this page -->
@@ -51,7 +53,7 @@
 								<img src=" {{asset('../../back_assets/images/faces/user.png')}}" alt="profile"/>
 							</a>
 							<div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
-								<a class="dropdown-item" href="{{path('app_profile')}}">
+								<a class="dropdown-item" href="{{path('app_admin_profile')}}">
 									<i class="ti-settings text-primary"></i>
 									Profile
 								</a>
@@ -104,11 +106,26 @@
 								</ul>
 							</div>
 						</li>
-						<li class="nav-item">
-							<a class="nav-link" href="#">
-								<i class="icon-columns menu-icon"></i>
-								<span class="menu-title">Events</span>
+							<li class="nav-item">
+							<a class="nav-link" data-bs-toggle="collapse" href="#Events" aria-expanded="false" aria-controls="Events">
+
+								<i class="icon-layout menu-icon"></i>
+								<span class="menu-title">Event</span>
+								<i class="menu-arrow"></i>
+
+
 							</a>
+							<div class="collapse" id="Events">
+								<ul class="nav flex-column sub-menu">
+									<li class="nav-item">
+										<a class="nav-link" href="{{ path('admin_page') }}">Events</a>
+									</li>
+									<li class="nav-item">
+										<a class="nav-link" href="{{ path('admincat_page') }}">Category</a>
+									</li>
+								</ul>
+							</div>
+
 						</li>
 
 
@@ -139,12 +156,11 @@
 							<div class="collapse" id="icons">
 								<ul class="nav flex-column sub-menu">
 									<li class="nav-item">
-										<a class="nav-link" href="../../pages/tables/comp_admin.html">Competitions</a>
+										<a class="nav-link" href="{{ path('app_competition_index') }}">Competitions</a>
 									</li>
 									<li class="nav-item">
-										<a class="nav-link" href="../../pages/tables/seasons_admin.html">Seasons</a>
+										<a class="nav-link" href="{{ path('app_saison_index') }}">Seasons</a>
 									</li>
-
 								</ul>
 							</div>
 						</li>
@@ -523,6 +539,7 @@ searchIcon.className = 'icon-search';
 			<script src=" {{asset('../../back_assets/js/todolist.js')}}"></script>
 			<script src=" {{asset('../../back_assets/js/chart.js')}}"></script>
 			<script src=" {{asset('../../back_assets/vendors/chart.js/chart.umd.js')}}"></script>
+				<script src="{{ asset('back_assets/vendors/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
 
 			<!-- endinject -->
