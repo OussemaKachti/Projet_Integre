@@ -15,7 +15,7 @@ class MissionProgress
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Club::class, inversedBy: "missionProgresses")]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?Club $club = null;
 
     #[ORM\ManyToOne(targetEntity: Competition::class, inversedBy: "missionProgresses")]

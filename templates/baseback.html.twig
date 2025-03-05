@@ -1,218 +1,237 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Skydash Admin</title>
-    <!-- plugins:css -->
-    <link rel="stylesheet" href=" {{asset('../../back_assets/vendors/feather/feather.css')}}">
-    <link rel="stylesheet" href=" {{asset('../../back_assets/vendors/ti-icons/css/themify-icons.css')}}">
-    <link rel="stylesheet" href=" {{asset('../../back_assets/vendors/css/vendor.bundle.base.css')}}">
-    <link rel="stylesheet" href=" {{asset('../../back_assets/vendors/font-awesome/css/font-awesome.min.css')}}">
-    <link rel="stylesheet" href=" {{asset('../../back_assets/vendors/mdi/css/materialdesignicons.min.css')}}">
-    <!-- endinject -->
-    <!-- inject:css -->
-    <link rel="stylesheet" href=" {{asset('../../back_assets/css/style.css')}}">
-    <!-- endinject -->
-    <link rel="shortcut icon" href=" {{asset('../../back_assets/images/favicon.png')}}" />
-  </head>
-  <body>
-    <div class="container-scroller">
-      <!-- partial:../../partials/_navbar.html -->
-      <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
-        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
-          <a class="navbar-brand brand-logo me-5" href="../../pages/tables/userAdmin.html"><img src=" {{asset('../../back_assets/images/log.png')}}" class="me-2" alt="logo" /></a>
-        </div>
-        <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
-          <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
-            <span class="icon-menu"></span>
-          </button>
-          <ul class="navbar-nav mr-lg-2">
-            <li class="nav-item nav-search d-none d-lg-block">
-              <div class="input-group">
-                <div class="input-group-prepend hover-cursor" id="navbar-search-icon">
-                  <span class="input-group-text" id="search">
-                    <i class="icon-search"></i>
-                  </span>
-                </div>
-                <input type="text" class="form-control" id="navbar-search-input" placeholder="Search now" aria-label="search" aria-describedby="search">
-              </div>
-            </li>
-          </ul>
-          <ul class="navbar-nav navbar-nav-right">
-            <li class="nav-item nav-profile dropdown">
-              <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" id="profileDropdown"> User
-                <img src=" {{asset('../../back_assets/images/faces/user.png')}}" alt="profile" />
-              </a>
-              <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
-                <a class="dropdown-item">
-                  <i class="ti-settings text-primary"></i> Settings </a>
-                <a class="dropdown-item">
-                  <i class="ti-power-off text-primary"></i> Logout </a>
-              </div>
-            </li>
-          </ul>
-          <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
-            <span class="icon-menu"></span>
-          </button>
-        </div>
-      </nav>
-      <!-- partial -->
-      <div class="container-fluid page-body-wrapper">
-        <!-- partial:../../partials/_sidebar.html -->
-        <nav class="sidebar sidebar-offcanvas" id="sidebar">
-          <ul class="nav">
-            <li class="nav-item">
-              <a class="nav-link" href="../../pages/tables/userAdmin.html">
-                  <i class="icon-columns menu-icon"></i>
-                  <span class="menu-title">User</span>
-              </a>
-            </li>
-            <li class="nav-item">
-             <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
-              
-                <i class="icon-layout menu-icon"></i>
-                <span class="menu-title">Clubs</span>
-                <i class="menu-arrow"></i>
-              </a>
-              <div class="collapse" id="ui-basic">
-                <ul class="nav flex-column sub-menu">
-                  <li class="nav-item"> <a class="nav-link" href="nav-link">Club</a></li>
-                  <li class="nav-item"> <a class="nav-link" href="nav-link">Member List</a></li>
-                </ul>
-              </div>
-            </li>
+	<head>
+		<!-- Required meta tags -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>Skydash Admin</title>
+		<!-- plugins:css -->
+		<link rel="stylesheet" href=" {{asset('../../back_assets/vendors/feather/feather.css')}}">
+		<link rel="stylesheet" href=" {{asset('../../back_assets/vendors/ti-icons/css/themify-icons.css')}}">
+		<link rel="stylesheet" href=" {{asset('../../back_assets/vendors/css/vendor.bundle.base.css')}}">
+		<link rel="stylesheet" href=" {{asset('../../back_assets/vendors/font-awesome/css/font-awesome.min.css')}}">
+		<link rel="stylesheet" href=" {{asset('../../back_assets/vendors/mdi/css/materialdesignicons.min.css')}}">
+		<!-- endinject -->
+		<!-- inject:css -->
+		<link
+		rel="stylesheet" href=" {{asset('../../back_assets/css/style.css')}}"> <!-- endinject -->
+		<link rel="shortcut icon" href=" {{asset('../../back_assets/images/favicon.png')}}"/>
+	</head>
+	<body>
+		<div
+			class="container-scroller">
+			<!-- partial:../../partials/_navbar.html -->
+			<nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+				<div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
+					<a class="navbar-brand brand-logo me-5" href="../../pages/tables/userAdmin.html"><img src=" {{asset('../../back_assets/images/log.png')}}" class="me-2" alt="logo"/></a>
+				</div>
+				<div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+					<button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+						<span class="icon-menu"></span>
+					</button>
+					<ul class="navbar-nav mr-lg-2">
+						<li class="nav-item nav-search d-none d-lg-block">
+							<div class="input-group">
+								<div class="input-group-prepend hover-cursor" id="navbar-search-icon">
+									<span class="input-group-text" id="search">
+										<i class="icon-search"></i>
+									</span>
+								</div>
+								<input type="text" class="form-control" id="navbar-search-input" placeholder="Search now" aria-label="search" aria-describedby="search">
+							</div>
+						</li>
+					</ul>
+					<ul class="navbar-nav navbar-nav-right">
+						<li class="nav-item nav-profile dropdown">
+							<a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" id="profileDropdown">
+								User
+								<img src=" {{asset('../../back_assets/images/faces/user.png')}}" alt="profile"/>
+							</a>
+							<div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+								<a class="dropdown-item">
+									<i class="ti-settings text-primary"></i>
+									Settings
+								</a>
+								<a class="dropdown-item">
+									<i class="ti-power-off text-primary"></i>
+									Logout
+								</a>
+							</div>
+						</li>
+					</ul>
+					<button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+						<span class="icon-menu"></span>
+					</button>
+				</div>
+			</nav>
+			<!-- partial -->
+			<div
+				class="container-fluid page-body-wrapper">
+				<!-- partial:../../partials/_sidebar.html -->
+				<nav class="sidebar sidebar-offcanvas" id="sidebar">
+					<ul class="nav">
+						<li class="nav-item">
+							<a class="nav-link" href="../../pages/tables/userAdmin.html">
+								<i class="icon-columns menu-icon"></i>
+								<span class="menu-title">User</span>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
 
-            
-            <li class="nav-item">
-             <a class="nav-link" data-bs-toggle="collapse" href="#Events" aria-expanded="false" aria-controls="Events">
-            
-                  <i class="icon-layout menu-icon"></i>
-                <span class="menu-title">Event</span>
-                <i class="menu-arrow"></i>
-
-              
-              </a>
-             <div class="collapse" id="Events">
-  <ul class="nav flex-column sub-menu">
-    <li class="nav-item">
-      <a class="nav-link" href="{{ path('admin_page') }}">Events</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{{ path('admincat_page') }}">Category</a>
-    </li>
-  </ul>
-</div>
-
-</li>
+								<i class="icon-layout menu-icon"></i>
+								<span class="menu-title">Clubs</span>
+								<i class="menu-arrow"></i>
+							</a>
+							<div class="collapse" id="ui-basic">
+								<ul class="nav flex-column sub-menu">
+									<li class="nav-item">
+										<a class="nav-link" href="nav-link">Club</a>
+									</li>
+									<li class="nav-item">
+										<a class="nav-link" href="nav-link">Member List</a>
+									</li>
+								</ul>
+							</div>
+						</li>
 
 
+						<li class="nav-item">
+							<a class="nav-link" data-bs-toggle="collapse" href="#Events" aria-expanded="false" aria-controls="Events">
+
+								<i class="icon-layout menu-icon"></i>
+								<span class="menu-title">Event</span>
+								<i class="menu-arrow"></i>
 
 
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#tables" aria-expanded="false" aria-controls="tables">
-                <i class="icon-grid-2 menu-icon"></i>
-                <span class="menu-title">Products</span>
-                <i class="menu-arrow"></i>
-              </a>
-              <div class="collapse" id="tables">
-                <ul class="nav flex-column sub-menu">
-                  <li class="nav-item"> <a class="nav-link" href="nav-link"">Products</a></li>
-                  <li class="nav-item"> <a class="nav-link" href="nav-link"nav-link"">Orders</a></li>
-                </ul>
-              </div>
-            </li>
+							</a>
+							<div class="collapse" id="Events">
+								<ul class="nav flex-column sub-menu">
+									<li class="nav-item">
+										<a class="nav-link" href="{{ path('admin_page') }}">Events</a>
+									</li>
+									<li class="nav-item">
+										<a class="nav-link" href="{{ path('admincat_page') }}">Category</a>
+									</li>
+								</ul>
+							</div>
 
-            
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#icons" aria-expanded="false" aria-controls="icons">
-                <i class="icon-contract menu-icon"></i>
-                <span class="menu-title">Competitions</span>
-                <i class="menu-arrow"></i>
-              </a>
-              <div class="collapse" id="icons">
-                <ul class="nav flex-column sub-menu">
-                  <li class="nav-item"> <a class="nav-link" href="nav-link"">Competitions</a></li>
-                  <li class="nav-item"> <a class="nav-link" href="nav-link"nav-link"">Seasons</a></li>
-                </ul>
-              </div>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
-                <i class="icon-head menu-icon"></i>
-                <span class="menu-title">Polls</span>
-                <i class="menu-arrow"></i>
-              </a>
-            </li>
-          </ul>
-        </nav>
+						</li>
 
-        <main>
-          {% block body %}{% endblock %}
-        </main>
-      </div>
-      <!-- footer -->
-      <footer class="footer">
-        <div class="d-sm-flex justify-content-center justify-content-sm-between">
-          <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2023. Premium <a href="https://www.bootstrapdash.com/" target="_blank">Bootstrap admin template</a> from BootstrapDash. All rights reserved.</span>
 
-        </div>
-      </footer>
-    </div>
+						<li class="nav-item">
+							<a class="nav-link" data-bs-toggle="collapse" href="#tables" aria-expanded="false" aria-controls="tables">
+								<i class="icon-grid-2 menu-icon"></i>
+								<span class="menu-title">Products</span>
+								<i class="menu-arrow"></i>
+							</a>
+							<div class="collapse" id="tables">
+								<ul class="nav flex-column sub-menu">
+									<li class="nav-item">
+										<a class="nav-link" href="nav-link" ">Products</a>
+									</li>
+									<li class="nav-item">
+										<a class="nav-link" href="nav-link" nav-link"">Orders</a>
+									</li>
+								</ul>
+							</div>
+						</li>
 
-    <!-- plugins:js -->
-    <script src=" {{asset('../../back_assets/vendors/js/vendor.bundle.base.js')}}"></script>
-    <!-- inject:js -->
-    <script src=" {{asset('../../back_assets/js/off-canvas.js')}}"></script>
-    <script src=" {{asset('../../back_assets/js/template.js')}}"></script>
-    <script src=" {{asset('../../back_assets/js/settings.js')}}"></script>
-    <script src=" {{asset('../../back_assets/js/todolist.js')}}"></script>
-    <script src=" {{asset('../../back_assets/js/chart.js')}}"></script>
-    <script src=" {{asset('../../back_assets/vendors/chart.js/chart.umd.js')}}"></script>
-  </body>
 
-  <style>
+						<li class="nav-item">
+							<a class="nav-link" data-bs-toggle="collapse" href="#icons" aria-expanded="false" aria-controls="icons">
+								<i class="icon-contract menu-icon"></i>
+								<span class="menu-title">Competitions</span>
+								<i class="menu-arrow"></i>
+							</a>
+							<div class="collapse" id="icons">
+								<ul class="nav flex-column sub-menu">
+									<li class="nav-item">
+										<a class="nav-link" href="nav-link" ">Competitions</a>
+									</li>
+									<li class="nav-item">
+										<a class="nav-link" href="nav-link" nav-link"">Seasons</a>
+									</li>
+								</ul>
+							</div>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
+								<i class="icon-head menu-icon"></i>
+								<span class="menu-title">Polls</span>
+								<i class="menu-arrow"></i>
+							</a>
+						</li>
+					</ul>
+				</nav>
 
-    .actions-column {
-      text-align: center;
-    }
+				<main>
+					{% block body %}{% endblock %}
+				</main>
+			</div>
+			<!-- footer -->
+			<footer class="footer">
+				<div class="d-sm-flex justify-content-center justify-content-sm-between">
+					<span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2023. Premium
+						<a href="https://www.bootstrapdash.com/" target="_blank">Bootstrap admin template</a>
+						from BootstrapDash. All rights reserved.</span>
 
-    .action-buttons {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
+				</div>
+			</footer>
+		</div>
 
-    .plusButton {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid white;
-      width: 1.8rem;
-      height: 1.8rem;
-      background-color: #000;
-      overflow: hidden;
-    }
+		<!-- plugins:js -->
+		<script src=" {{asset('../../back_assets/vendors/js/vendor.bundle.base.js')}}"></script>
+		<!-- inject:js -->
+		<script src=" {{asset('../../back_assets/js/off-canvas.js')}}"></script>
+		<script src=" {{asset('../../back_assets/js/template.js')}}"></script>
+		<script src=" {{asset('../../back_assets/js/settings.js')}}"></script>
+		<script src=" {{asset('../../back_assets/js/todolist.js')}}"></script>
+		<script src=" {{asset('../../back_assets/js/chart.js')}}"></script>
+		<script src=" {{asset('../../back_assets/vendors/chart.js/chart.umd.js')}}"></script>
+	</body>
 
-    .bin-button {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 25px;
-      height: 25px;
-      border-radius: 5px;
-      background-color: rgb(255, 95, 95);
-      cursor: pointer;
-      border: 3px solid rgb(255, 201, 201);
-      transition-duration: 0.3s;
-    }
+	<style>
 
-    .bin-button:hover {
-      background-color: rgb(255, 0, 0);
-    }
-  </style>
+		.actions-column {
+			text-align: center;
+		}
+
+		.action-buttons {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+		}
+
+		.plusButton {
+			position: relative;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			border: 1px solid white;
+			width: 1.8rem;
+			height: 1.8rem;
+			background-color: #000;
+			overflow: hidden;
+		}
+
+		.bin-button {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			width: 25px;
+			height: 25px;
+			border-radius: 5px;
+			background-color: rgb(255, 95, 95);
+			cursor: pointer;
+			border: 3px solid rgb(255, 201, 201);
+			transition-duration: 0.3s;
+		}
+
+		.bin-button:hover {
+			background-color: rgb(255, 0, 0);
+		}
+	</style>
 </html>

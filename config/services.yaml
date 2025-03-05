@@ -7,33 +7,55 @@
 parameters:
     event_images_directory: '%kernel.project_dir%/public/uploads/events'
 
+
 services:
-    _defaults:
-        autowire: true      # Automatically injects dependencies based on type hints
-        autoconfigure: true # Automatically tags services for common interfaces
+  # Access denied handler
+  App\EventListener\UserAuthenticationSubscriber:
+    tags:
+      - { name: kernel.event_subscriber }
+  App\Security\AccessDeniedHandler:
+    arguments:
+      $urlGenerator: "@router"
+      $security: "@security.helper"
 
-    App\Service\:
-        resource: '../src/Service'
+  # Login redirect listener
+  App\EventListener\LoginRedirectListener:
+    arguments:
+      $security: "@security.helper"
+      $urlGenerator: "@router"
+    tags:
+      - { name: kernel.event_subscriber }
 
-    App\Controller\:
-        resource: '../src/Controller' # Loads all controllers from the Controller directory
-        tags: ['controller.service_arguments'] # Ensures that arguments for controller actions are resolved
+  _defaults:
+    autowire: true # Automatically injects dependencies based on type hints
+    autoconfigure: true # Automatically tags services for common interfaces
+  App\Service\:
+    resource: "../src/Service"
+  App\Controller\:
+    resource: "../src/Controller" # Loads all controllers from the Controller directory
+    tags: ["controller.service_arguments"] # Ensures that arguments for controller actions are resolved
+  App\Repository\:
+    resource: "../src/Repository" # Loads all repositories from the Repository directory
+    tags: ["doctrine.repository_service"] # Ensures that repositories are tagged correctly
+  App\Security\:
+    resource: "../src/Security"
+  App\Service\OpenAIClient:
+    arguments:
+      $apiKey: "%env(OPENAI_API_KEY)%"
+  App\Service\ToxicityDetector:
+    arguments:
+      $client: "@http_client"
+      $apiKey: "%env(OPENAI_API_KEY)%"
 
-    App\Repository\:
-        resource: '../src/Repository' # Loads all repositories from the Repository directory
-        tags: ['doctrine.repository_service'] # Ensures that repositories are tagged correctly
-
-    App\Security\:
-        resource: '../src/Security'
-
-    App\Service\OpenAIClient:
-        arguments:
-            $apiKey: '%env(OPENAI_API_KEY)%'
-
-    App\Service\ToxicityDetector:
-        arguments:
-            $client: '@http_client'
-            $apiKey: '%env(OPENAI_API_KEY)%'
+  # Configure LLaVA Content Moderation Service
+  App\Service\LLaVAContentModerationService:
+    arguments:
+      $httpClient: "@http_client"
+      $huggingFaceApiKey: "%huggingface_api_key%"
+      $logger: "@logger"
+      $modelEndpoint: "%llava_model_endpoint%"
+      $cache: "@cache.app"
+      $nsfwModelEndpoint: "%nsfw_detection_model%"
 
     Tecnickcom\Tcpdf\Tcpdf:
         public: true

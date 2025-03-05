@@ -1,0 +1,49 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+
+parameters:
+    uploads_directory: '%kernel.project_dir%/public/uploads'
+    event_images_directory: '%kernel.project_dir%/public/uploads/events'
+
+
+services:
+    # Access denied handler
+    App\EventListener\UserAuthenticationSubscriber:
+        tags:
+            - { name: kernel.event_subscriber }
+    App\Security\AccessDeniedHandler:
+        arguments:
+            $urlGenerator: '@router'
+            $security: '@security.helper'
+    
+    # Login redirect listener
+    App\EventListener\LoginRedirectListener:
+        arguments:
+            $security: '@security.helper'
+            $urlGenerator: '@router'
+        tags:
+            - { name: kernel.event_subscriber }
+
+    _defaults:
+        autowire: true      # Automatically injects dependencies based on type hints
+        autoconfigure: true # Automatically tags services for common interfaces
+    App\Service\:
+        resource: '../src/Service'
+    App\Controller\:
+        resource: '../src/Controller' # Loads all controllers from the Controller directory
+        tags: ['controller.service_arguments'] # Ensures that arguments for controller actions are resolved
+    App\Repository\:
+        resource: '../src/Repository' # Loads all repositories from the Repository directory
+        tags: ['doctrine.repository_service'] # Ensures that repositories are tagged correctly
+    App\Security\:
+        resource: '../src/Security'
+    App\Service\OpenAIClient:
+        arguments:
+            $apiKey:  '%env(OPENAI_API_KEY)%'
+    App\Service\ToxicityDetector:
+        arguments:
+            $client: '@http_client'
+            $apiKey: '%env(OPENAI_API_KEY)%'
