@@ -1,0 +1,25 @@
+framework:
+    workflows:
+        order:
+            type: 'state_machine'  # Utilisation d'un workflow de type "state_machine"
+            supports:
+                - App\Entity\Commande  # Cette configuration s'applique aux objets de type Commande
+            places:
+                - en_cours      # État : En cours
+                - confirmee     # État : Confirmée
+                - annulee       # État : Annulée
+            transitions:
+                confirm_order:  # Transition pour confirmer la commande
+                    from: en_cours
+                    to: confirmee
+                cancel_order:   # Transition pour annuler la commande
+                    from: en_cours
+                    to: annulee
+                
+            metadata:
+                confirm_order:
+                    label: "Confirmer la commande"
+                cancel_order:
+                    label: "Annuler la commande"
+                
+

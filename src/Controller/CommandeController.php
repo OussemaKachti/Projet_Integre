@@ -21,6 +21,7 @@ use App\Services\OrderValidationService;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Workflow\Registry;
 
 
 #[Route('/commande')]
@@ -168,19 +169,35 @@ public function commande(EntityManagerInterface $entityManager,
 }
 
 
-    #[Route('/commande/valider/{id}', name: 'commande_validate', methods: ['GET'])]
-    public function validateCommande(Commande $commande, OrderValidationService $orderValidationService): Response
-    {
-        try {
-            $orderValidationService->validateOrder($commande);
-            $this->addFlash('success', 'Commande validée et e-mail envoyé avec succès.');
-        } catch (\Exception $e) {
-            $this->addFlash('danger', 'Erreur lors de la validation de la commande : ' . $e->getMessage());
-        }
-        
-        // Redirige vers la liste des commandes ou une page de confirmation
+#[Route('/commande/valider/{id}', name: 'commande_validate', methods: ['GET'])]
+public function validateCommande(int $id, EntityManagerInterface $entityManager): Response
+{
+    // Récupérer la commande par ID
+    $commande = $entityManager->getRepository(Commande::class)->find($id);
+
+    if (!$commande) {
+        $this->addFlash('danger', 'Commande non trouvée.');
         return $this->redirectToRoute('presi_commandes');
     }
+
+    // Appliquer la transition "confirm_order"
+    $workflow = $this->workflowRegistry->get($commande);
+
+    if ($workflow->can($commande, 'confirm_order')) {
+        $workflow->apply($commande, 'confirm_order');
+        // Sauvegarder la commande avec son nouveau statut
+        $entityManager->flush();
+
+        // Message de succès
+        $this->addFlash('success', 'Commande confirmée avec succès!');
+    } else {
+        // Message d'erreur si la transition ne peut pas être effectuée
+        $this->addFlash('danger', 'Impossible de confirmer la commande.');
+    }
+
+    // Rediriger vers la liste des commandes ou une page de confirmation
+    return $this->redirectToRoute('presi_commandes');
+}
     
 
     #[Route('/admin/supprimer/{id}', name: 'admin_commande_supprimer', methods: ['POST', 'GET'])]
@@ -212,6 +229,15 @@ public function commande(EntityManagerInterface $entityManager,
         if (!$commande) {
             $this->addFlash('danger', 'Commande non trouvée.');
             return $this->redirectToRoute('admin_commandes');
+        }
+
+        // Appeler la méthode cancelOrder à partir du service
+        try {
+            $this->commandeService->cancelOrder($commande);
+            $this->addFlash('success', 'Commande annulée avec succès.');
+        } catch (\Exception $e) {
+            $this->addFlash('danger', $e->getMessage());
+            return $this->redirectToRoute('presi_commandes');
         }
 
         // Supprimer la commande
@@ -366,5 +392,10 @@ public function success(Commande $commande): Response
 
         return $this->json($topProduits);
     }
+    
+    
+
+       
+    
 
 }

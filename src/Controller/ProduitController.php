@@ -16,6 +16,8 @@ use App\Entity\Club;
 use App\Repository\ClubRepository;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Bundle\SecurityBundle\Security;
+use App\Entity\User;
 
 #[Route('/produit')]
 class ProduitController extends AbstractController
@@ -24,23 +26,35 @@ class ProduitController extends AbstractController
 public function index(
     ProduitRepository $produitRepository,
     ClubRepository $clubRepository,
-    PaginatorInterface $paginator, // Utilisation correcte de la pagination
-    Request $request
+    PaginatorInterface $paginator,
+    Request $request,
+    Security $security // Injection du service Security pour récupérer l'utilisateur
 ): Response {
-    $query = $produitRepository->createQueryBuilder('p')->getQuery(); // Récupérer une requête valide
+    $query = $produitRepository->createQueryBuilder('p')->getQuery();
 
     $pagination = $paginator->paginate(
         $query, 
-        $request->query->getInt('page', 1), // Récupération du numéro de page
-        2 // Nombre d'éléments par page
+        $request->query->getInt('page', 1), 
+        2 
     );
+
+    $user = $security->getUser(); // Récupère l'utilisateur connecté
+    $isPresident = false;
+
+    if ($user) {
+        // Vérifie si l'utilisateur a le rôle PRESIDENT_CLUB
+        $isPresident = in_array('ROLE_PRESIDENT_CLUB', $user->getRoles(), true);
+    }
 
     return $this->render('produit/show.html.twig', [
         'pagination' => $pagination,
         'clubs' => $clubRepository->findAll(),
-        'produits' => $pagination->getItems(), // Extraction des produits paginés
+        'produits' => $pagination->getItems(),
+        'isPresident' => $isPresident // Passer la variable à Twig
     ]);
 }
+
+
 
 #[Route('/presi', name: 'produit_index', methods: ['GET'])]
 public function inde(
@@ -285,30 +299,35 @@ exit;
 
 
 //cart
-    #[Route('/cart', name: 'cart_index')]
-    public function cart(SessionInterface $session, ProduitRepository $produitRepository): Response
+#[Route('/cart', name: 'cart_index')]
+public function cart(SessionInterface $session, ProduitRepository $produitRepository): Response
 {
     // Récupérer le panier depuis la session
     $cartData = $session->get('cart', []);
-    $cartProduits = []; // Utilisation du nom demandé
-    $total = 0; // Initialisation du total
+    $cartProduits = [];
+    $total = 0;
 
-    // Pour chaque produit dans le panier, récupérer ses informations
+    // Vérifier si le panier est vide
+    $panierVide = empty($cartData);
+
     foreach ($cartData as $productId => $quantity) {
-        $produit = $produitRepository->find($productId); // Correction de la variable
+        $produit = $produitRepository->find($productId);
         if ($produit) {
             $cartProduits[] = [
-                'produit'  => $produit, // Changer la clé pour 'produit'
+                'produit'  => $produit,
                 'quantity' => $quantity,
             ];
             $total += $produit->getPrix() * $quantity;
         }
     }
 
-    // Passer les données à la vue
-    return $this->render('produit/cart.html.twig', compact('cartProduits', 'total')
-    );
+    return $this->render('produit/cart.html.twig', [
+        'cartProduits' => $cartProduits,
+        'total' => $total,
+        'panierVide' => $panierVide, // Passer cette variable au template
+    ]);
 }
+
 
  
     #[Route('/add/{id}', name: 'cart_add', methods: ['GET'] )]
