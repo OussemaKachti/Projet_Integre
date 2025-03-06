@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use App\Enum\GoalTypeEnum;
 
 #[ORM\Entity(repositoryClass: CompetitionRepository::class)]
 class Competition
@@ -51,7 +52,7 @@ class Competition
     #[Assert\NotNull(message: "A season must be selected.")]
     private ?Saison $saison = null;
 
-    #[ORM\OneToMany(mappedBy: "competition", targetEntity: MissionProgress::class)]
+    #[ORM\OneToMany(mappedBy: "competition", targetEntity: MissionProgress::class, cascade: ["persist", "remove"])]
     private Collection $missionProgresses;
     
     #[ORM\Column(type: Types::INTEGER)]
@@ -59,17 +60,27 @@ class Competition
     #[Assert\PositiveOrZero(message: "Points must be a positive number or zero.")]
     private ?int $points = null;
     
-    #[ORM\Column(type: "string", length: 20)]
-    #[Assert\Choice(choices: ["pending", "in_progress", "completed"], message: "Invalid status.")]
-    private ?string $status = "pending";
+    #[ORM\Column(type: "string", length: 20, options: ["default" => "pending"])]
+    #[Assert\Choice(choices: ["pending", "activated", "expired"], message: "Invalid status.")] // ✅ Updated choices
+    private string $status = "pending";
 
-    #[ORM\ManyToMany(targetEntity: Club::class, inversedBy: "competitions")]
-    private Collection $clubs;
+
+    #[ORM\Column(type: Types::INTEGER)]
+    #[Assert\NotNull(message: "Goal value is required.")]
+    #[Assert\Positive(message: "Goal value must be greater than zero.")]
+    private ?int $goal= null;
+
+    #[ORM\Column(type: "string", enumType: GoalTypeEnum::class, length: 50)]
+    #[Assert\Choice(callback: [GoalTypeEnum::class, 'cases'], message: "Invalid goal type.")]
+    private ?GoalTypeEnum $goalType = GoalTypeEnum::EVENT_COUNT;
+
+
     
+
 
     public function __construct() {
         $this->missionProgresses = new ArrayCollection();
-        $this->clubs = new ArrayCollection();
+        $this->status = "pending"; // ✅ Ensure the default value is properly set        $this->clubs = new ArrayCollection();
 
     }
 
@@ -166,7 +177,7 @@ class Competition
     return $this;
 }
 
-
+//*****************POINTS********************* */
 public function getPoints(): ?int
 {
     return $this->points;
@@ -177,5 +188,42 @@ public function setPoints(int $points): static
     $this->points = $points;
     return $this;
 }
+
+//*******************GOAlType******************* */
+public function getGoalType(): ?GoalTypeEnum
+{
+    return $this->goalType;
+}
+
+public function setGoalType(GoalTypeEnum $goalType): static
+{
+    $this->goalType = $goalType;
+    return $this;
+}
+
+//*******************GOAl******************* */
+
+
+public function getGoal(): ?int
+{
+    return $this->goal;
+}
+
+public function setGoal(int $goal): static
+{
+    $this->goal = $goal;
+    return $this;
+}
+
+
+//******************Méthode pour vérifier la progression des clubs*********voir combien de clubs ont complété la mission.************* */
+public function getClubsCompleted(): int
+{
+    return $this->missionProgresses->filter(fn($mp) => $mp->getIsCompleted())->count();
+}
+
+
+
+
 
 }

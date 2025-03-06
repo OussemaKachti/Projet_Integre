@@ -11,7 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-
+use App\Service\MissionCompletionChecker;
+use App\Repository\ClubRepository;
 #[Route('/competition')]
 class CompetitionController extends AbstractController
 {
@@ -93,4 +94,70 @@ class CompetitionController extends AbstractController
 
         return $this->redirectToRoute('app_competition_index', [], Response::HTTP_SEE_OTHER);
     }
+
+
+    #[Route('/admin/update-missions', name: 'update_missions')]
+    public function updateMissions(MissionCompletionChecker $checker): Response
+    {
+        $checker->checkAndUpdateMissionStatus();
+
+        return new Response("Competition statuses updated successfully!");
+    }
+
+    public function activateCompetition(
+        Competition $competition, 
+        EntityManagerInterface $entityManager, 
+        ClubRepository $clubRepository,
+        MissionProgressRepository $missionProgressRepository
+    ): Response {
+        if ($competition->getStatus() !== 'activated') {
+            $competition->setStatus('activated');
+            $clubs = $clubRepository->findAll();
+    
+            foreach ($clubs as $club) {
+                $progress = $missionProgressRepository->findOneBy([
+                    'club' => $club,
+                    'competition' => $competition
+                ]);
+    
+                if (!$progress) {
+                    $progress = new MissionProgress();
+                    $progress->setClub($club);
+                    $progress->setCompetition($competition);
+                    $entityManager->persist($progress);
+                } else {
+                    $progress->setProgress(0); // ✅ Reset progress if reactivating
+                }
+            }
+    
+            $entityManager->flush();
+        }
+    
+        return $this->redirectToRoute('app_competition_index');
+    }
+    
+
+#[Route('/admin/check-expired-competitions', name: 'check_expired_competitions')]
+public function checkExpiredCompetitions(EntityManagerInterface $entityManager, CompetitionRepository $competitionRepository): Response
+{
+    $today = new \DateTime();
+    $expiredCompetitions = $competitionRepository->createQueryBuilder('c')
+        ->where('c.endDate < :today')
+        ->andWhere('c.status = :status')
+        ->setParameter('today', $today)
+        ->setParameter('status', 'activated')
+        ->getQuery()
+        ->getResult();
+
+    foreach ($expiredCompetitions as $competition) {
+        $competition->setStatus('expired'); // ✅ Mark as expired
+    }
+
+    $entityManager->flush();
+
+    return new Response("Expired competitions updated.");
+}
+
+ 
+
 }

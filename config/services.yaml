@@ -91,3 +91,17 @@ services:
             $entityManager: '@doctrine.orm.entity_manager'
             
         
+  App\EventListener\MissionProgressListener:
+        arguments:
+            $missionCompletionChecker: '@App\Service\MissionCompletionChecker'
+            $logger: '@logger'
+        tags:
+            - { name: kernel.event_subscriber }
+  App\EventListener\EventCreationListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.terminate }
+  App\Validator\Constraints\ValidEmailValidator:
+        arguments:
+            $logger: '@logger'
+        tags:
+            - { name: validator.constraint_validator }
