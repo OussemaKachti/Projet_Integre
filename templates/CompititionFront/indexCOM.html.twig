@@ -79,15 +79,19 @@
                                     <th>Points</th>
                                 </tr>
                             </thead>
-                           <tbody>
-    {% for leader in leaderboard %}
-        <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ leader.club }}</td> {# Access the nomC property of the Club entity #}
-            <td>{{ leader.points }}</td>
-        </tr>
-    {% endfor %}
-</tbody>
+                            <tbody>
+                                {% for club in leaderboard %}
+                                    <tr class="{% if loop.index == 1 %}text-warning{% endif %}"> {# Gold for first place #}
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ club.nomC }}</td>
+                                        <td>{{ club.points }}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center">No clubs found</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
                         </table>
                     </div>
                 </div>
