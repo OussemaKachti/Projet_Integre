@@ -28,239 +28,251 @@
 					{# {% if app.user.role == 'presidentClub' %} #}
 						<div
 						class="col-xxl-8 col-xl-8 col-lg-8"> {# {% endif %}
-																					
-																											{% if app.user.role == 'presidentClub' %}
-																												<div>
-																												{% endif %} #}
+																																																																													
+																																																																																			{% if app.user.role == 'presidentClub' %}
+																																																																																				<div>
+																																																																																				{% endif %} #}
 
 
 						<div class="postbox__wrapper postbox__details pr-20">
 							<div class="postbox__item transition-3 mb-70">
 								<div class="postbox__content">
-									{% for sondage in sondages %}
-										<div class="poll-container" data-sondage-id="{{ sondage.id }}">
-											<div class="user-info">
-												<img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="User">
-												<b>{{ sondage.user.nom }}
-													{{ sondage.user.prenom }}</b>
-												|
-												<span>{{ sondage.createdAt|date('d M Y') }}</span>
-												<div class="summary-container">
-													<button class="btn btn-success summary-button open-summary-modal" data-sondage-id="{{ sondage.id }}">
-														View Summary
-													</button>
-												</div>
-												<style>
-													.summary-button {
-														position: absolute;
-														top: 10px;
-														right: 2px;
-														background-color: #3498db; /* Remplacez par la couleur souhaitée */
-														border-color: #2980b9; /* Ajustez la couleur de la bordure */
-														color: white; /* Couleur du texte */
-													}
-
-													.summary-button:hover {
-														background-color: #2980b9; /* Couleur du bouton au survol */
-														border-color: #1c5980; /* Couleur de la bordure au survol */
-													}
-												</style>
-											</div>
-											<div class="poll-title">{{ sondage.question }}</div>
-
-											<!-- Formulaire de vote -->
-											<form action="{{ path('submit_vote', {'sondageId': sondage.id}) }}" method="POST" class="poll-vote-form">
-												{% for choix in sondage.choix %}
-													<div class="poll-option option-{{ loop.index }}">
-														<input type="radio" name="choix" id="option-{{ loop.index }}" value="{{ choix.id }}" class="poll-option-radio">
-														<label for="option-{{ loop.index }}">{{ choix.contenu }}</label>
-														<div class="progress-bar">
-															{% if sondageResults[sondage.id] is defined and sondageResults[sondage.id] is not empty %}
-																{% for resultat in sondageResults[sondage.id] %}
-																	{% if resultat.choix == choix.contenu %}
-																		<div class="progress" style="width: {{ resultat.percentage }}%; background-color: {{ resultat.color }}">
-																			{{ resultat.percentage }}%
-																		</div>
-																	{% endif %}
-																{% endfor %}
-															{% else %}
-																<p>Aucun résultat disponible pour ce sondage.</p>
-															{% endif %}
-
-														</div>
+									{% if sondages is empty %}
+										<div class="alert alert-info text-center">
+											<h4>No polls exist yet!</h4>
+										</div>
+									{% else %}
+										{% for sondage in sondages %}
+											<div class="poll-container" data-sondage-id="{{ sondage.id }}">
+												<div class="user-info">
+<img src="{{ sondage.user.profilePicture ? asset('uploads/profiles/' ~ sondage.user.profilePicture) : asset('front_assets/img/blog/comments/user.png') }}" 
+     alt="{{ sondage.user.prenom }} {{ sondage.user.nom }}" 
+     class="profile-picture">
+													<b>{{ sondage.user.nom }}
+														{{ sondage.user.prenom }}</b>
+													|
+													<span>{{ sondage.createdAt|date('d M Y') }}</span>
+													<div class="summary-container">
+														<button class="btn btn-success summary-button open-summary-modal" data-sondage-id="{{ sondage.id }}">
+															View Summary
+														</button>
 													</div>
-												{% endfor %}
-												<!-- Modale Bootstrap (ajoutée une seule fois en dehors de la boucle) -->
-												<div class="modal fade" id="summaryModal" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
-													<div class="modal-dialog">
-														<div class="modal-content">
-															<div class="modal-header">
-																<h5 class="modal-title" id="summaryModalLabel">Survey Summary</h5>
-																<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-															</div>
-															<div class="modal-body">
-																<p id="summaryText">Loading...</p>
-															</div>
-															<div class="modal-footer">
-																<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+													<style>
+														.summary-button {
+															position: absolute;
+															top: 10px;
+															right: 2px;
+															background-color: #3498db; /* Remplacez par la couleur souhaitée */
+															border-color: #2980b9; /* Ajustez la couleur de la bordure */
+															color: white; /* Couleur du texte */
+														}
+
+														.summary-button:hover {
+															background-color: #2980b9; /* Couleur du bouton au survol */
+															border-color: #1c5980; /* Couleur de la bordure au survol */
+														}
+													</style>
+												</div>
+												<div class="poll-title">{{ sondage.question }}</div>
+
+												<!-- Formulaire de vote -->
+												<form action="{{ path('submit_vote', {'sondageId': sondage.id}) }}" method="POST" class="poll-vote-form">
+													{% for choix in sondage.choix %}
+														<div class="poll-option option-{{ loop.index }}">
+															<input type="radio" name="choix" id="option-{{ loop.index }}" value="{{ choix.id }}" class="poll-option-radio">
+															<label for="option-{{ loop.index }}">{{ choix.contenu }}</label>
+															<div class="progress-bar">
+																{% if sondageResults[sondage.id] is defined and sondageResults[sondage.id] is not empty %}
+																	{% for resultat in sondageResults[sondage.id] %}
+																		{% if resultat.choix == choix.contenu %}
+																			<div class="progress" style="width: {{ resultat.percentage }}%; background-color: {{ resultat.color }}">
+																				{{ resultat.percentage }}%
+																			</div>
+																		{% endif %}
+																	{% endfor %}
+																{% else %}
+																	<p>Aucun résultat disponible pour ce sondage.</p>
+																{% endif %}
+
 															</div>
 														</div>
+													{% endfor %}
+
+													<!-- Modale Bootstrap (ajoutée une seule fois en dehors de la boucle) -->
+													<div class="modal fade" id="summaryModal" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
+														<div class="modal-dialog">
+															<div class="modal-content">
+																<div class="modal-header">
+																	<h5 class="modal-title" id="summaryModalLabel">Survey Summary</h5>
+																	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+																</div>
+																<div class="modal-body">
+																	<p id="summaryText">Loading...</p>
+																</div>
+																<div class="modal-footer">
+																	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+																</div>
+															</div>
+														</div>
+													</div>
+													<button type="submit" class="btn btn-secondary">Submit Vote</button>
+												</form>
+
+												<!-- Toast Bootstrap -->
+												<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3">
+													<div id="vote-toast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+														<div class="d-flex">
+															<div class="toast-body"></div>
+															<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+														</div>
 													</div>
 												</div>
-												<button type="submit" class="btn btn-secondary">Submit Vote</button>
-											</form>
 
-											<!-- Toast Bootstrap -->
-											<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3">
-												<div id="vote-toast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-													<div class="d-flex">
-														<div class="toast-body"></div>
-														<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-													</div>
-												</div>
-											</div>
-
-											<!-- Button to Delete Vote -->
+												<!-- Button to Delete Vote -->
 
 
-											<!-- Comments Section -->
-											<div
-												class="latest-comment mb-3">
-												<!-- Rendre le h3 cliquable avec un style pointer -->
+												<!-- Comments Section -->
 												<div
-													style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-													<!-- Nombre de commentaires -->
-													<h3 class="openModal" style="cursor: pointer;" data-sondage-id="{{ sondage.id }}">
-														{{ sondage.commentaires|length }}
-														Comments
-													</h3>
+													class="latest-comment mb-3">
+													<!-- Rendre le h3 cliquable avec un style pointer -->
+													<div
+														style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+														<!-- Nombre de commentaires -->
+														<h3 class="openModal" style="cursor: pointer;" data-sondage-id="{{ sondage.id }}">
+															{{ sondage.commentaires|length }}
+															Comments
+														</h3>
 
-													<!-- Affichage du choix de l'utilisateur -->
-													<p class="user-response" style="margin: 0; padding-right: 10px;">
-														<strong>Votre choix :</strong>
-														{% if reponses[sondage.id] is defined %}
-															{{ reponses[sondage.id] }}
-														{% else %}
-															No vote
+														<!-- Affichage du choix de l'utilisateur -->
+														<p class="user-response" style="margin: 0; padding-right: 10px;">
+															<strong>Votre choix :</strong>
+															{% if reponses[sondage.id] is defined %}
+																{{ reponses[sondage.id] }}
+															{% else %}
+																No vote
+															{% endif %}
+														</p>
+
+														<!-- Formulaire pour supprimer le vote -->
+														{% if reponses[sondage.id] is defined and reponses[sondage.id] is not empty %}
+															<form action="{{ path('delRep', {'sondageId': sondage.id}) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your vote?');">
+																<input type="hidden" name="_method" value="DELETE">
+																<button type="submit" class="btn btn-danger">Delete Vote</button>
+															</form>
 														{% endif %}
-													</p>
+													</div>
 
-													<!-- Formulaire pour supprimer le vote -->
-													{% if reponses[sondage.id] is defined and reponses[sondage.id] is not empty %}
-														<form action="{{ path('delRep', {'sondageId': sondage.id}) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your vote?');">
-															<input type="hidden" name="_method" value="DELETE">
-															<button type="submit" class="btn btn-danger">Delete Vote</button>
-														</form>
-													{% endif %}
-												</div>
-
-												<style>
-													.openModal {
-														font-size: 14px !important; /* Taille de police plus petite avec priorité */
-														font-weight: normal !important; /* Enlever le gras avec priorité */
-														color: #555 !important; /* Couleur plus douce avec priorité */
-														margin: 0 !important; /* Enlever la marge si nécessaire avec priorité */
-													}
-												</style>
-												<!-- Modal -->
-												<div class="modal fade" id="commentsModal{{ sondage.id }}" tabindex="-1" aria-labelledby="commentsModalLabel{{ sondage.id }}" aria-hidden="true">
-													<div class="modal-dialog modal-lg" role="document">
-														<div class="modal-content">
-															<div class="modal-header">
-																<h5 class="modal-title" id="commentsModalLabel{{ sondage.id }}">All Comments</h5>
-																<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-															</div>
-															<div class="modal-body">
-																<div class="comments-list">
-																	{% for commentaire in sondage.commentaires %}
-																		<div class="comment-box" id="comment-{{ commentaire.id }}">
-																			<div class="comment-info d-flex">
-																				<div class="comment-avatar mr-20">
-																					<img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="">
+													<style>
+														.openModal {
+															font-size: 14px !important; /* Taille de police plus petite avec priorité */
+															font-weight: normal !important; /* Enlever le gras avec priorité */
+															color: #555 !important; /* Couleur plus douce avec priorité */
+															margin: 0 !important; /* Enlever la marge si nécessaire avec priorité */
+														}
+													</style>
+													<!-- Modal -->
+													<div class="modal fade" id="commentsModal{{ sondage.id }}" tabindex="-1" aria-labelledby="commentsModalLabel{{ sondage.id }}" aria-hidden="true">
+														<div class="modal-dialog modal-lg" role="document">
+															<div class="modal-content">
+																<div class="modal-header">
+																	<h5 class="modal-title" id="commentsModalLabel{{ sondage.id }}">All Comments</h5>
+																	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+																</div>
+																<div class="modal-body">
+																	<div class="comments-list">
+																		{% for commentaire in sondage.commentaires %}
+																			<div class="comment-box" id="comment-{{ commentaire.id }}">
+																				<div class="comment-info d-flex">
+																					<div class="comment-avatar mr-20">
+																						{% if commentaire.user.profilePicture %}
+																							<img src="{{ asset('uploads/profiles/' ~ commentaire.user.profilePicture) }}" alt="Profile picture" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+																						{% else %}
+																							<img src="{{ asset('front_assets/img/blog/comments/user.png') }}" alt="Default profile picture">
+																						{% endif %}
+																					</div>
+																					<br>
+																					<div class="avatar-name">
+																						<h5>{{ commentaire.user.nom }}
+																							{{ commentaire.user.prenom }}</h5>
+																						<span class="post-meta">{{ commentaire.dateComment|date('d M Y') }}</span>
+																					</div>
 																				</div>
-																				<br>
-																				<div class="avatar-name">
-																					<h5>{{ commentaire.user.nom }}
-																						{{ commentaire.user.prenom }}</h5>
-																					<span class="post-meta">{{ commentaire.dateComment|date('d M Y') }}</span>
+																				<div class="comment-info d-flex">
+																					{% if commentaire.contenuComment starts with '⚠️ Comment hidden' %}
+																						<p class="moderated-comment">{{ commentaire.contenuComment }}</p>
+																					{% else %}
+																						<p>{{ commentaire.contenuComment }}</p>
+																					{% endif %}
 																				</div>
-																			</div>
-																			<div class="comment-info d-flex">
-																				{% if commentaire.contenuComment starts with '⚠️ Comment hidden' %}
-																					<p class="moderated-comment">{{ commentaire.contenuComment }}</p>
-																				{% else %}
-																					<p>{{ commentaire.contenuComment }}</p>
-																				{% endif %}
-																			</div>
-																			<style>
-																				.comment-info p {
-																					font-weight: bold; /* Texte en gras */
-																					text-align: left; /* Aligner totalement le texte à droite */
-																				}
+																				<style>
+																					.comment-info p {
+																						font-weight: bold; /* Texte en gras */
+																						text-align: left; /* Aligner totalement le texte à droite */
+																					}
 
-																				textarea {
-																					width: 50%; /* Assurer qu'il prend toute la largeur disponible */
-																					height: 28px; /* Taille plus petite pour le champ de texte */
-																					font-size: 14px; /* Réduire la taille du texte à l'intérieur */
-																					padding: 8px;
-																					border-radius: 5px;
-																					border: 1px solid #ddd;
-																					resize: none; /* Empêche le redimensionnement de la zone de texte */
-																				}
+																					textarea {
+																						width: 50%; /* Assurer qu'il prend toute la largeur disponible */
+																						height: 28px; /* Taille plus petite pour le champ de texte */
+																						font-size: 14px; /* Réduire la taille du texte à l'intérieur */
+																						padding: 8px;
+																						border-radius: 5px;
+																						border: 1px solid #ddd;
+																						resize: none; /* Empêche le redimensionnement de la zone de texte */
+																					}
 
-																				.moderated-comment {
-																					background-color: #fff3cd;
-																					border-left: 4px solid #ffc107;
-																					padding: 1rem;
-																					margin: 0.5rem 0;
-																					color: #856404;
-																				}
+																					.moderated-comment {
+																						background-color: #fff3cd;
+																						border-left: 4px solid #ffc107;
+																						padding: 1rem;
+																						margin: 0.5rem 0;
+																						color: #856404;
+																					}
 
-																				.toxic-warning-icon {
-																					color: #856404;
-																					margin-right: 0.5rem;
-																				}
-																			</style>
+																					.toxic-warning-icon {
+																						color: #856404;
+																						margin-right: 0.5rem;
+																					}
+																				</style>
 
-																			<div
-																				class="comment-actions" style="display: flex; align-items: center; gap: 10px;">
-																				<!-- Edit Button -->
-																				{% if app.user and app.user.id == commentaire.user.id %}
-																					{% if not (commentaire.contenuComment matches '/^⚠️ Comment hidden:/') %}
-																						<form action="{{ path('edit_comment', {'id': commentaire.id}) }}" method="POST" id="editCommentForm">
-																							<input type="hidden" name="_method" value="PUT">
-																							<textarea name="content" placeholder="Edit your comment">{{ commentaire.contenuComment }}</textarea>
-																							<button type="submit" class="btn btn-success">Update Comment</button>
-																						</form>
-																						<br>
+																				<div
+																					class="comment-actions" style="display: flex; align-items: center; gap: 10px;">
+																					<!-- Edit Button -->
+																					{% if app.user and app.user.id == commentaire.user.id %}
+																						{% if not (commentaire.contenuComment matches '/^⚠️ Comment hidden:/') %}
+																							<form action="{{ path('edit_comment', {'id': commentaire.id}) }}" method="POST" id="editCommentForm">
+																								<input type="hidden" name="_method" value="PUT">
+																								<textarea name="content" placeholder="Edit your comment">{{ commentaire.contenuComment }}</textarea>
+																								<button type="submit" class="btn btn-success">Update Comment</button>
+																							</form>
+																							<br>
+																						{% endif %}
 																					{% endif %}
-																				{% endif %}
 
-																				<!-- Delete Button -->
-																				{% if app.user and (app.user.id == commentaire.user.id or app.user.role == 'presidentClub' and commentaire.sondage.club.president.id == app.user.id) %}
-																					{% if not (commentaire.contenuComment matches '/^⚠️ Comment hidden:/') %}
-																						<form action="{{ path('delete_comment', {'id': commentaire.id}) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this comment?');" id="deleteCommentForm">
-																							<input type="hidden" name="_method" value="DELETE">
-																							<button type="submit" class="btn btn-danger">Delete</button>
-																						</form>
+																					<!-- Delete Button -->
+																					{% if app.user and (app.user.id == commentaire.user.id or app.user.role == 'presidentClub' and commentaire.sondage.club.president.id == app.user.id) %}
+																						{% if not (commentaire.contenuComment matches '/^⚠️ Comment hidden:/') %}
+																							<form action="{{ path('delete_comment', {'id': commentaire.id}) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this comment?');" id="deleteCommentForm">
+																								<input type="hidden" name="_method" value="DELETE">
+																								<button type="submit" class="btn btn-danger">Delete</button>
+																							</form>
+																						{% endif %}
 																					{% endif %}
-																				{% endif %}
 
-																				<!-- Toast Notification -->
-																				<div id="toast" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
-																					<div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" style="display: none;">
-																						<div class="d-flex">
-																							<div class="toast-body">
-																								Comment updated successfully!
+																					<!-- Toast Notification -->
+																					<div id="toast" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+																						<div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" style="display: none;">
+																							<div class="d-flex">
+																								<div class="toast-body">
+																									Comment updated successfully!
+																								</div>
+																								<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 																							</div>
-																							<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 																						</div>
 																					</div>
 																				</div>
-																			</div>
 
-																			<script>
-																				document.getElementById('editCommentForm').addEventListener('submit', function (event) { // Affiche le toast pour la mise à jour du commentaire
+																				<script>
+																					document.getElementById('editCommentForm').addEventListener('submit', function (event) { // Affiche le toast pour la mise à jour du commentaire
 let toast = new bootstrap.Toast(document.getElementById('toastMessage'));
 toast.show();
 });
@@ -269,54 +281,56 @@ document.getElementById('deleteCommentForm').addEventListener('submit', function
 let toast = new bootstrap.Toast(document.getElementById('toastMessage'));
 toast.show();
 });
-																			</script>
+																				</script>
 
 
-																		</div>
-																	{% else %}
-																		<p>No comments yet.</p>
-																	{% endfor %}
+																			</div>
+																		{% else %}
+																			<p>No comments yet.</p>
+																		{% endfor %}
 
+																	</div>
 																</div>
-															</div>
-															<div class="modal-footer">
-																<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+																<div class="modal-footer">
+																	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+																</div>
 															</div>
 														</div>
 													</div>
 												</div>
-											</div>
 
-											<!-- Conteneur pour les toasts -->
-											<div class="toast-container position-fixed top-0 end-0 p-3" id="toast-container"></div>
+												<!-- Conteneur pour les toasts -->
+												<div class="toast-container position-fixed top-0 end-0 p-3" id="toast-container"></div>
 
-											<!-- Comment Form -->
-											<div class="postbox__comment">
-												<h3>Write a comment</h3>
-												<br>
-												<form id="comment-form-{{ sondage.id }}" data-sondage-id="{{ sondage.id }}">
-													<div class="row">
-														<div class="col-xxl-12">
-															<div class="postbox__comment-input">
-																<div class="comment-input-wrapper">
-																	<textarea placeholder="Enter your comment ..." class="comment-textarea"></textarea>
-																	<button type="button" class="voice-input-btn" onclick="startVoiceRecognition(this)">
-																		<i class="fas fa-microphone"></i>
-																	</button>
+												<!-- Comment Form -->
+												<div class="postbox__comment">
+													<h3>Write a comment</h3>
+													<br>
+													<form id="comment-form-{{ sondage.id }}" data-sondage-id="{{ sondage.id }}">
+														<div class="row">
+															<div class="col-xxl-12">
+																<div class="postbox__comment-input">
+																	<div class="comment-input-wrapper">
+																		<textarea placeholder="Enter your comment ..." class="comment-textarea"></textarea>
+																		<button type="button" class="voice-input-btn" onclick="startVoiceRecognition(this)">
+																			<i class="fas fa-microphone"></i>
+																		</button>
+																	</div>
+																</div>
+															</div>
+															<div class="col-xxl-12">
+																<div class="postbox__comment-btn">
+																	<button type="submit" class="tp-btn">Post Comment</button>
 																</div>
 															</div>
 														</div>
-														<div class="col-xxl-12">
-															<div class="postbox__comment-btn">
-																<button type="submit" class="tp-btn">Post Comment</button>
-															</div>
-														</div>
-													</div>
-												</form>
-												<br>
+													</form>
+													<br>
+												</div>
 											</div>
-										</div>
-									{% endfor %}
+										{% endfor %}
+									{% endif %}
+
 								</div>
 							</div>
 						</div>
@@ -327,8 +341,8 @@ toast.show();
 						<div
 							class="blog__sidebar pl-70">
 							{# 
-																																																																																																																																																																																																																																																																																																																																																																																																																																							    {% if app.user and app.user.role == 'presidentClub' %}
-																																																																																																																																																																																																																																																																																																																																																																																																																							#}
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																    {% if app.user and app.user.role == 'presidentClub' %}
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																#}
 							<form id="poll-form" method="POST" action="{{ path('api_poll_new') }}">
 								<div id="toastContainer" class="toast-container position-fixed top-50 start-50 translate-middle" style="z-index: 9999;"></div>
 								<style>
@@ -399,8 +413,8 @@ toast.show();
 								</div>
 
 								{# 
-																																																																																																																																																																																																																																																																																																																																																																																																																																																		    {% endif %}
-																																																																																																																																																																																																																																																																																																																																																																																																																																																		#}
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																			    {% endif %}
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																			#}
 								<button style="--clr: #7808d0" class="button" onclick="window.location.href='{{ path('api_user_polls') }}';">
 									<span class="button__icon-wrapper">
 										<svg width="10" class="button__icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 14 15">
@@ -704,40 +718,40 @@ const sondageId = pollContainer.getAttribute('data-sondage-id');
 fetch (`/commentaire/comment/list/${sondageId}`).then(response => response.json()).then(data => {
 const commentList = document.getElementById (`comment-list-${sondageId}`);
 commentList.innerHTML = '';
-// Clear any existing comments
 
 // If there are comments, append them to the list
-if (data.length > 0) {
-data.forEach(comment => {
+if (data.comments && data.comments.length > 0) {
+data.comments.forEach(comment => {
 const li = document.createElement('li');
 li.innerHTML = `
-                                                <div class="comments-box grey-bg-2">
-                                                <div class="comments-info d-flex">
-                                                        <div class="comments-avatar mr-20">
-                                                            <img src="front_assets/img/blog/comments/user.png" alt="">
-                                                        </div>
-                                                        <div class="avatar-name">
-                                                            <h5>${
-comment.user
+                    <div class="comments-box grey-bg-2">
+                        <div class="comments-info d-flex">
+                            <div class="comments-avatar mr-20">
+                                <img src="${
+comment.user.profilePicture ? '/uploads/profiles/' + comment.user.profilePicture : '/front_assets/img/blog/comments/user.png'
+}" 
+                                    alt="Profile picture" 
+                                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
+                            </div>
+                            <div class="avatar-name">
+                                <h5>${
+comment.user.name
 }</h5>
-                                                            <span class="post-meta">${
+                                <span class="post-meta">${
 comment.date
 }</span>
-                                                        </div>
-                                                        <div class="comments-replay">
-                                                            <a href="#">delete</a>
-                                                        </div>
-                                                </div>
-                                                <div class="comments-text ml-65">
-                                                        <p>${
+                            </div>
+                        </div>
+                        <div class="comments-text ml-65">
+                            <p>${
 comment.content
 }</p>
-                                                </div>
-                                                </div>
-                                            `;
+                        </div>
+                    </div>
+                `;
 commentList.appendChild(li);
 });
-} else { // If no comments, display a message
+} else {
 commentList.innerHTML = '<li>No comments yet.</li>';
 }
 }).catch(error => console.error('Error fetching comments:', error));
@@ -837,7 +851,11 @@ commentBox.classList.add("comment-box");
 commentBox.innerHTML = `
                                 <div class="comment-info d-flex">
                                     <div class="comment-avatar mr-20">
-                                        <img src="front_assets/img/blog/comments/user.png" alt="">
+         <img src="${
+comment.user.profilePicture ? '/uploads/profiles/' + comment.user.profilePicture : '/front_assets/img/blog/comments/user.png'
+}" 
+                    alt="Profile picture" 
+                    style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
                                     </div>
                                     <div class="avatar-name">
                                         <h5>${
@@ -993,5 +1011,7 @@ button.onclick = () => startVoiceRecognition(button);
 			font-size: 16px;
 		}
 	</style>
+
+	<link rel="stylesheet" href="https://cdn.materialdesignicons.com/6.5.95/css/materialdesignicons.min.css">
 
 {% endblock %}

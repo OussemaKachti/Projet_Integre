@@ -15,6 +15,9 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;  
 use Knp\Component\Pager\PaginatorInterface;
 
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mailer\MailerInterface;
+
 
 #[Route('/club')]
 class ClubController extends AbstractController
@@ -129,25 +132,35 @@ class ClubController extends AbstractController
     //}
 
     #[Route('/index2', name: 'app_club_index2', methods: ['GET'])]
-    public function index2(ClubRepository $clubRepository, EntityManagerInterface $entityManager, PaginatorInterface $paginator, Request $request ): Response
-    {   
-        // Créer une requête pour récupérer les clubs
-        $query = $entityManager->getRepository(Club::class)->createQueryBuilder('c')
-        ->orderBy('c.nomC', 'ASC') // Trier par nom
-        ->getQuery();
+public function index2(ClubRepository $clubRepository, EntityManagerInterface $entityManager, PaginatorInterface $paginator, Request $request): Response
+{   
+    // Récupérer la recherche
+    $keyword = $request->query->get('query', '');
 
-    // Paginate results
+    // Construire la requête principale avec recherche
+    $queryBuilder = $entityManager->getRepository(Club::class)->createQueryBuilder('c')
+        ->orderBy('c.nomC', 'ASC'); // Trier par ordre alphabétique
+
+    // Appliquer le filtre de recherche si un mot-clé est fourni
+    if (!empty($keyword)) {
+        $queryBuilder
+            ->where('LOWER(c.nomC) LIKE LOWER(:keyword)') // Insensible à la casse
+            ->setParameter('keyword', '%' . $keyword . '%');
+    }
+
+    // Paginer les résultats
     $pagination = $paginator->paginate(
-        $query,
-        $request->query->getInt('page', 1),
-        3// Number of items per page
+        $queryBuilder->getQuery(), // Exécuter la requête construite
+        $request->query->getInt('page', 1), // Page actuelle
+        3 // Nombre d'éléments par page
     );
 
-        return $this->render('club/index2.html.twig', [
-            'clubs' => $clubRepository->findAll(),
-            'pagination' => $pagination,
-        ]);
-    }
+    return $this->render('club/index2.html.twig', [
+        'pagination' => $pagination,
+        'keyword' => $keyword, // Passer la recherche au template
+    ]);
+}
+
     #[Route('/newClub', name: 'app_club_new', methods: ['GET', 'POST'])]
     public function newClub(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
@@ -279,7 +292,8 @@ class ClubController extends AbstractController
     public function acceptePoste(
         int $id, 
         EntityManagerInterface $entityManager, 
-        ClubRepository $clubRepository
+        ClubRepository $clubRepository,
+        MailerInterface $mailer
     ): Response {
         // Find the club using the repository method
         $club = $clubRepository->find($id);
@@ -298,10 +312,25 @@ class ClubController extends AbstractController
             // Update the status to ACCEPTE
             $club->setStatus(StatutClubEnum::ACCEPTE);
 
+           
+    
+
             // Persist and flush the changes
             $entityManager->persist($club);
             $entityManager->flush();
-
+            $commande = $em->getRepository(Commande::class)->find($id); // Assurez-vous que le produit existe
+            $user=$commande->getUser()->getEmail();
+            $email = ($user)
+            ->from("amaltr249@gmail.com")
+            ////reccuperation  mailll
+            ->to($club->getPresident()->getEmail()) // Remplacer par l'email du client
+            ->subject('Validation')
+            ->html("
+                <p>Votre Commande a étè Confirmer !! </p>
+                ");
+            
+            
+                $mailer->send($email);
             // Add success message
             //$this->addFlash('success', 'Club has been successfully accepted. Previous status: ' . $currentStatus);
 

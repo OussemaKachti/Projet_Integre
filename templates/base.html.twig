@@ -1,14 +1,15 @@
-
 <!doctype html>
-<html class="no-js" lang="zxx">
-   
-<!-- Mirrored from html.storebuild.shop/eduker-html/eduker/blog-details.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 08 Feb 2025 14:50:53 GMT -->
-<head>
-   <meta charset="utf-8">
-   <meta http-equiv="x-ua-compatible" content="ie=edge">
-   
-   <meta name="description" content="">
-   <meta name="viewport" content="width=device-width, initial-scale=1">
+<html
+	class="no-js" lang="zxx">
+
+	<!-- Mirrored from html.storebuild.shop/eduker-html/eduker/blog-details.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 08 Feb 2025 14:50:53 GMT -->
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+
+		<meta name="description" content="">
+		<meta name="viewport" content="width=device-width, initial-scale=1"></head>
+</html>
 <html
 	class="no-js" lang="zxx">
 
@@ -48,8 +49,8 @@
 	</head>
 	<body>
 		<!--[if lte IE 9]>
-								      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
-								      <![endif]-->
+																						      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
+																						      <![endif]-->
 		<style>
 			/* CSS pour aligner les cartes côte à côte et améliorer l'affichage */
 			.course__area {
@@ -200,8 +201,8 @@
 												</a>
 												<div class="user-dropdown-menu">
 													<ul>
-														<li><a href="{{path('app_profile')}}">My Profile</a></li>
-														<li><a href="{{path('app_logout')}}">Log Out</a></li>
+														<li><a href="{{path('app_profile')}}">My Profile</a href=></li>
+														<li><a href="{{path('app_logout')}}">Log Out</a href=></li>
 													</ul>
 												</div>
 											</div>
@@ -246,21 +247,21 @@
 												<a href="listeClub.html">Clubs</a>
 												<ul class="submenu">
 													<li>
-													<a href="{{ path('app_club_index')}}">Our clubs</a>
-											
+														<a href="{{ path('app_club_index')}}">Our clubs</a>
+
 													</li>
 													<li>
-													<a href="{{ path('myclub')}}">my club</a>
-														
+														<a href="{{ path('myclub')}}">my club</a>
+
 													</li>
 													{% if app.user and (app.user.role.value == 'presidentClub' or app.user.role.value == 'membre') %}
-												<li>
-													<a href="{{ path('app_sondage_index') }}">Polls</a>
-												</li>
-											{% endif %}
+														<li>
+															<a href="{{ path('app_sondage_index') }}">Polls</a>
+														</li>
+													{% endif %}
 												</ul>
 											</li>
-											
+
 											<li class="has-dropdown">
 												<a href="event.html">Events</a>
 												<ul class="submenu">
@@ -282,7 +283,7 @@
 													<li>
 														<a href="{{path('cart_index')}}">My cart</a>
 													</li>
-													
+
 												</ul>
 											</li>
 											<li>
@@ -515,7 +516,9 @@ document.removeEventListener('click', closeDropdown);
 									</div>
 									<div class="footer__widget-content">
 										<div class="footer__widget-info">
-											<p>Uniclubs is a platform for managing social and cultural clubs and events, offering tools to join, organize and promote activities.</p>
+											<p>
+												<h4>Uniclubs</h4>
+												is a platform for managing social and cultural clubs and events, offering tools to join, organize and promote activities.</p>
 											<div class="footer__social">
 												<h4>Follow Us</h4>
 
@@ -529,21 +532,23 @@ document.removeEventListener('click', closeDropdown);
 									</div>
 								</div>
 							</div>
+							<br>
+							<br>
 							<div class="col-xxl-2 col-xl-2 col-lg-2 col-md-3 col-sm-5">
 								<div class="footer__widget mb-50">
 									<h3 class="footer__widget-title">Explore</h3>
 									<div class="footer__widget-content">
 										<ul>
-											<li><a href="listeClub.html">Clubs</a></li>
-											<li><a href="event.html">Events</a></li>
+											<li><a href="{{path('app_club_index')}}">Clubs</a href=></li>
+											<li><a href="{{path('event')}}">Events</a href=></li>
 
-											<li><a href="products.html">Products</a></li>
-											<li><a href="compition.html">Competitions</a></li>
+											<li><a href="{{path('app_produit_index')}}">Products</a href=></li>
+											<li><a href="{{path('app_com_home')}}">Competitions</a href=></li>
 										</ul>
 									</div>
 								</div>
 							</div>
-
+							<br>
 							<div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6 col-sm-7">
 								<div class="footer__widget footer-col-4 mb-50">
 									<h3 class="footer__widget-title">Sign up
@@ -578,31 +583,35 @@ document.removeEventListener('click', closeDropdown);
 				</div>
 			</div>
 		</footer>
-		 <script>
-  window.isUserLoggedIn = {% if app.user %}true{% else %}false{% endif %};
+		<script>
+			window.isUserLoggedIn = {% if app.user %}
+true
+{% else %}
+false
+{% endif %};
 // </script>
-		<!-- footer area end -->
+<!-- footer area end -->
 
-		<!-- JS here -->
-		<script src="{{ asset('public/js/auth-check.js') }}"></script>
-		<script src="{{ asset('front_assets/js/vendor/jquery.js') }}"></script>
-		<script src="{{ asset('front_assets/js/vendor/waypoints.js') }}"></script>
-		<script src="{{ asset('front_assets/js/bootstrap-bundle.js') }}"></script>
-		<script src="{{ asset('front_assets/js/meanmenu.js') }}"></script>
-		<script src="{{ asset('front_assets/js/swiper-bundle.js') }}"></script>
-		<script src="{{ asset('front_assets/js/owl-carousel.js') }}"></script>
-		<script src="{{ asset('front_assets/js/magnific-popup.js') }}"></script>
-		<script src="{{ asset('front_assets/js/parallax.js') }}"></script>
-		<script src="{{ asset('front_assets/js/backtotop.js') }}"></script>
-		<script src="{{ asset('front_assets/js/nice-select.js') }}"></script>
-		<script src="{{ asset('front_assets/js/counterup.js') }}"></script>
-		<script src="{{ asset('front_assets/js/wow.js') }}"></script>
-		<script src="{{ asset('front_assets/js/isotope-pkgd.js') }}"></script>
-		<script src="{{ asset('front_assets/js/imagesloaded-pkgd.js') }}"></script>
-		<script src="{{ asset('front_assets/js/ajax-form.js') }}"></script>
-		<script src="{{ asset('front_assets/js/main.js') }}"></script>
-		{% block javascripts %}{% endblock %}
+<!-- JS here --> <script src="{{ asset('public/js/auth-check.js') }}"></script>
+			<script src="{{ asset('front_assets/js/vendor/jquery.js') }}"></script>
+			<script src="{{ asset('front_assets/js/vendor/waypoints.js') }}"></script>
+			<script src="{{ asset('front_assets/js/bootstrap-bundle.js') }}"></script>
+			<script src="{{ asset('front_assets/js/meanmenu.js') }}"></script>
+			<script src="{{ asset('front_assets/js/swiper-bundle.js') }}"></script>
+			<script src="{{ asset('front_assets/js/owl-carousel.js') }}"></script>
+			<script src="{{ asset('front_assets/js/magnific-popup.js') }}"></script>
+			<script src="{{ asset('front_assets/js/parallax.js') }}"></script>
+			<script src="{{ asset('front_assets/js/backtotop.js') }}"></script>
+			<script src="{{ asset('front_assets/js/nice-select.js') }}"></script>
+			<script src="{{ asset('front_assets/js/counterup.js') }}"></script>
+			<script src="{{ asset('front_assets/js/wow.js') }}"></script>
+			<script src="{{ asset('front_assets/js/isotope-pkgd.js') }}"></script>
+			<script src="{{ asset('front_assets/js/imagesloaded-pkgd.js') }}"></script>
+			<script src="{{ asset('front_assets/js/ajax-form.js') }}"></script>
+			<script src="{{ asset('front_assets/js/main.js') }}"></script>
+
+
+		</body>
+		</body>
 	</body>
-
-	<!-- Mirrored from html.storebuild.shop/eduker-html/eduker/about.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 08 Feb 2025 14:50:39 GMT -->
-</html>
+</html></body><!-- Mirrored from html.storebuild.shop/eduker-html/eduker/about.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 08 Feb 2025 14:50:39 GMT --></html></body></html>

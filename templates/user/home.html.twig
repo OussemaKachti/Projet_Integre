@@ -6,6 +6,55 @@
     {{ parent() }}
     <!-- Include SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if not app.user %}
+            // Sélectionner les éléments spécifiques
+            const protectedElements = document.querySelectorAll(`
+                .tp-btn,                          /* Find Clubs button */
+                .course__title-2 a,               /* AIESEC and Lions descriptions */
+                .tp-btn-5.tp-btn-7,              /* View Events buttons */
+                .nav-link[data-bs-toggle="tab"],  /* Category tabs */
+                [href="clubs.html"],              /* Explore Clubs link */
+                .event__more a                    /* View Events links */
+            `);
+            
+            protectedElements.forEach(element => {
+                element.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Authentication Required',
+                        text: 'Please sign in to access this feature',
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sign In',
+                        cancelButtonText: 'Cancel',
+                        customClass: {
+                            confirmButton: 'btn btn-primary',
+                            cancelButton: 'btn btn-secondary'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '{{ path("app_login") }}';
+                        }
+                    });
+                });
+            });
+        {% endif %}
+    });
+    </script>
+
+    <style>
+    .swal2-popup {
+        border-radius: 15px;
+    }
+    .swal2-confirm {
+        background-color: #4B49AC !important;
+    }
+    .swal2-cancel {
+        background-color: #6c757d !important;
+    }
+    </style>
 {% endblock %}
 
 {% block body %}
@@ -29,7 +78,7 @@
 											all in one platform designed for ESPRIT students.
 										</p>
 										<div class="slider__btn" data-animation="fadeInUp" data-delay="1.1s">
-											<a href="course-v1.html" class="tp-btn">Find Clubs</a>
+											<a href="{% if app.user %}course-v1.html{% else %}{{ path('app_login') }}{% endif %}" class="tp-btn">Find Clubs</a>
 										</div>
 									</div>
 								</div>
@@ -49,7 +98,7 @@
 											all in one platform designed for ESPRIT students.
 										</p>
 										<div class="slider__btn" data-animation="fadeInUp" data-delay="1.1s">
-											<a href="course-v1.html" class="tp-btn">Find Clubs</a>
+											<a href="{% if app.user %}course-v1.html{% else %}{{ path('app_login') }}{% endif %}" class="tp-btn">Find Clubs</a>
 										</div>
 									</div>
 								</div>
@@ -96,19 +145,19 @@
 										<div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
 											<div class="course__item-2 transition-3 white-bg mb-30 fix">
 												<div class="course__thumb-2 w-img fix">
-													<a href="course-details.html">
+													<a href="{% if app.user %}course-details.html{% else %}{{ path('app_login') }}{% endif %}">
 														<img src="{{asset('front_assets/img/course/2/aiesec.jpg')}}" alt="">
 													</a>
 												</div>
 												<div class="course__content-2">
 													<div class="course__top-2 d-flex align-items-center justify-content-between">
 														<div class="course__tag-2">
-															<a href="#">AIESEC</a>
+															<a href="{% if app.user %}#{% else %}{{ path('app_login') }}{% endif %}">AIESEC</a>
 														</div>
 
 													</div>
 													<h3 class="course__title-2">
-														<a href="course-details.html">AIESEC is a global platform for young people to explore and develop their leadership potential through international internships and volunteer opportunities.</a>
+														<a href="{% if app.user %}course-details.html{% else %}{{ path('app_login') }}{% endif %}">AIESEC is a global platform for young people to explore and develop their leadership potential through international internships and volunteer opportunities.</a>
 													</h3>
 													<div class="course__bottom-2 d-flex align-items-center justify-content-between">
 														<div class="course__action">
@@ -143,7 +192,7 @@
 										<div class="col-xxl-4 col-xl-4 col-lg-4 col-md-6">
 											<div class="course__item-2 transition-3 white-bg mb-30 fix">
 												<div class="course__thumb-2 w-img fix" style="text-align: center;">
-													<a href="course-details.html">
+													<a href="{% if app.user %}course-details.html{% else %}{{ path('app_login') }}{% endif %}">
 														<img src="{{asset('front_assets/img/course/2/lions.png')}}" alt="" style="width: 65%; height: auto;">
 													</a>
 												</div>
@@ -151,12 +200,12 @@
 												<div class="course__content-2">
 													<div class="course__top-2 d-flex align-items-center justify-content-between">
 														<div class="course__tag-2 pink-bg">
-															<a href="#">Lions</a>
+															<a href="{% if app.user %}#{% else %}{{ path('app_login') }}{% endif %}">Lions</a>
 														</div>
 
 													</div>
 													<h3 class="course__title-2">
-														<a href="course-details.html">The Lions Club is a global network of volunteers dedicated to serving communities and improving lives through humanitarian projects and support.</a>
+														<a href="{% if app.user %}course-details.html{% else %}{{ path('app_login') }}{% endif %}">The Lions Club is a global network of volunteers dedicated to serving communities and improving lives through humanitarian projects and support.</a>
 													</h3>
 													<div class="course__bottom-2 d-flex align-items-center justify-content-between">
 														<div class="course__action">
@@ -214,7 +263,17 @@
 						<div class="course__filter text-center mb-30">
 							<nav>
 								<div class="nav nav-tabs justify-content-center" id="course-tab" role="tablist">
-									<button class="nav-link active" id="nav-all-tab" data-bs-toggle="tab" data-bs-target="#nav-all" type="button" role="tab" aria-controls="nav-all" aria-selected="true">All Category</button>
+									<button class="nav-link active" 
+											onclick="{% if not app.user %}window.location.href='{{ path('app_login') }}'{% endif %}"
+											id="nav-all-tab" 
+											data-bs-toggle="{% if app.user %}tab{% endif %}" 
+											data-bs-target="#nav-all" 
+											type="button" 
+											role="tab" 
+											aria-controls="nav-all" 
+											aria-selected="true">
+										All Category
+									</button>
 
 									<button class="nav-link" id="nav-trending-tab" data-bs-toggle="tab" data-bs-target="#nav-trending" type="button" role="tab" aria-controls="nav-trending" aria-selected="false">Academic and Technical</button>
 
@@ -244,18 +303,36 @@
 								<div class="event__content">
 									<div class="event__meta">
 										<ul>
-											<li><a href="#"><svg width="17" height="17" viewbox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.49992 9.51253C9.72047 9.51253 10.7099 8.52308 10.7099 7.30253C10.7099 6.08198 9.72047 5.09253 8.49992 5.09253C7.27937 5.09253 6.28992 6.08198 6.28992 7.30253C6.28992 8.52308 7.27937 9.51253 8.49992 9.51253Z" stroke="#5F6160" stroke-width="1.5"/><path d="M2.56416 6.01334C3.95958 -0.120822 13.0475 -0.113738 14.4358 6.02043C15.2504 9.61876 13.0121 12.6646 11.05 14.5488C9.62625 15.9229 7.37375 15.9229 5.94291 14.5488C3.98791 12.6646 1.74958 9.61168 2.56416 6.01334Z" stroke="#5F6160" stroke-width="1.5"/></svg>Menzah 4, Tunisia</a></li>
+											<li>
+												<a href="{% if app.user %}#{% else %}{{ path('app_login') }}{% endif %}">
+													<svg width="17" height="17" viewbox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+														<path d="M8.49992 9.51253C9.72047 9.51253 10.7099 8.52308 10.7099 7.30253C10.7099 6.08198 9.72047 5.09253 8.49992 5.09253C7.27937 5.09253 6.28992 6.08198 6.28992 7.30253C6.28992 8.52308 7.27937 9.51253 8.49992 9.51253Z" stroke="#5F6160" stroke-width="1.5"/>
+														<path d="M2.56416 6.01334C3.95958 -0.120822 13.0475 -0.113738 14.4358 6.02043C15.2504 9.61876 13.0121 12.6646 11.05 14.5488C9.62625 15.9229 7.37375 15.9229 5.94291 14.5488C3.98791 12.6646 1.74958 9.61168 2.56416 6.01334Z" stroke="#5F6160" stroke-width="1.5"/>
+													</svg>
+													Menzah 4, Tunisia
+												</a>
+											</li>
 										</ul>
 									</div>
 									<h3 class="event__title">
-										<a href="event-details.html">"CodeStorm: The Ultimate Hackathon Challenge" 🚀💻  - Academic
+										<a href="{% if app.user %}event-details.html{% else %}{{ path('app_login') }}{% endif %}">"CodeStorm: The Ultimate Hackathon Challenge" 🚀💻  - Academic
 										</a>
 									</h3>
 
 									<div class="event__person">
 										<ul>
-											<li><a href="#"><imgsrc="{{asset('front_assets/img/event/open.png')}}" alt="" style="width: 26px; height: 26px;"><span>Open</span></a></li>
-											<li><a href="#"><imgsrc="{{asset('front_assets/img/course/2/aiesec.jpg')}}" alt=""><span>AIESEC</span></a></li>
+											<li>
+												<a href="{% if app.user %}#{% else %}{{ path('app_login') }}{% endif %}">
+													<img src="{{asset('front_assets/img/event/open.png')}}" alt="" style="width: 26px; height: 26px;">
+													<span>Open</span>
+												</a>
+											</li>
+											<li>
+												<a href="{% if app.user %}#{% else %}{{ path('app_login') }}{% endif %}">
+													<img src="{{asset('front_assets/img/course/2/aiesec.jpg')}}" alt="">
+													<span>AIESEC</span>
+												</a>
+											</li>
 										</ul>
 									</div>
 								</div>
@@ -271,7 +348,7 @@
 									</span>
 								</div>
 								<div class="event__more ml-30">
-									<a href="event-details.html" class="tp-btn-5 tp-btn-7">View Events
+									<a href="{% if app.user %}event-details.html{% else %}{{ path('app_login') }}{% endif %}" class="tp-btn-5 tp-btn-7">View Events
 									</a>
 								</div>
 							</div>
@@ -291,18 +368,35 @@
 								<div class="event__content">
 									<div class="event__meta">
 										<ul>
-											<li><a href="#"><svg width="17" height="17" viewbox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.49992 9.51253C9.72047 9.51253 10.7099 8.52308 10.7099 7.30253C10.7099 6.08198 9.72047 5.09253 8.49992 5.09253C7.27937 5.09253 6.28992 6.08198 6.28992 7.30253C6.28992 8.52308 7.27937 9.51253 8.49992 9.51253Z" stroke="#5F6160" stroke-width="1.5"/><path d="M2.56416 6.01334C3.95958 -0.120822 13.0475 -0.113738 14.4358 6.02043C15.2504 9.61876 13.0121 12.6646 11.05 14.5488C9.62625 15.9229 7.37375 15.9229 5.94291 14.5488C3.98791 12.6646 1.74958 9.61168 2.56416 6.01334Z" stroke="#5F6160" stroke-width="1.5"/></svg>Lac 2, Tunisia</a></li>
+											<li>
+												<a href="{% if app.user %}#{% else %}{{ path('app_login') }}{% endif %}">
+													<svg width="17" height="17" viewbox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+														<path d="M8.49992 9.51253C9.72047 9.51253 10.7099 8.52308 10.7099 7.30253C10.7099 6.08198 9.72047 5.09253 8.49992 5.09253C7.27937 5.09253 6.28992 6.08198 6.28992 7.30253C6.28992 8.52308 7.27937 9.51253 8.49992 9.51253Z" stroke="#5F6160" stroke-width="1.5"/>
+														<path d="M2.56416 6.01334C3.95958 -0.120822 13.0475 -0.113738 14.4358 6.02043C15.2504 9.61876 13.0121 12.6646 11.05 14.5488C9.62625 15.9229 7.37375 15.9229 5.94291 14.5488C3.98791 12.6646 1.74958 9.61168 2.56416 6.01334Z" stroke="#5F6160" stroke-width="1.5"/>
+													</svg>
+													Lac 2, Tunisia
+												</a>
+											</li>
 										</ul>
 									</div>
 									<h3 class="event__title">
-										<a href="event-details.html">"GoalFest: The Ultimate Football Showdown" ⚽🔥           -  Sports</a>
+										<a href="{% if app.user %}event-details.html{% else %}{{ path('app_login') }}{% endif %}">"GoalFest: The Ultimate Football Showdown" ⚽🔥           -  Sports</a>
 									</h3>
 
 									<div class="event__person">
 										<ul>
-											<li><a href="#"><imgsrc="{{asset('front_assets/img/event/private.png')}}" alt="" style="width: 26px; height: 26px;"><span>Private</span></a></li>
-											<li><a href="#"><imgsrc="{{asset('front_assets/img/course/2/enac.png')}}" alt=""><span>ENACTUS</span></a></li>
-
+											<li>
+												<a href="{% if app.user %}#{% else %}{{ path('app_login') }}{% endif %}">
+													<img src="{{asset('front_assets/img/event/private.png')}}" alt="" style="width: 26px; height: 26px;">
+													<span>Private</span>
+												</a>
+											</li>
+											<li>
+												<a href="{% if app.user %}#{% else %}{{ path('app_login') }}{% endif %}">
+													<img src="{{asset('front_assets/img/course/2/enac.png')}}" alt="">
+													<span>ENACTUS</span>
+												</a>
+											</li>
 										</ul>
 									</div>
 								</div>
@@ -318,7 +412,7 @@
 									</span>
 								</div>
 								<div class="event__more ml-30">
-									<a href="event-details.html" class="tp-btn-5 tp-btn-7">View Events
+									<a href="{% if app.user %}event-details.html{% else %}{{ path('app_login') }}{% endif %}" class="tp-btn-5 tp-btn-7">View Events
 									</a>
 								</div>
 							</div>
@@ -414,7 +508,7 @@
 							</div>
 							<p>Explore the vibrant club community at our university. Whether you're into tech, arts, sports, or social causes, there's a place for you.</p>
 							<div class="brand__btn">
-								<a href="clubs.html" class="tp-btn-5 tp-btn-6">Explore Clubs</a>
+								{# <a href="{% if app.user %}clubs.html{% else %}{{ path('app_login') }}{% endif %}" class="tp-btn-5 tp-btn-6">Explore Clubs</a> #}
 							</div>
 						</div>
 					</div>

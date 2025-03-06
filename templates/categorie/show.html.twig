@@ -46,15 +46,16 @@
         {{ form_start(form) }}
     
         <div class="mb-3 text-center"> <!-- Ajout du centre pour le champ -->
-            {{ form_label(form.nomCat, 'Nom de la catégorie') }}
+            {{ form_label(form.nomCat, 'Category Name') }}
             {{ form_widget(form.nomCat, {'attr': {'class': 'form-control mx-auto', 'style': 'width: 80%; max-width: 400px;'}}) }} <!-- Ajustement de la largeur du champ -->
             {{ form_errors(form.nomCat) }}
         </div>
-
-        <div class="d-grid gap-2 text-center"> <!-- Centrer le bouton -->
-       <button class="btn mx-auto" style="width: 80%; max-width: 400px; background-color:rgb(26, 11, 96); color: white;">Add Category</button>
-<!-- Ajustement de la largeur du bouton -->
-        </div>
+<div class="d-grid gap-2 text-center">
+    <button class="btn mx-auto" style="width: 80%; max-width: 400px; background-color:rgb(26, 11, 96); color: white;">Add Category</button>
+    <a href="{{ path('app_evenement_new') }}" class="btn btn-outline-secondary px-4" style="width: 50%; max-width: 200px; background-color:rgb(136, 130, 160); color: white;">
+        <i class="fa fa-arrow-left me-1"></i> Back to Form
+    </a>
+</div>
     
         {{ form_end(form) }}
     </div>

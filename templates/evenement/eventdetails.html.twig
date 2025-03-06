@@ -4,7 +4,7 @@
 
 {% block body %}
 <main>
-    {# Ajout de l'affichage des messages flash #}
+    {# Flash messages #}
     {% for label, messages in app.flashes %}
     {% for message in messages %}
         <div class="alert alert-{{ label }}">
@@ -12,40 +12,36 @@
         </div>
     {% endfor %}
 {% endfor %}
-
-{# Boutons d'action pour l'événement - version simplifiée #}
+  
+{# Event action buttons #}
 <div class="event-actions">
     {% if app.user %}
         {% if participation is defined and participation %}
-            {# L'utilisateur participe déjà à l'événement #}
-            <div class="participation-confirmed">
-             
-                {# Bouton de téléchargement déplacé vers la sidebar #}
-            </div>
+            {# User already participating #}
+            <div class="participation-confirmed"></div>
         {% else %}
-            {# L'utilisateur ne participe pas encore - optionnel si vous préférez n'avoir que le bouton dans la sidebar #}
-       
+            {# User not yet participating #}
         {% endif %}
     {% else %}
-        <a href="{{ path('app_login') }}" class="btn btn-secondary">Connectez-vous pour participer</a>
+        <a href="{{ path('app_login') }}" class="btn btn-secondary">Login to Participate</a>
     {% endif %}
 </div>
 
     <section class="event__area pt-115 p-relative">
         <div class="container">
             <div class="row">
-                <!-- Contenu principal -->
+                <!-- Main Content -->
                 <div class="col-xxl-8">
                     <div class="event__wrapper">
                         <div class="page__title-content mb-25">
                             <h5 class="breadcrumb__title-2">{{ evenement.nomEvent }}</h5>
                         </div>
 
-                        <!-- Nouveau bloc pour la catégorie sous le titre avec un style personnalisé -->
+                        <!-- Category Display -->
                         <div class="course__update mr-80 mb-30">
                             {% if evenement.categorie %}
                                 <div class="course__category" style="display: inline-flex; align-items: center; background-color: #e0f7fa; padding: 8px 20px; border-radius: 25px;">
-                                    <span style="color: #021715; font-weight: bold; font-size: 16px; margin-right: 10px;">Catégorie:</span>
+                                    <span style="color: #021715; font-weight: bold; font-size: 16px; margin-right: 10px;">Category:</span>
                                     <i class="fa-solid fa-tags" style="margin-right: 10px; color: #00796b; font-size: 18px;"></i>
                                     <span style="color: #021715; font-weight: bold; font-size: 16px;">{{ evenement.categorie.nomCat }}</span>
                                 </div>
@@ -62,16 +58,15 @@
                             {% endif %}
                         </div>
 
-
                         <div class="event__details mb-35">
-                            {# Vérifiez si l'image de la description existe #}
+                            {# Check if description image exists #}
                             {% if evenement.imageDescription %}
                                 <div class="event__image-container">
-                                    <img src="{{ asset('uploads/events/' ~ evenement.imageDescription) }}" alt="Image de la description" style="max-width: 750px; max-height: 550px; width: auto; height: auto; object-fit: cover;">
+                                    <img src="{{ asset('uploads/events/' ~ evenement.imageDescription) }}" alt="Description Image" style="max-width: 750px; max-height: 550px; width: auto; height: auto; object-fit: cover;">
                                 </div>
-                                <div class="space-between-image-description"></div>  {# Ajout d'un espace entre l'image et le titre #}
+                                <div class="space-between-image-description"></div>
                             {% else %}
-                                <p>Aucune image pour la description.</p>
+                                <p>No image available.</p>
                             {% endif %}
                             <h3>Description</h3>
                             <p>{{ evenement.descEvent }}</p>
@@ -80,7 +75,6 @@
                 </div>
 
                 <!-- Sidebar -->
-                <!-- Sidebar (Les deux sont maintenant dans la même colonne) -->
                 <div class="col-xxl-4 col-xl-4 col-lg-4">
                     <div class="event__sidebar pl-70">
                         <div class="event__sidebar-widget white-bg mb-20">
@@ -93,7 +87,7 @@
                                                     <i class="fa-solid fa-clock event-icon-time"></i>
                                                 </div>
                                                 <div class="event__info-item">
-                                                    <h5><span>Début :</span> {{ evenement.startDate|date('d M Y H:i') }}</h5>
+                                                    <h5><span>Start:</span> {{ evenement.startDate|date('d M Y H:i') }}</h5>
                                                 </div>
                                             </li>
                                             <li class="d-flex align-items-center">
@@ -101,7 +95,7 @@
                                                     <i class="fa-solid fa-calendar-check event-icon-end"></i>
                                                 </div>
                                                 <div class="event__info-item">
-                                                    <h5><span>Fin :</span> {{ evenement.endDate|date('d M Y H:i') }}</h5>
+                                                    <h5><span>End:</span> {{ evenement.endDate|date('d M Y H:i') }}</h5>
                                                 </div>
                                             </li>
                                             <li class="d-flex align-items-center">
@@ -109,7 +103,7 @@
                                                     <i class="fa-solid fa-location-pin event-icon-venue"></i>
                                                 </div>
                                                 <div class="event__info-item">
-                                                    <h5><span>Lieu :</span> {{ evenement.lieux }}</h5>
+                                                    <h5><span>Location:</span> {{ evenement.lieux }}</h5>
                                                 </div>
                                             </li>
                                         </ul>
@@ -118,37 +112,37 @@
                                     <div class="event__participation-btn mt-3 text-center">
                                         {% if app.user %}
                                             {% if participation is defined and participation %}
-                                                {# L'utilisateur participe déjà - afficher le bouton de téléchargement #}
-                                                <p class="participation-status">Vous êtes inscrit à cet événement</p>
+                                                {# User already registered #}
+                                                <p class="participation-status">You are registered for this event</p>
                                                 <a href="{{ path('download_ticket', {'id': participation.id}) }}" class="btn btn-download">
-                                                    <i class="fas fa-download"></i> Télécharger mon ticket
+                                                    <i class="fas fa-download"></i> Download Ticket
                                                 </a>
                                             {% else %}
-                                                {# L'utilisateur ne participe pas encore #}
+                                                {# User not yet registered #}
                                                 <form action="{{ path('event_join', {'id': evenement.id}) }}" method="post">
                                                     <button type="submit" class="btn btn-participate">Join</button>
                                                 </form>
                                             {% endif %}
                                         {% else %}
-                                            <a href="{{ path('app_login') }}" class="btn btn-secondary">Connectez-vous pour participer</a>
+                                            <a href="{{ path('app_login') }}" class="btn btn-secondary">Login to Participate</a>
                                         {% endif %}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Sidebar Admin pour gestion -->
+                        <!-- Admin Sidebar for Management -->
                         {% if canManageEvent %}
                         <div class="event__admin-sidebar white-bg mt-20">
                             <h4 class="admin-title">Event Management</h4>
                             <div class="admin-buttons">
                                 <a href="{{ path('app_evenement_edit', {'id': evenement.id}) }}" class="btn btn-warning text-white">
-                                    <i class="fas fa-edit"></i> Modify
+                                    <i class="fas fa-edit"></i> Edit
                                 </a>
                                 <a href="{{ path('event_participants', { id: evenement.id }) }}" class="admin-btn participants-btn">
                                     <i class="fas fa-users"></i> View Participants
                                 </a>
-                                <form method="post" action="{{ path('delete_pres', {'id': evenement.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer cet événement ?');">
+                                <form method="post" action="{{ path('delete_pres', {'id': evenement.id}) }}" onsubmit="return confirm('Are you sure you want to delete this event?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ evenement.id) }}">
                                     <button class="admin-btn delete-btn">
                                         <i class="fas fa-trash-alt"></i> Delete
@@ -159,8 +153,9 @@
                         {% endif %}
                     </div>
                 </div>
-
-
+    <a href="{{ path('event') }}" class="btn btn-outline-secondary px-4" style="width: 50%; max-width: 200px; background-color:rgb(136, 130, 160); color: white;">
+        <i class="fa fa-arrow-left me-1"></i> Back to List
+    </a>
                 <style>
                     /* Amélioration du style du bouton "Join" */
                     .btn-participate {

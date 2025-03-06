@@ -15,6 +15,7 @@ use App\Entity\User;
 use App\Repository\ClubRepository;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[Route('/participation/membre')]
 class ParticipationMembreController extends AbstractController
@@ -231,7 +232,30 @@ public function new(
         //$this->addFlash('success', 'Le poste a été accepte avec succès.');
         return $this->redirectToRoute('app_participation_membre_index');
     }
+
+    #[Route('/stats/popular-clubs', name: 'popular_clubs')]
+    public function popularClubs(EntityManagerInterface $entityManager): JsonResponse
+    {
+        // Fetch the most popular clubs by participant count
+        $query = $entityManager->createQuery(
+            'SELECT c.nomC AS clubName, COUNT(p.id) AS totalParticipants
+             FROM App\Entity\ParticipationMembre p
+             JOIN p.club c
+             GROUP BY c.id
+             ORDER BY totalParticipants DESC'
+        );
+
+        $popularClubs = $query->getResult();
+         // Debugging: Check what data is returned
+        dump($popularClubs); // This will output data to the Symfony profiler/log
+        return $this->json($popularClubs, 200, ['Access-Control-Allow-Origin' => '*']);
+
+    }
 }
+
+
+        
+
 
 
 

@@ -17,10 +17,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use App\Enum\StatutCommandeEnum;
-use App\Services\OrderValidationService;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
+
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mailer\MailerInterface;
 
 
 #[Route('/commande')]
@@ -169,14 +171,31 @@ public function commande(EntityManagerInterface $entityManager,
 
 
     #[Route('/commande/valider/{id}', name: 'commande_validate', methods: ['GET'])]
-    public function validateCommande(Commande $commande, OrderValidationService $orderValidationService): Response
+    public function validateCommande(Commande $commande, int $id,MailerInterface $mailer ,CommandeRepository $commandeRepository,
+EntityManagerInterface $entityManager
+    ): Response
     {
-        try {
-            $orderValidationService->validateOrder($commande);
+       
+          
+ $commande = $commandeRepository->find($id);
+ $commande->setStatut(StatutCommandeEnum::CONFIRMEE);
+$entityManager->persist($commande);
+$entityManager->flush();
+
+$email = (new Email())
+->from("amaltr249@gmail.com")
+////reccuperation  mailll
+->to($commande->getUser()->getEmail()) // Remplacer par l'email du client
+->subject('Accepted')
+->html("
+    <p>Your club is accepted</p>
+    ");
+
+
+    $mailer->send($email);
+
             $this->addFlash('success', 'Commande validée et e-mail envoyé avec succès.');
-        } catch (\Exception $e) {
-            $this->addFlash('danger', 'Erreur lors de la validation de la commande : ' . $e->getMessage());
-        }
+       
         
         // Redirige vers la liste des commandes ou une page de confirmation
         return $this->redirectToRoute('presi_commandes');

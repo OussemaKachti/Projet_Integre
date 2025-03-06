@@ -16,7 +16,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Repository\ClubRepository;
-
+use Symfony\Component\Security\Core\Security;
+use App\Entity\Club;
 use Knp\Component\Pager\PaginatorInterface;
 use App\Enum\RoleEnum;
 use App\Entity\User;
@@ -187,23 +188,7 @@ public function index(
     }
     
     
-//    #[Route('/', name: 'event', methods: ['GET'])]
-// public function index(Request $request, EvenementRepository $evenementRepository, PaginatorInterface $paginator): Response
-// {
-//     // Utilisation du QueryBuilder pour récupérer les événements
-//     $query = $evenementRepository->createQueryBuilder('e')->getQuery();
 
-//     // Paginer la requête : 10 éléments par page, page courante récupérée via le paramètre "page"
-//     $evenements = $paginator->paginate(
-//         $query,
-//         $request->query->getInt('page', 1),
-//         4
-//     );
-
-//     return $this->render('evenement/event.html.twig', [
-//         'evenements' => $evenements,
-//     ]);
-// }
 #[Route('/event/details/{id}', name: 'eventdetails', methods: ['GET'])]
 public function show(EvenementRepository $evenementRepository, EntityManagerInterface $entityManager, int $id): Response
 {
@@ -617,52 +602,102 @@ public function show(EvenementRepository $evenementRepository, EntityManagerInte
             ]);
         }
 
-    #[Route('/new', name: 'app_evenement_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, ValidatorInterface $validator): Response
-    {
-        $evenement = new Evenement();
-        $form = $this->createForm(EvenementType::class, $evenement);
-        $form->handleRequest($request);
-    
-        // Initialize errors for GET request
-        $errors = [];
-    
-        if ($form->isSubmitted() && $form->isValid()) {
-  
-
-    // Récupérer l’image
-    $imageDescriptionFile = $form->get('imageDescription')->getData();
-    
-    if ($imageDescriptionFile) {
-        $originalFilename = pathinfo($imageDescriptionFile->getClientOriginalName(), PATHINFO_FILENAME);
-        $safeFilename = $slugger->slug($originalFilename);
-        $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageDescriptionFile->guessExtension();
-
-        try {
-            $imageDescriptionFile->move(
-                $this->getParameter('event_images_directory'),
-                $newFilename
-            );
-            $evenement->setImageDescription($newFilename);
-        } catch (FileException $e) {
-            $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
-        }
+        #[Route('/my-calendar', name: 'app_my_calendar')]
+public function myCalendarView(): Response
+{
+    // Vérifier si l'utilisateur est connecté
+    $user = $this->getUser();
+    if (!$user) {
+        return $this->redirectToRoute('app_login');
     }
-
-    $entityManager->persist($evenement);
-    $entityManager->flush();
-
-    $this->addFlash('success', 'Événement créé avec succès !');
-    return $this->redirectToRoute('event');
+    
+    return $this->render('evenement/mycalendar.html.twig');
 }
 
-    
-        return $this->render('evenement/newevent.html.twig', [
-            'form' => $form->createView(),
-            'evenement' => $evenement,
-            'errors' => $errors,
-        ]);
+#[Route('/api/my-events', name: 'my_events_calendar')]
+public function getMyEvents(ParticipationEventRepository $participationRepository): JsonResponse
+{
+    // Récupérer l'utilisateur connecté
+    $user = $this->getUser();
+    if (!$user) {
+        return new JsonResponse([]);
     }
+    
+    // Récupérer les participations de l'utilisateur
+    $participations = $participationRepository->findBy(['user' => $user]);
+    
+    $data = [];
+    
+    foreach ($participations as $participation) {
+        $event = $participation->getEvenement();
+        $data[] = [
+            'title' => $event->getNomEvent(),
+            'start' => $event->getStartDate()->format('Y-m-d H:i:s'),
+            'color' => '#007BFF'
+        ];
+    }
+    
+    return new JsonResponse($data);
+}
+
+#[Route('/new', name: 'app_evenement_new', methods: ['GET', 'POST'])]
+public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, ValidatorInterface $validator, Security $security): Response
+{
+    $evenement = new Evenement();
+    
+    // Récupérer l'utilisateur connecté
+    $user = $security->getUser();
+    
+    // Trouver le club dont cet utilisateur est président
+    $clubRepository = $entityManager->getRepository(Club::class);
+    $presidentClub = $clubRepository->findOneBy(['president' => $user]);
+    
+    // Créer le formulaire avec le club du président en option
+    $form = $this->createForm(EvenementType::class, $evenement, [
+        'president_club' => $presidentClub,
+    ]);
+    
+    $form->handleRequest($request);
+    
+    // Initialiser les erreurs pour la requête GET
+    $errors = [];
+    
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Récupérer l'image
+        $imageDescriptionFile = $form->get('imageDescription')->getData();
+        
+        if ($imageDescriptionFile) {
+            $originalFilename = pathinfo($imageDescriptionFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = $slugger->slug($originalFilename);
+            $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageDescriptionFile->guessExtension();
+
+            try {
+                $imageDescriptionFile->move(
+                    $this->getParameter('event_images_directory'),
+                    $newFilename
+                );
+                $evenement->setImageDescription($newFilename);
+            } catch (FileException $e) {
+                $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
+            }
+        }
+        
+        // Définir explicitement le club de l'événement comme étant celui du président
+        $evenement->setClub($presidentClub);
+        
+        $entityManager->persist($evenement);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Événement créé avec succès !');
+        return $this->redirectToRoute('event');
+    }
+    
+    return $this->render('evenement/newevent.html.twig', [
+        'form' => $form->createView(),
+        'evenement' => $evenement,
+        'errors' => $errors,
+    ]);
+}
     
 
     #[Route('/{id}/edit', name: 'app_evenement_edit', methods: ['GET', 'POST'])]
