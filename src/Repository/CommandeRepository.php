@@ -5,7 +5,7 @@ namespace App\Repository;
 use App\Entity\Commande;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-
+use Doctrine\ORM\Query;
 /**
  * @extends ServiceEntityRepository<Commande>
  *
@@ -45,4 +45,17 @@ class CommandeRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+public function searchByKeyword(string $keyword): Query
+{
+    return $this->createQueryBuilder('p')
+        ->leftJoin('p.orderDetails', 'od')  // Joindre Orderdetails
+        ->leftJoin('od.produit', 'prod')  // Joindre Produit
+        ->leftJoin('prod.club', 'c')  // Joindre Club via Produit
+        ->where('prod.nomProd LIKE :keyword ')
+        //->orWhere('c.nomC LIKE :keyword')  
+        ->setParameter('keyword', '%' . $keyword . '%')
+        ->orderBy('p.id', 'ASC')
+        ->getQuery();
+}
+
 }

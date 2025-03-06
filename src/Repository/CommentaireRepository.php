@@ -45,4 +45,49 @@ class CommentaireRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+    public function countTodayComments(): int
+    {
+        return $this->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->where('c.dateComment >= :today')
+            ->setParameter('today', new \DateTime('today'))
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countFlaggedComments(): int
+    {
+        return $this->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->where('c.contenuComment LIKE :warning')
+            ->setParameter('warning', '%⚠️ Comment hidden%')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function getClubsActivity(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->select('cl.nomC as club_name, COUNT(c.id) as comment_count')
+            ->join('c.sondage', 's')
+            ->join('s.club', 'cl')
+            ->groupBy('cl.id')
+            ->orderBy('comment_count', 'DESC')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getAvailableClubs(): array
+    {
+        $results = $this->createQueryBuilder('c')
+            ->select('DISTINCT cl.nomC')
+            ->join('c.sondage', 's')
+            ->join('s.club', 'cl')
+            ->getQuery()
+            ->getResult();
+
+        return array_column($results, 'nomC');
+    }
 }

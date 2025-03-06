@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}Club{% endblock %}
+
+{% block body %}
+
+      <main>
+
+         <!-- breadcrumb area start -->
+         <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="assets/img/clubsA.jpg">
+            <div class="container">
+               <div class="row">
+                  <div class="col-xxl-12">
+                     <div class="breadcrumb__content text-center p-relative z-index-1">
+                        <h3 class="breadcrumb__title">Members list</h3>
+                        <div class="breadcrumb__list">
+                           <span><a href="index.html">Home</a></span>
+                           <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
+                           <span>Members list</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+         <!-- breadcrumb area end -->
+<br>
+<br>
+<br>
+ <!-- cart-area start -->
+<section class="cart-area pt-120 pb-120">
+   <div class="container">
+      <div class="row">
+         <div class="col-12">
+               <form action="#">
+                  <div class="table-content table-responsive">
+                     <table class="table">
+                        <thead>
+                           <tr>
+                              <th class="cart-product-name">Full Name</th>
+                              <th class="product-price">Role</th>
+                              <th class="product-quantity">Email</th>
+                              <th class="product-subtotal">Phone</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           <!-- Member 1 -->
+                           <tr>
+                              <td class="product-name">Mariem Trabelsi</td>
+                              <td class="product-price">President</td>
+                              <td class="product-quantity">mariem.trabelsi@example.com</td>
+                              <td class="product-subtotal">+216 12 345 678</td>
+                           </tr>
+                   
+                           <!-- Member 2 -->
+                           <tr>
+                              <td class="product-name">Morgan Karim</td>
+                              <td class="product-price">Member</td>
+                              <td class="product-quantity">morgan.karim@example.com</td>
+                              <td class="product-subtotal">+216 98 765 432</td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  </div>
+                  <div class="row">
+                     
+                     </div>
+                  </div>
+                  
+                     </div>
+                  </div>
+               </form>
+         </div>
+      </div>
+   </div>
+</section>
+<!-- cart-area end -->
+
+
+
+
+
+      </main>
+
+
+
+
+
+{% endblock %}

@@ -1,23 +1,33 @@
-// Add this to your main JavaScript file or create a new one: assets/js/auth-check.js
+// Improved auth-check.js
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if user is logged in (this assumes you add a global JS variable from Twig)
+    // Only run this check if the user is not logged in
     if (!window.isUserLoggedIn) {
-        // List of paths that don't require authentication
-        const publicPaths = ['/login', '/user/sign-up', '/home', '/access-denied'];
+        // List of paths that don't require authentication (keep in sync with server-side)
+        const publicPaths = [
+            '/login', 
+            '/user/sign-up', 
+            '/home', 
+            '/access-denied', 
+            '/confirm-email',
+            '/assets/'
+        ];
         
         // Current path
         const currentPath = window.location.pathname;
         
         // If not on a public path, redirect to access denied
-        if (!publicPaths.some(path => currentPath.startsWith(path))) {
+        const isPublicPath = publicPaths.some(path => currentPath.startsWith(path));
+        
+        if (!isPublicPath) {
+            console.log('Unauthorized access detected, redirecting...');
             window.location.href = '/access-denied';
         }
     }
 });
 
-// Then in your base template:
+// Make sure to include this in your base template:
 // <script>
 //     window.isUserLoggedIn = {% if app.user %}true{% else %}false{% endif %};
 // </script>
-// <script src="{{ asset('build/js/auth-check.js') }}"></script>
+// <script src="{{ asset('js/auth-check.js') }}"></script>

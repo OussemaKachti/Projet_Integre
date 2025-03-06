@@ -8347,7 +8347,8 @@ input[type=color] {
   background-color: var(--tp-common-black-3);
 }
 .price__list ul li span {
-  float: right;
+  
+  display: inline-block;
   width: 16px;
   height: 16px;
   line-height: 14px;
@@ -10050,7 +10051,8 @@ td.product-thumbnail img {
   background: #252525 none repeat scroll 0 0;
   border: medium none;
   color: #fff;
-  float: left;
+  display: inline-block;
+  
   font-size: 12px;
   font-weight: 700;
   height: 40px;

@@ -32,6 +32,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Security\Core\Security;
+use Knp\Component\Pager\PaginatorInterface;
+use App\Form\CommentaireType;
 
 
 
@@ -79,7 +81,7 @@ class SondageController extends AbstractController
 
 
     #[Route('/deleteAdmin/{id}', name: 'delete_admin', methods: ['POST'])]
-    public function deletePollAdmin(int $id, Request $request, EntityManagerInterface $em): Response
+    public function deletePollAdmin(int $id, Request $request, EntityManagerInterface $em, Security $security): Response
     {
         try {
             // Vérifier si le sondage existe
@@ -91,8 +93,9 @@ class SondageController extends AbstractController
             }
     
             
-            $user = $em->getRepository(User::class)->find(1);  // Utilisateur statique pour tester
-  
+           // $user = $em->getRepository(User::class)->find(1);  // Utilisateur statique pour tester
+           $user = $security->getUser();
+
            
     
             // Supprimer manuellement les réponses liées à ce sondage
@@ -124,34 +127,54 @@ class SondageController extends AbstractController
 
             
     #[Route('/ListPolls', name: 'app_sondage_index', methods: ['GET'])]
-    public function index(SondageRepository $sondageRepository, EntityManagerInterface $entityManager,Security $security,
-    ): Response
+    public function index(SondageRepository $sondageRepository, EntityManagerInterface $entityManager, Security $security): Response
     {
-        $sondages = $sondageRepository->findAll();
         $user = $security->getUser();
-    
-        $reponses = [];
-        $sondageResults = [];
-    
+        $sondages = [];
+        
         if ($user) {
-            foreach ($sondages as $sondage) {
-                $reponse = $entityManager->getRepository(Reponse::class)->findOneBy([
-                    'sondage' => $sondage,
-                    'user' => $user
-                ]);
-    
-                if ($reponse) {
-                    $reponses[$sondage->getId()] = $reponse->getChoixSondage()->getContenu();
-                }
-    
-                $sondageResults[$sondage->getId()] = $this->getPollResults($sondage);
+            // Vérifier si l'utilisateur est président d'un club
+            $clubPresident = $entityManager->getRepository(Club::class)->findOneBy(['president' => $user]);
+            $isClubPresident = ($clubPresident !== null);
+
+            // Vérifier si l'utilisateur est membre d'un club
+            $participation = $entityManager->getRepository(ParticipationMembre::class)->findOneBy(['user' => $user, 'statut' => 'accepte']);
+            $clubMembre = $participation ? $participation->getClub() : null;
+            
+            // Récupérer les sondages selon les conditions
+            if ($clubPresident) {
+                $sondages = $sondageRepository->findBy(['club' => $clubPresident]);
+            } elseif ($clubMembre) {
+                $sondages = $sondageRepository->findBy(['club' => $clubMembre]);
             }
         }
-    
+        
+        $reponses = [];
+        $sondageResults = [];
+        
+        foreach ($sondages as $sondage) {
+            $reponse = $entityManager->getRepository(Reponse::class)->findOneBy([
+                'sondage' => $sondage,
+                'user' => $user
+            ]);
+            
+            if ($reponse) {
+                $reponses[$sondage->getId()] = $reponse->getChoixSondage()->getContenu();
+            }
+            
+            $sondageResults[$sondage->getId()] = $this->getPollResults($sondage);
+        }
+        
+        // Create the comment form
+        $commentaire = new Commentaire();
+        $form = $this->createForm(CommentaireType::class, $commentaire);
+        
         return $this->render('sondage/ListPolls.html.twig', [
             'sondages' => $sondages,
             'reponses' => $reponses, 
-            'sondageResults' => $sondageResults 
+            'sondageResults' => $sondageResults,
+            'isClubPresident' => $isClubPresident,
+            'form' => $form->createView()
         ]);
     }
     public function getPollResults(Sondage $sondage): array
@@ -183,7 +206,7 @@ public function getColorByPercentage(float $percentage): string
     if ($percentage <= 20) {
         return '#e74c3c'; // Rouge
     } elseif ($percentage <= 40) {
-        return '#f39c12'; // Orange
+        return '#4682B4	'; // blue
     } elseif ($percentage <= 60) {
         return '#f1c40f'; // Jaune
     } elseif ($percentage <= 80) {
@@ -200,7 +223,7 @@ public function getColorByPercentage(float $percentage): string
 
 
                                         #[Route('/adminPolls', name: 'app_sondage_index2')]
-                                        public function index2(Request $request, SondageRepository $sondageRepository): Response 
+                                        public function index2(Request $request, SondageRepository $sondageRepository, PaginatorInterface $paginator): Response 
                                         {
                                             $query = trim($request->query->get('q', ''));
                                             
@@ -215,31 +238,80 @@ public function getColorByPercentage(float $percentage): string
                                             }
                                         
                                             $qb->orderBy('s.createdAt', 'DESC');
+                                            $pagination = $paginator->paginate(
+                                                $qb,
+                                                $request->query->getInt('page', 1),
+                                                2 // Nombre d'éléments par page
+                                            );
                                             
-                                            $sondages = $qb->getQuery()->getResult();
-                                        
-                                            $sondagesFormatted = array_map(function($sondage) {
-                                                return [
-                                                    'id' => $sondage->getId(),
-                                                    'question' => $sondage->getQuestion(),
-                                                    'club_name' => $sondage->getClub() ? $sondage->getClub()->getNomC() : 'Non défini',
-                                                    'created_at' => $sondage->getCreatedAt() ? $sondage->getCreatedAt()->format('Y-m-d') : 'Non défini',
-                                                    'choix' => $sondage->getChoix()->map(function($choix) {
-                                                        return $choix->getContenu();
-                                                    })->toArray(),
-                                                ];
-                                            }, $sondages);
-                                        
+                                            // Calcul des statistiques
+                                            $totalPolls = $sondageRepository->count([]);
+                                            
+                                            // Trouver le club le plus actif
+                                            $mostActiveClub = $sondageRepository->createQueryBuilder('s')
+                                                ->select('c.nomC as club_name, COUNT(s.id) as poll_count')
+                                                ->leftJoin('s.club', 'c')
+                                                ->groupBy('c.id')
+                                                ->orderBy('poll_count', 'DESC')
+                                                ->setMaxResults(1)
+                                                ->getQuery()
+                                                ->getOneOrNullResult();
+
+                                            // Compter les sondages actifs (créés dans les 30 derniers jours)
+                                            $activePolls = $sondageRepository->createQueryBuilder('s')
+                                                ->select('COUNT(s.id)')
+                                                ->where('s.createdAt >= :thirtyDaysAgo')
+                                                ->setParameter('thirtyDaysAgo', new \DateTime('-30 days'))
+                                                ->getQuery()
+                                                ->getSingleScalarResult();
+
+                                            // Compter le nombre total de réponses
+                                            $totalVotes = $sondageRepository->createQueryBuilder('s')
+                                                ->select('COUNT(r.id)')
+                                                ->leftJoin('s.reponses', 'r')
+                                                ->getQuery()
+                                                ->getSingleScalarResult();
+
+                                            // Récupérer les statistiques des 7 derniers jours
+                                            $weekly_stats = $sondageRepository->getWeeklyStats();
+
                                             if ($request->isXmlHttpRequest()) {
+                                                $sondagesFormatted = array_map(function($sondage) {
+                                                    return [
+                                                        'id' => $sondage->getId(),
+                                                        'question' => $sondage->getQuestion(),
+                                                        'club_name' => $sondage->getClub() ? $sondage->getClub()->getNomC() : 'Non défini',
+                                                        'created_at' => $sondage->getCreatedAt() ? $sondage->getCreatedAt()->format('Y-m-d') : 'Non défini',
+                                                        'choix' => $sondage->getChoix()->map(function($choix) {
+                                                            return $choix->getContenu();
+                                                        })->toArray(),
+                                                    ];
+                                                }, $pagination->getItems());
+                                        
+                                                // Rendre la pagination en HTML
+                                                $paginationHtml = $this->renderView('sondage/_pagination.html.twig', [
+                                                    'pagination' => $pagination
+                                                ]);
+                                        
                                                 return new JsonResponse([
                                                     'sondages' => $sondagesFormatted,
+                                                    'pagination' => $paginationHtml,
                                                     'count' => count($sondagesFormatted)
                                                 ]);
                                             }
                                         
                                             return $this->render('sondage/adminPolls.html.twig', [
-                                                'sondages' => $sondagesFormatted
+                                                'pagination' => $pagination,
+                                                'sondages' => $pagination->getItems(),
+                                                'total_polls' => $totalPolls,
+                                                'total_votes' => $totalVotes,
+                                                'active_polls' => $activePolls,
+                                                'most_active_club' => $mostActiveClub ? $mostActiveClub['club_name'] : 'No club',
+                                                'most_active_club_polls' => $mostActiveClub ? $mostActiveClub['poll_count'] : 0,
+                                                'weekly_polls' => $weekly_stats['polls'],
+                                                'weekly_votes' => $weekly_stats['votes'],
                                             ]);
+                                            
                                         }
                                         
                                         
@@ -300,43 +372,50 @@ public function getColorByPercentage(float $percentage): string
     
 //partie chart admin 
 #[Route('/poll/details/{id}', name: 'app_poll_details')]
-public function pollDetails(int $id, EntityManagerInterface $em): Response
-{
-    $sondage = $em->getRepository(Sondage::class)->find($id);
-    
+public function pollDetails(
+    int $id, 
+    SondageRepository $sondageRepository,
+    Request $request,
+    PaginatorInterface $paginator
+): Response {
+    $sondage = $sondageRepository->find($id);
+
     if (!$sondage) {
         throw $this->createNotFoundException('Poll not found');
     }
 
-    // Récupérer les commentaires
-    $comments = $em->getRepository(Commentaire::class)
-        ->findBy(['sondage' => $sondage], ['dateComment' => 'DESC']);
+    // Pagination des commentaires
+    $pagination = $paginator->paginate(
+        $sondage->getCommentaires(),
+        $request->query->getInt('page', 1),
+        5 // Nombre de commentaires par page
+    );
 
-    // Préparer les données pour le graphique
-    $pollResults = [];
-    $totalReponses = count($sondage->getReponses());
-
-    // Pour chaque choix du sondage
+    // Calcul des résultats du sondage
+    $totalVotes = 0;
+    $results = [];
+    
     foreach ($sondage->getChoix() as $choix) {
-        // Compter les réponses pour ce choix
-        $nombreReponses = $em->getRepository(Reponse::class)
-            ->count(['sondage' => $sondage, 'choixSondage' => $choix]);
-        
-        // Calculer le pourcentage
-        $percentage = $totalReponses > 0 ? ($nombreReponses / $totalReponses) * 100 : 0;
-        
-        $pollResults[] = [
+        $count = count($choix->getReponses());
+        $totalVotes += $count;
+        $results[] = [
             'choix' => $choix->getContenu(),
-            'count' => $nombreReponses,
-            'percentage' => round($percentage, 1),
-            'color' => sprintf('#%06X', mt_rand(0, 0xFFFFFF)) // Couleur aléatoire
+            'count' => $count,
+            'percentage' => 0 // Sera calculé ci-dessous
         ];
+    }
+
+    // Calcul des pourcentages
+    if ($totalVotes > 0) {
+        foreach ($results as &$result) {
+            $result['percentage'] = round(($result['count'] / $totalVotes) * 100);
+        }
     }
 
     return $this->render('sondage/pollsDetails.html.twig', [
         'sondage' => $sondage,
-        'comments' => $comments,
-        'poll_results' => $pollResults
+        'pagination' => $pagination,
+        'poll_results' => $results
     ]);
 }
 
@@ -345,7 +424,7 @@ private function getColorForPercentage(float $percentage): string
     if ($percentage <= 20) {
         return '#e74c3c'; // Rouge
     } elseif ($percentage <= 40) {
-        return '#f39c12'; // Orange
+        return '#4682B4'; // blue
     } elseif ($percentage <= 60) {
         return '#f1c40f'; // Jaune
     } elseif ($percentage <= 80) {
@@ -475,22 +554,24 @@ public function create(Request $request, EntityManagerInterface $em): Response
      EntityManagerInterface $em, 
      ValidatorInterface $validator,
      MailerInterface $mailer,
-     LoggerInterface $logger
+     LoggerInterface $logger,
+     Security $security
  ): JsonResponse {
      $data = json_decode($request->getContent(), true);
      
      if (!$data) {
          return new JsonResponse(['status' => 'error', 'message' => 'Invalid JSON data'], 400);
      }
-     
-     $user = $em->getRepository(User::class)->find(29);
+
+     $user = $security->getUser();
      if (!$user) {
-         return new JsonResponse(['status' => 'error', 'message' => 'User not found'], 404);
+         return new JsonResponse(['status' => 'error', 'message' => 'User not authenticated'], 401);
      }
-     
-     $club = $em->getRepository(Club::class)->findOneBy(['president' => $user->getId()]);
+
+     // Trouver le club du président
+     $club = $em->getRepository(Club::class)->findOneBy(['president' => $user]);
      if (!$club) {
-         return new JsonResponse(['status' => 'error', 'message' => 'You must be a club president to create polls'], 403);
+         return new JsonResponse(['status' => 'error', 'message' => 'User is not a club president'], 403);
      }
      
      $sondage = new Sondage();
@@ -686,9 +767,9 @@ public function create(Request $request, EntityManagerInterface $em): Response
     
 //ghalta dhaherli
     #[Route('/sondages', name: 'app_sondages')]
-    public function getPollsByClub(EntityManagerInterface $em, SondageRepository $sondageRepository, ClubRepository $clubRepository): Response
+    public function getPollsByClub(EntityManagerInterface $em, SondageRepository $sondageRepository, ClubRepository $clubRepository, Security $security): Response
     {
-        $user = $em->getRepository(User::class)->find(1); 
+        $user = $security->getUser();
 
         if (!$user) {
             throw $this->createAccessDeniedException('You should connect to see all polls');

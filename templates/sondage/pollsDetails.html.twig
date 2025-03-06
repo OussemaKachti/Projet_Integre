@@ -56,172 +56,609 @@
 			width: 100%;
 			margin-top: 20px;
 		}
+
+		.column:hover {
+			transform: translateY(-5px);
+			box-shadow: 5px 8px 20px rgba(0, 0, 0, 0.3);
+		}
+
+		.chart-container {
+			padding: 20px;
+			margin-top: 20px;
+		}
+
+		.column-wrapper {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		/* Correction du page-body-wrapper */
+		.page-body-wrapper {
+			padding-left: 0 !important;
+			padding-right: 0 !important;
+			width: calc(100% - 260px) !important;
+			max-width: none !important;
+			margin-left: 260px !important;
+			background: #f8f9fc !important;
+		}
+
+		/* Pour le mode responsive quand la sidebar est cachée */
+		@media(max-width: 991px) {
+			.page-body-wrapper {
+				width: 100% !important;
+				margin-left: 0 !important;
+			}
+		}
+
+		/* Ajustement du container-fluid */
+		.container-fluid {
+			padding: 30px !important;
+		}
+
+		/* Ajustement des cartes */
+		.card {
+			border: none !important;
+			border-radius: 15px !important;
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05) !important;
+			transition: transform 0.3s, box-shadow 0.3s !important;
+			margin-bottom: 25px !important;
+			background: white !important;
+		}
+
+		.card:hover {
+			transform: translateY(-5px) !important;
+			box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+		}
+
+		.card-title {
+			color: #2c3e50 !important;
+			font-size: 1.25rem !important;
+			font-weight: 600 !important;
+			margin-bottom: 1.5rem !important;
+			border-bottom: 2px solid #f1f1f1 !important;
+			padding-bottom: 10px !important;
+		}
+
+		/* Style du tableau */
+		.table {
+			margin: 0 !important;
+		}
+
+		.table thead th {
+			background: #f8f9fc !important;
+			color: #2c3e50 !important;
+			font-weight: 600 !important;
+			border-bottom: 2px solid #e3e6f0 !important;
+			padding: 15px !important;
+		}
+
+		.table tbody td {
+			padding: 15px !important;
+			vertical-align: middle !important;
+			color: #5a5c69 !important;
+			border-bottom: 1px solid #f1f1f1 !important;
+		}
+
+		/* Style des barres de progression */
+		.progress {
+			height: 25px !important;
+			border-radius: 50px !important;
+			background-color: #f1f1f1 !important;
+			margin: 10px 0 !important;
+			overflow: hidden !important;
+		}
+
+		.progress-bar {
+			background: linear-gradient(45deg, #4e73df, #36b9cc) !important;
+			border-radius: 50px !important;
+			transition: width 0.6s ease !important;
+		}
+
+		/* Style des colonnes de statistiques */
+		.column {
+			background: linear-gradient(45deg, #4e73df, #36b9cc) !important;
+			border-radius: 8px !important;
+			transition: all 0.3s ease !important;
+		}
+
+		.column:hover {
+			transform: translateY(-5px) !important;
+			box-shadow: 0 8px 25px rgba(78, 115, 223, 0.25) !important;
+		}
+
+		/* Style des informations */
+		.poll-info {
+			color: #5a5c69 !important;
+			line-height: 1.8 !important;
+		}
+
+		.poll-info strong {
+			color: #2c3e50 !important;
+			font-weight: 600 !important;
+		}
+
+		/* Style des boutons */
+		.bin-button {
+			background: #e74a3b !important;
+			border: none !important;
+			border-radius: 8px !important;
+			padding: 8px 15px !important;
+			color: white !important;
+			transition: all 0.3s ease !important;
+		}
+
+		.bin-button:hover {
+			background: #d52a1a !important;
+			transform: translateY(-2px) !important;
+		}
+
+		/* Responsive design */
+		@media(max-width: 991px) {
+			.container-fluid {
+				padding: 15px !important;
+			}
+		}
+
+		/* Style pour la barre de défilement */
+		.table-responsive::-webkit-scrollbar {
+			width: 8px;
+		}
+
+		.table-responsive::-webkit-scrollbar-track {
+			background: #f1f1f1;
+			border-radius: 4px;
+		}
+
+		.table-responsive::-webkit-scrollbar-thumb {
+			background: #888;
+			border-radius: 4px;
+		}
+
+		.table-responsive::-webkit-scrollbar-thumb:hover {
+			background: #555;
+		}
+
+		/* Style pour l'en-tête fixe */
+		thead th {
+			border-top: none !important;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+		}
+
+		/* Style pour le tableau */
+		.table-responsive {
+			border-radius: 8px;
+			scrollbar-width: thin;
+			scrollbar-color: #888 #f1f1f1;
+		}
+
+		.table td, .table th {
+			white-space: nowrap;
+		}
+
+		/* Style du bouton de suppression */
+		.bin-button {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 35px;
+			height: 35px;
+			border-radius: 8px;
+			background-color: #ff5f5f;
+			border: none;
+			cursor: pointer;
+			transition: all 0.3s ease;
+		}
+
+		.bin-button:hover {
+			background-color: #ff3333;
+			transform: translateY(-2px);
+		}
+
+		.bin-button:active {
+			transform: scale(0.95);
+		}
+
+		.bin-button i {
+			color: white;
+			font-size: 1rem;
+		}
+
+		/* Animation de suppression */
+		tr {
+			transition: all 0.3s ease;
+		}
+
+		tr.removing {
+			opacity: 0;
+			transform: translateX(-20px);
+		}
+
+		.navigation {
+			margin-top: 20px;
+			display: flex;
+			justify-content: center;
+		}
+
+		.page-link {
+			color: #4e73df !important;
+			border: 1px solid #e3e6f0 !important;
+			margin: 0 3px !important;
+			border-radius: 5px !important;
+			cursor: pointer;
+		}
+
+		.page-item.active .page-link {
+			background-color: #4e73df !important;
+			border-color: #4e73df !important;
+			color: white !important;
+		}
+
+		.page-link:hover {
+			background-color: #eaecf4 !important;
+			border-color: #e3e6f0 !important;
+		}
+
+		.page-item.disabled .page-link {
+			color: #858796 !important;
+			background-color: #fff !important;
+			border-color: #e3e6f0 !important;
+		}
 	</style>
 {% endblock %}
 
 {% block body %}
 	<div class="main-panel" style="width: 100%; max-width: 1500px; margin: 0 auto 0 20px;">
-		<div
-			class="content-wrapper">
-			<!-- Informations du sondage -->
-			<div class="row mb-4">
-				<div class="col-12">
-					<div class="card">
-						<div class="card-body">
-							<h4 class="card-title">Poll Information</h4>
-							<p>
-								<strong>Question:</strong>
-								{{ sondage.question }}</p>
-							<p>
-								<strong>Club:</strong>
-								{{ sondage.club.nomC }}</p>
-							<p>
-								<strong>Created At:</strong>
-								{{ sondage.createdAt|date('d/m/Y H:i') }}</p>
-						</div>
-					</div>
-				</div>
-			</div>
+    <div class="content-wrapper">
+        <div class="row">
+            <div class="col-lg-12 grid-margin stretch-card">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Poll Details</h4>
 
-			<!-- Table des commentaires -->
-			<div class="row mb-4">
-				<div class="col-12">
-					<div class="card">
-						<div class="card-body">
-							<h4 class="card-title">Comments</h4>
-							<div class="table-responsive">
-								<table class="table table-striped">
-									<thead>
-										<tr>
-											<th>User</th>
-											<th>Comment</th>
-											<th>Created At</th>
-											<th>Actions</th>
-										</tr>
-									</thead>
-									<tbody>
-										{% for comment in comments %}
-											<tr>
-												<td>{{ comment.user.fullName }}</td>
-												{# Utilisation de la méthode getFullName() #}
-												<td>{{ comment.contenuComment }}</td>
-												<td>{{ comment.dateComment|date('d/m/Y H:i') }}</td>
-												<td class="actions-column">
-													<div class="action-buttons">
-														<button class="bin-button" data-id="{{ comment.id }}">
-															<svg class="bin-top" viewbox="0 0 39 7" fill="none">
-																<line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
-																<line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
-															</svg>
-															<svg class="bin-bottom" viewbox="0 0 33 39" fill="none">
-																<path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
-																<path d="M21 6V29" stroke="white" stroke-width="4"></path>
-															</svg>
-														</button>
-													</div>
-												</td>
-											</tr>
-										{% endfor %}
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="row">
+                        <!-- Poll Information -->
+                        <div class="poll-info mb-4">
+                            <p><strong>Question:</strong> {{ sondage.question }}</p>
+                            <p><strong>Club:</strong> {{ sondage.club.nomC }}</p>
+                            <p><strong>Created At:</strong> {{ sondage.createdAt|date('d/m/Y H:i') }}</p>
+                        </div>
 
-				<div class="col-lg-6 grid-margin stretch-card">
-					<div class="card">
-						<div class="card-body">
-							<h4 class="card-title">Bar chart for Responses to polls</h4>
-							<canvas id="barChart"></canvas>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+                        <!-- Comments Table -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Comment</th>
+                                        <th>Created At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for comment in pagination %}
+                                        <tr>
+                                            <td>{{ comment.user.fullName }}</td>
+                                            <td>{{ comment.contenuComment }}</td>
+                                            <td>{{ comment.dateComment|date('d/m/Y H:i') }}</td>
+                                            <td class="actions-column">
+                                                <div class="action-buttons">
+                                                    <button class="bin-button" data-id="{{ comment.id }}">
+                                                        <svg class="bin-top" viewbox="0 0 39 7" fill="none">
+                                                            <line y1="5" x2="39" y2="5" stroke="white" stroke-width="4"></line>
+                                                            <line x1="12" y1="1.5" x2="26.0357" y2="1.5" stroke="white" stroke-width="3"></line>
+                                                        </svg>
+                                                        <svg class="bin-bottom" viewbox="0 0 33 39" fill="none">
+                                                            <path d="M12 6L12 29" stroke="white" stroke-width="4"></path>
+                                                            <path d="M21 6V29" stroke="white" stroke-width="4"></path>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="4" class="text-center">No comments found for this poll.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
 
-		<!-- Graphique des réponses -->
-		<div class="row">
-			<div class="col-lg-6 grid-margin stretch-card">
-				<div class="card">
-					<div class="card-body">
-						<h4 class="card-title">Response Statistics</h4>
-						<canvas id="statsChart" style="height: 300px;"></canvas>
-						
-						<!-- Légende des résultats -->
-						<div class="mt-4">
-							{% for result in poll_results %}
-								<div class="mb-2">
-									{{ result.choix }}: {{ result.count }} votes ({{ result.percentage }}%)
-								</div>
-							{% endfor %}
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+                            <!-- Pagination -->
+                            <div class="d-flex justify-content-center mt-3">
+                                {{ knp_pagination_render(pagination) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-		<!-- Nouvelle section pour le graphique ApexCharts -->
-		<div class="row">
-			<div class="col-lg-6 grid-margin stretch-card">
-				<div class="card">
-					<div class="card-body">
-						<h4 class="card-title">Response Analytics</h4>
-						<div id="responseAnalytics" class="chart-container"></div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+        <!-- Statistics Row -->
+        <div class="row mt-4">
+            <!-- Response Statistics -->
+            <div class="col-lg-6 grid-margin stretch-card">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Response Statistics</h4>
+                        {% for result in poll_results %}
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>{{ result.choix }}</span>
+                                    <span>{{ result.count }} votes ({{ result.percentage }}%)</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ result.percentage }}%;" 
+                                         aria-valuenow="{{ result.percentage }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ result.percentage }}%
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Votes Distribution -->
+            <div class="col-lg-6 grid-margin stretch-card">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Vote Distribution Cards</h4>
+                        <div class="card2">
+                            {% for result in poll_results %}
+                                <div class="item item--{{ loop.index }}">
+                                    <span class="quantity">
+                                        {{ result.count }}
+                                    </span>
+                                    <span class="text text--{{ loop.index }}">
+                                        {{ result.choix }}
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <style>
+                            .card2 {
+                                width: 100%;
+                                height: auto;
+                                min-height: 254px;
+                                color: white;
+                                display: grid;
+                                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                                gap: 15px;
+                                padding: 15px;
+                            }
+
+                            .card2 .item {
+                                border-radius: 10px;
+                                padding: 20px;
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                text-align: center;
+                            }
+
+                            .item:hover {
+                                transform: scale(1.05);
+                                transition: all 350ms ease-in-out;
+                            }
+
+                            .quantity {
+                                font-size: 28px;
+                                font-weight: 600;
+                                margin-bottom: 10px;
+                            }
+
+                            .text {
+                                font-size: 14px;
+                                font-weight: 500;
+                                word-wrap: break-word;
+                                max-width: 100%;
+                            }
+
+                            /* Couleurs dynamiques pour les cartes */
+                            .item--1 { background: #c7c7ff; }
+                            .item--2 { background: #ffd8be; }
+                            .item--3 { background: #a9ecbf; }
+                            .item--4 { background: #f3bbe1; }
+                            /* Ajoutez plus de variations si nécessaire */
+
+                            .text--1 { color: rgba(149, 149, 255, 1); }
+                            .text--2 { color: rgba(252, 161, 71, 1); }
+                            .text--3 { color: rgba(66, 193, 110, 1); }
+                            .text--4 { color: rgba(220, 91, 183, 1); }
+                            /* Ajoutez plus de variations si nécessaire */
+                        </style>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-center mt-4 mb-4">
+        <a href="{{ path('app_sondage_index2') }}" class="btn btn-secondary">Back</a>
+    </div>
 </div>
 {% endblock %}
 
 {% block javascripts %}
-{{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-	document.addEventListener('DOMContentLoaded', function() {
-		var ctx = document.getElementById('statsChart').getContext('2d');
-		var data = {{ poll_results|json_encode|raw }};
-		
-		console.log('Data:', data); // Pour déboguer
-		
-		new Chart(ctx, {
-			type: 'doughnut',
-			data: {
-				labels: data.map(item => item.choix),
-				datasets: [{
-					data: data.map(item => item.count),
-					backgroundColor: [
-						'#FF6384',
-						'#36A2EB',
-						'#FFCE56',
-						'#4BC0C0',
-						'#9966FF'
-					]
-				}]
-			},
-			options: {
-				responsive: true,
-				plugins: {
-					legend: {
-						position: 'bottom'
-					},
-					tooltip: {
-						callbacks: {
-							label: function(context) {
-								var label = context.label || '';
-								var value = context.raw || 0;
-								var total = context.dataset.data.reduce((a, b) => a + b, 0);
-								var percentage = ((value / total) * 100).toFixed(1);
-								return `${label}: ${value} votes (${percentage}%)`;
-							}
-						}
+	{{ parent() }}
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script>
+		$(document).ready(function () {
+if ($("#lineChart").length) {
+var ctx = $("#lineChart").get(0).getContext("2d");
+var pollData = {{ poll_results|json_encode|raw }};
+
+var gradientFill = ctx.createLinearGradient(0, 0, 0, 200);
+gradientFill.addColorStop(0, 'rgba(75, 73, 172, 0.5)');
+gradientFill.addColorStop(1, 'rgba(75, 73, 172, 0.1)');
+
+new Chart(ctx, {
+type: 'line',
+data: {
+labels: pollData.map(item => item.choix),
+datasets: [
+{
+label: 'Distribution des votes',
+data: pollData.map(item => item.count),
+borderColor: '#4747A1',
+backgroundColor: gradientFill,
+fill: true,
+tension: 0.4,
+pointBackgroundColor: '#4747A1',
+pointBorderColor: '#fff',
+pointBorderWidth: 2,
+pointRadius: 6,
+pointHoverRadius: 8,
+pointHoverBackgroundColor: '#fff',
+pointHoverBorderColor: '#4747A1',
+pointHoverBorderWidth: 2
+}
+]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+scales: {
+y: {
+beginAtZero: true,
+grid: {
+color: 'rgba(0, 0, 0, 0.05)'
+},
+ticks: {
+stepSize: 1,
+font: {
+size: 12
+}
+}
+},
+x: {
+grid: {
+display: false
+},
+ticks: {
+font: {
+size: 12
+}
+}
+}
+},
+plugins: {
+legend: {
+display: false
+},
+tooltip: {
+backgroundColor: 'rgba(0, 0, 0, 0.8)',
+titleFont: {
+size: 13
+},
+bodyFont: {
+size: 13
+},
+padding: 15,
+callbacks: {
+label: function (context) {
+const item = pollData[context.dataIndex];
+return `Votes: ${
+item.count
+} (${
+item.percentage
+}%)`;
+}
+}
+}
+},
+interaction: {
+intersect: false,
+mode: 'index'
+}
+}
+});
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+	// Gestion de la suppression des commentaires
+	const deleteButtons = document.querySelectorAll('.bin-button');
+	
+	deleteButtons.forEach(button => {
+		button.addEventListener('click', function() {
+			const commentId = this.getAttribute('data-id');
+			
+			if (confirm('Are you sure you want to delete this comment?')) {
+				fetch(`/admin/comments/delete/${commentId}`, {
+					method: 'DELETE',
+					headers: {
+						'X-Requested-With': 'XMLHttpRequest'
 					}
-				}
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.success) {
+						// Suppression de la ligne du tableau
+						this.closest('tr').remove();
+						alert('Comment deleted successfully!');
+					} else {
+						alert('Error deleting comment');
+					}
+				})
+				.catch(error => {
+					console.error('Error:', error);
+					alert('An error occurred while deleting the comment');
+				});
 			}
 		});
 	});
-</script>{% endblock %}
+
+	// Gestion du clic sur les liens de pagination
+	document.querySelector('.navigation').addEventListener('click', function(e) {
+		if (e.target.classList.contains('page-link')) {
+			e.preventDefault();
+			const page = e.target.getAttribute('data-page') || 1;
+			
+			// Récupération des données avec AJAX
+			fetch(`/adminPolls?page=${page}&q=${encodeURIComponent(document.querySelector('#search').value)}`)
+				.then(response => response.json())
+				.then(data => {
+					updateTable(data.sondages);
+					updatePagination(data.currentPage, data.pageCount);
+				});
+		}
+	});
+});
+
+function updateTable(sondages) {
+	// Fonction pour mettre à jour le contenu du tableau
+	const tbody = document.querySelector('table tbody');
+	tbody.innerHTML = '';
+	
+	sondages.forEach(sondage => {
+		tbody.innerHTML += `
+			<tr>
+				<td>${sondage.question}</td>
+				<td>${sondage.club_name}</td>
+				<td>${sondage.created_at}</td>
+				<td>
+					<!-- Vos actions -->
+				</td>
+			</tr>
+		`;
+	});
+}
+
+function updatePagination(currentPage, pageCount) {
+	// Mise à jour de l'état actif des boutons de pagination
+	document.querySelectorAll('.page-item').forEach(item => {
+		const pageNum = parseInt(item.querySelector('.page-link').getAttribute('data-page'));
+		if (pageNum === currentPage) {
+			item.classList.add('active');
+		} else {
+			item.classList.remove('active');
+		}
+	});
+}
+	</script>
+{% endblock %}

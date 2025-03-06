@@ -1,0 +1,32 @@
+knp_paginator:
+  # default_options:
+  #     page_name: page # Nom du paramètre de page dans l'URL
+  #     sort_field_name: sort
+  #     sort_direction_name: direction
+  # template:
+  #     pagination: '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig' # Utilisation de Bootstrap 5
+
+  # ken fama haja nbadlou el essem taa wahda mel pagination w nemchiw nbadlouha fel page teeha
+  page_range: 5
+  default_options:
+    page_name: page
+    sort_field_name: sort
+    sort_direction_name: direction
+  template:
+    pagination: "@KnpPaginator/Pagination/sliding.html.twig"
+    sortable: "@KnpPaginator/Pagination/sortable_link.html.twig"
+# monolog:
+#   handlers:
+#     main:
+#       type: rotating_file
+#       path: "%kernel.logs_dir%/%kernel.environment%.log"
+#       level: debug
+#       max_files: 30
+#     security:
+#       type: stream
+#       path: "%kernel.logs_dir%/security.log"
+#       level: debug
+#     console:
+#       type: console
+#       process_pids: true
+#       level: debug

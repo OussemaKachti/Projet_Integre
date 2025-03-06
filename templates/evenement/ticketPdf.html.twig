@@ -1,0 +1,72 @@
+{# templates/evenement/ticketPdf.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Ticket - {{ evenement.nomEvent }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        .ticket {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .ticket-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .ticket-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2C3E50;
+        }
+        .ticket-info {
+            margin-bottom: 15px;
+        }
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .ticket-footer {
+            margin-top: 30px;
+            font-size: 12px;
+            text-align: center;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="ticket">
+        <div class="ticket-header">
+            <div class="ticket-title">{{ evenement.nomEvent }}</div>
+            <div>Ticket d'admission</div>
+        </div>
+        
+        <div class="ticket-info">
+            <p><strong>ID du ticket:</strong> {{ ticketId }}</p>
+            <p><strong>Participant:</strong> {{ user.nom }} {{ user.prenom }}</p>
+            {% if evenement.dateDebut is defined %}
+                <p><strong>Date de l'événement:</strong> {{ evenement.startDate|date('d/m/Y H:i') }}</p>
+            {% endif %}
+            {% if evenement.lieu is defined %}
+                <p><strong>Lieu:</strong> {{ evenement.lieux }}</p>
+            {% endif %}
+            <p><strong>Date d'inscription:</strong> {{ participation.dateparticipation |date('d/m/Y H:i') }}</p>
+        </div>
+        
+        <div class="qr-code">
+            <p>[QR CODE: {{ ticketId }}]</p>
+        </div>
+        
+        <div class="ticket-footer">
+            <p>Ce ticket est personnel et ne peut être transféré. Veuillez présenter ce ticket (version imprimée ou sur votre téléphone) lors de votre arrivée à l'événement.</p>
+        </div>
+    </div>
+</body>
+</html>

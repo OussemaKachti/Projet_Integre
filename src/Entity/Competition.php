@@ -80,7 +80,8 @@ class Competition
 
     public function __construct() {
         $this->missionProgresses = new ArrayCollection();
-        $this->status = "pending"; // ✅ Ensure the default value is properly set
+        $this->status = "pending"; // ✅ Ensure the default value is properly set        $this->clubs = new ArrayCollection();
+
     }
 
     public function getId(): ?int

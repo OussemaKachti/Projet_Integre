@@ -1,0 +1,181 @@
+{% extends 'base.admin.html.twig' %}
+
+
+{% block body %}
+<style>
+    .cart-area {
+        padding-top: 120px;
+        padding-bottom: 120px;
+    }
+    .table-content {
+        margin-top: 20px;
+    }
+</style>
+
+<section class="cart-area pt-120 pb-120">
+    <div class="container">
+    <form method="get" action="{{ path('admin_commandes') }}" class="d-flex mb-4">
+    <input type="text" name="q" value="{{ keyword|default('') }}" placeholder="Research for ..." class="form-control me-2" style="width: 300px;">
+    <button type="submit" class="btn btn-primary">Research</button>
+</form>
+        <div class="row">
+            <h1>Order table</h1>
+            <div class="col-12">
+                <div class="table-content table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Email</th>
+                                <th>Date</th>
+                                <th>Nom du Produit</th>
+                                <th>Nom du Club</th>
+                                <th>Image</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in data %}
+                                <tr>
+                                    {# Informations de l'utilisateur #}
+                                    {% if item.user is not null and item.user is iterable == false %}
+                                        <td>{{ item.user.nom }}</td>
+                                        <td>{{ item.user.prenom }}</td>
+                                        <td>{{ item.user.email }}</td>
+                                    {% else %}
+                                        <td colspan="3">Utilisateur inconnu</td>
+                                    {% endif %}
+
+                                    {# Date de la commande #}
+                                    <td>{{ item.dateComm|date('Y-m-d H:i') }}</td>
+
+                                    {# Récupérer le premier OrderDetail s'il existe #}
+                                    {% set orderDetails = item.orderDetails|default([]) %}
+                                    {% set firstDetail = orderDetails is not empty ? orderDetails.first() : null %}
+
+                                    {# Nom du produit #}
+        <td>
+            {% if item.produit is not null %}
+                {{ item.produit.nomProd }}
+            {% else %}
+                Produit inconnu
+            {% endif %}
+        </td>
+
+        {# Nom du club #}
+        <td>
+            {% if item.club is not null %}
+                {{ item.club.nomC }}
+            {% else %}
+                Club inconnu
+            {% endif %}
+        </td>
+
+        
+
+        {# Image du produit #}
+        <td>
+            {% if item.produit is not null and item.produit.imgprod is not null %}
+                <img src="{{ asset('uploads/' ~ item.produit.imgprod) }}" 
+                     alt="Image de {{ item.produit.nomProd }}" 
+                     style="width: 90px; height: 90px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            {% else %}
+                <span>Aucune image</span>
+            {% endif %}
+        </td>
+
+                                    {# Actions #}
+                                    <td class="product-actions">
+                                        <div class="btn-group">
+                                            <form action="{{ path('admin_commande_supprimer', {'id': item.commande.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande ?');">
+                                                <button class="trash-button" aria-label="Supprimer">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="trash-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M3 6h18"></path>
+                                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="8">Aucune commande trouvée</td>
+                                </tr>
+                                
+                            {% endfor %}
+                            
+                        </tbody>
+                    </table>
+                    <div class="row mt-4">
+  <div class="col-xxl-20">
+     {{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig') }}
+  </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{# Nouveau bloc pour le graphique des produits les plus vendus #}
+<section class="container mt-5">
+    <h2 class="mb-4">Top Products Sold</h2>
+    <canvas id="topProduitsChart"></canvas>
+</section>
+
+{# Script pour le graphique #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("{{ path('top_produits') }}")
+            .then(response => response.json())
+            .then(data => {
+                console.log("Données reçues :", data);
+                const labels = data.map(item => item.nomProd);
+                const values = data.map(item => item.totalVentes);
+
+                const ctx = document.getElementById('topProduitsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Nombre de ventes',
+                            data: values,
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Quantité vendue'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Produits'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Top Produits Vendus'
+                            }
+                        }
+                    }
+                });
+            });
+    });
+</script>
+{% endblock %}

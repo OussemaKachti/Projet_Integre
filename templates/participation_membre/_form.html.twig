@@ -1,4 +1,65 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
-{{ form_end(form) }}
+<div class="container mt-5">
+    <div class="card shadow-lg p-4">
+        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate', 'id': 'participationForm'}}) }}
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">{{ form.description.vars.label|capitalize }}</label>
+                <h5 class="text-secondary mb-2">Pourquoi souhaitez-vous participer ?</h5>
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'placeholder': 'Exprimez vos motivations...', 'required': 'required'}}) }}
+                {{ form_errors(form.description) }}
+            </div>
+          
+        </div>
+
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-primary px-4 py-2">
+                <i class="fas fa-paper-plane"></i> {{ button_label|default('Envoyer') }}
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+
+        <!-- Message d'information -->
+        <div class="alert alert-info mt-4 text-center" role="alert">
+            <i class="fas fa-info-circle"></i> Assurez-vous que toutes les informations sont correctes avant de soumettre. 🚀
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'alerte pour validation -->
+<div class="modal fade" id="validationModal" tabindex="-1" aria-labelledby="validationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="validationModalLabel">Attention ! 🚫</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Veuillez remplir tous les champs obligatoires avant de soumettre le formulaire.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var form = document.getElementById('participationForm');
+
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                // Affichage du modal Bootstrap en cas d'erreur
+                var validationModal = new bootstrap.Modal(document.getElementById('validationModal'));
+                validationModal.show();
+            }
+
+            form.classList.add('was-validated');
+        });
+    });
+</script>

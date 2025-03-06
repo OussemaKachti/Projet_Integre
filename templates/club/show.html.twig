@@ -1,5 +1,6 @@
 {% extends 'base.html.twig' %}
 
+
 {% block title %}Club{% endblock %}
 
 {% block body %}
@@ -21,7 +22,7 @@
             </tr>
             <tr>
                 <th>Status</th>
-                <td>{{ club.status }}</td>
+                <td>{{ club.status.value }}</td>
             </tr>
             <tr>
                 <th>Image</th>
