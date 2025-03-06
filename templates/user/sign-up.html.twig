@@ -120,57 +120,63 @@
                             {# Start form with render_rest=false to prevent automatic error rendering #}
                             {{ form_start(form, {'attr': {'class': 'signup-form','novalidate':'novalidate'}, 'render_rest': false}) }}
                             
-                            <div class="sign__input-wrapper">
-                                <h5>{{ 'First Name'|trans }}</h5>
-                                <div class="sign__input">
-                                    <i class="fal fa-user"></i>
-                                    {{ form_widget(form.nom, {
-                                        'attr': {
-                                            'placeholder': 'First name',
-                                            'class': form.nom.vars.errors|length > 0 ? 'form-control input-error' : 'form-control'
-                                        }
-                                    }) }}
-                                    {% if form.nom.vars.errors|length > 0 %}
-                                        <span class="input-error-icon">
-                                            <i class="fas fa-exclamation-circle"></i>
-                                        </span>
-                                    {% endif %}
-                                </div>
-                                {% if form.nom.vars.errors|length > 0 %}
-                                    <div class="form-error-message">
-                                        {% for error in form.nom.vars.errors %}
-                                            {{ error.message }}
-                                            {% if not loop.last %}<br>{% endif %}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
+                           {# For First Name field (nom) #}
+<div class="sign__input-wrapper">
+    <h5>{{ 'First Name'|trans }}</h5>
+    <div class="sign__input">
+        <i class="fal fa-user"></i>
+        {{ form_widget(form.nom, {
+            'attr': {
+                'placeholder': 'First name',
+                'class': form.nom.vars.errors|length > 0 ? 'form-control input-error' : 'form-control'
+            }
+        }) }}
+        {% if form.nom.vars.errors|length > 0 %}
+            <span class="input-error-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </span>
+        {% endif %}
+    </div>
+    {% if form.nom.vars.errors|length > 0 %}
+        <div class="form-error-message">
+            {% for error in form.nom.vars.errors %}
+                {% if error.message starts with 'First name' %}
+                    {{ error.message }}
+                    {% if not loop.last %}<br>{% endif %}
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
 
-                            <div class="sign__input-wrapper">
-                                <h5>{{ 'Last Name'|trans }}</h5>
-                                <div class="sign__input">
-                                    <i class="fal fa-user"></i>
-                                    {{ form_widget(form.prenom, {
-                                        'attr': {
-                                            'placeholder': 'Last name',
-                                            'class': form.prenom.vars.errors|length > 0 ? 'form-control input-error' : 'form-control'
-                                        }
-                                    }) }}
-                                    {% if form.prenom.vars.errors|length > 0 %}
-                                        <span class="input-error-icon">
-                                            <i class="fas fa-exclamation-circle"></i>
-                                        </span>
-                                    {% endif %}
-                                </div>
-                                {% if form.prenom.vars.errors|length > 0 %}
-                                    <div class="form-error-message">
-                                        {% for error in form.prenom.vars.errors %}
-                                            {{ error.message }}
-                                            {% if not loop.last %}<br>{% endif %}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
+{# For Last Name field (prenom) #}
+<div class="sign__input-wrapper">
+    <h5>{{ 'Last Name'|trans }}</h5>
+    <div class="sign__input">
+        <i class="fal fa-user"></i>
+        {{ form_widget(form.prenom, {
+            'attr': {
+                'placeholder': 'Last name',
+                'class': form.prenom.vars.errors|length > 0 ? 'form-control input-error' : 'form-control'
+            }
+        }) }}
+        {% if form.prenom.vars.errors|length > 0 %}
+            <span class="input-error-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </span>
+        {% endif %}
+    </div>
+    {% if form.prenom.vars.errors|length > 0 %}
+        <div class="form-error-message">
+            {% for error in form.prenom.vars.errors %}
+                {% if error.message starts with 'Last name' %}
+                    {{ error.message }}
+                    {% if not loop.last %}<br>{% endif %}
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
 
                             <div class="sign__input-wrapper">
                                 <h5>{{ form.email.vars.label }}</h5>
@@ -278,45 +284,51 @@
     </section>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add smooth scrolling to alerts when they exist
-        const alertsContainer = document.getElementById('alerts-container');
-        if (alertsContainer && alertsContainer.children.length > 0) {
-            alertsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+   document.addEventListener('DOMContentLoaded', function() {
+    // Add smooth scrolling to alerts when they exist
+    const alertsContainer = document.getElementById('alerts-container');
+    if (alertsContainer && alertsContainer.children.length > 0) {
+        alertsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Fixed password toggle functionality
+    const passwordField = document.querySelector('.password-field input');
+    const toggleButton = document.querySelector('.toggle-password');
     
-        // Find the password field directly using its class/structure
-        const passwordField = document.querySelector('.password-field input[type="password"]');
-        const toggleButton = document.querySelector('.toggle-password');
+    if (passwordField && toggleButton) {
+        // Ensure initial state is correct
+        toggleButton.querySelector('i').classList.add('fa-eye');
         
-        if (passwordField && toggleButton) {
-            toggleButton.addEventListener('click', function() {
-                // Toggle the password field visibility
-                if (passwordField.type === 'password') {
-                    passwordField.type = 'text';
-                    toggleButton.querySelector('i').classList.remove('fa-eye');
-                    toggleButton.querySelector('i').classList.add('fa-eye-slash');
-                } else {
-                    passwordField.type = 'password';
-                    toggleButton.querySelector('i').classList.remove('fa-eye-slash');
-                    toggleButton.querySelector('i').classList.add('fa-eye');
-                }
-            });
-        }
-        
-        // Required checkbox validation
-        const form = document.querySelector('.signup-form');
-        const agreeCheckbox = document.getElementById('m-agree');
-        
-        if (form && agreeCheckbox) {
-            form.addEventListener('submit', function(event) {
-                if (!agreeCheckbox.checked) {
-                    event.preventDefault();
-                    alert('You must agree to the Terms & Conditions to proceed.');
-                }
-            });
-        }
-    });
+        toggleButton.addEventListener('click', function(e) {
+            // Prevent the click from submitting the form
+            e.preventDefault();
+            
+            // Toggle the password field visibility
+            if (passwordField.getAttribute('type') === 'password') {
+                passwordField.setAttribute('type', 'text');
+                toggleButton.querySelector('i').classList.remove('fa-eye');
+                toggleButton.querySelector('i').classList.add('fa-eye-slash');
+            } else {
+                passwordField.setAttribute('type', 'password');
+                toggleButton.querySelector('i').classList.remove('fa-eye-slash');
+                toggleButton.querySelector('i').classList.add('fa-eye');
+            }
+        });
+    }
+    
+    // Required checkbox validation
+    const form = document.querySelector('.signup-form');
+    const agreeCheckbox = document.getElementById('m-agree');
+    
+    if (form && agreeCheckbox) {
+        form.addEventListener('submit', function(event) {
+            if (!agreeCheckbox.checked) {
+                event.preventDefault();
+                alert('You must agree to the Terms & Conditions to proceed.');
+            }
+        });
+    }
+});
     </script>
     {% include 'user/terms-modal.html.twig' %}
 {% endblock %}

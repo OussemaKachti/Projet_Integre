@@ -254,6 +254,10 @@
 														<a href="{{ path('myclub')}}">my club</a>
 
 													</li>
+																				<li>
+														<a href="{{ path('app_participation_membre_index')}}">participation</a>
+
+													</li>
 													{% if app.user and (app.user.role.value == 'presidentClub' or app.user.role.value == 'membre') %}
 														<li>
 															<a href="{{ path('app_sondage_index') }}">Polls</a>

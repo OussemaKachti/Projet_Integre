@@ -1,7 +1,7 @@
 {% extends 'baseAdmin.html.twig' %}
 {% block title %}Admin's Dashboard{% endblock %}
 {% block body %}
-<div class="content-wrapper">
+<main>
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
@@ -450,7 +450,7 @@
             </div>
         </div>
     </div>
-</div>
+</main>
 
 <!-- Modal templates (inline) -->
 <!-- User Details Modal -->
@@ -495,45 +495,6 @@
 </div>
 
 <style>
-    /* Make content fit properly with sidebar */
-    .content-wrapper {
-        padding: 20px;
-        margin-left: 250px; /* Adjust based on your sidebar width */
-        width: calc(100% - 250px);
-        overflow-x: hidden;
-        transition: all 0.3s ease;
-    }
-    
-    /* When sidebar is collapsed */
-    .sidebar-icon-only .content-wrapper {
-        margin-left: 70px;
-        width: calc(100% - 70px);
-    }
-    
-    /* Responsive container */
-    .container-fluid {
-        padding: 0;
-    }
-    
-    /* Responsive table */
-    .table-responsive {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        max-width: 100%;
-    }
-    
-    .table {
-        width: 100%;
-        margin-bottom: 0;
-        white-space: nowrap;
-    }
-    
-    /* Allow text wrapping in specific columns */
-    .table td:nth-child(1),
-    .table td:nth-child(2) {
-        white-space: normal;
-    }
-    
     /* Stats card styling */
     .border-left-primary {
         border-left: 4px solid #4e73df;
@@ -589,29 +550,6 @@
     }
     .fa-2x {
         color: rgba(0,0,0,0.1);
-    }
-    
-    /* Media queries for responsive layout */
-    @media (max-width: 991.98px) {
-        .content-wrapper {
-            margin-left: 0;
-            width: 100%;
-        }
-        
-        .sidebar-icon-only .content-wrapper {
-            margin-left: 0;
-            width: 100%;
-        }
-        
-        /* Adjust card heights */
-        .card {
-            height: auto !important;
-        }
-        
-        /* Ensure charts are responsive */
-        .chart-area, .chart-pie {
-            height: 250px;
-        }
     }
     
     /* Better action buttons display */

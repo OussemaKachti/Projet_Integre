@@ -706,7 +706,7 @@ e.preventDefault();
 				}
 				
 
-				.profile__basic-thumb {
+				-thumb {
     position: relative !important;
     width: 100px !important;
     height: 100px !important;
@@ -716,7 +716,18 @@ e.preventDefault();
     padding: 0 !important;
 }
 
-.profile__basic-thumb .profile-picture-container {
+/* Profile Picture Styling */
+.profile__basic-thumb {
+    position: relative !important;
+    width: 100px !important;
+    height: 100px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.profile-picture-container {
     width: 100px !important;
     height: 100px !important;
     position: relative !important;
@@ -724,49 +735,54 @@ e.preventDefault();
     padding: 0 !important;
     border-radius: 50% !important;
     overflow: hidden !important;
+    cursor: pointer !important;
 }
 
-.profile__basic-thumb img,
 .profile-picture {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100px !important;
-    height: 100px !important;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: cover !important;
     border-radius: 50% !important;
-    margin: 0 !important;
-    padding: 0 !important;
     display: block !important;
-    border: none !important;
 }
 
 .profile-picture-overlay {
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
-    width: 100px !important;
-    height: 100px !important;
+    width: 100% !important;
+    height: 100% !important;
     background-color: rgba(0, 0, 0, 0.5) !important;
     border-radius: 50% !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+    z-index: 5 !important;
 }
 
-				.profile-picture-container:hover .profile-picture-overlay {
-					opacity: 1;
-				}
+.profile-picture-container:hover .profile-picture-overlay {
+    opacity: 1 !important;
+}
 
-				.change-picture-btn {
-					background: none;
-					border: none;
-					color: white;
-					font-size: 24px;
-					cursor: pointer;
-				}
+.change-picture-btn {
+    background: none !important;
+    border: none !important;
+    color: white !important;
+    font-size: 24px !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.change-picture-btn i {
+    font-size: 24px !important;
+    color: white !important;
+}
 
 				.custom-file-upload {
 					display: inline-block;
@@ -775,7 +791,7 @@ e.preventDefault();
 					color: white;
 					border-radius: 5px;
 					cursor: pointer;
-					transition: all 0.3s ease;
+					transition: all.profile__basic 0.3s ease;
 				}
 
 				.custom-file-upload:hover {

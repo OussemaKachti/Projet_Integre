@@ -120,62 +120,36 @@ class UserController extends AbstractController
     }
     
     #[Route('/sign-up', name: 'app_user_signup')]
-    public function signUp(
-        Request $request,
-        EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $passwordHasher,
-        UserConfirmationService $userConfirmationService,
-        ContentModerationService $contentModerationService
-    ): Response {
-        // Create a new User entity
-        $user = new User();
-        // Create the form using the UserType (without the role field)
-        $form = $this->createForm(UserType::class, $user);
-        // Handle form submission
-        $form->handleRequest($request);
+public function signUp(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    UserPasswordHasherInterface $passwordHasher,
+    UserConfirmationService $userConfirmationService,
+    ContentModerationService $contentModerationService
+): Response {
+    // Create a new User entity
+    $user = new User();
+    // Create the form using the UserType (without the role field)
+    $form = $this->createForm(UserType::class, $user);
+    // Handle form submission
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted()) {
-            // Current Mapping:
-            // $user->getNom() = First Name (despite 'nom' usually meaning 'last name' in French)
-            // $user->getPrenom() = Last Name (despite 'prenom' usually meaning 'first name' in French)
-            
-            // Get the entered field values (using the existing mapping)
-            $firstName = $user->getNom();      // First name is stored in 'nom' field
-            $lastName = $user->getPrenom();    // Last name is stored in 'prenom' field
-            $fullName = $firstName . ' ' . $lastName;
-            
-            // Validate first and last name (no numbers, etc)
-            $hasNameError = false;
-            
-            // Check First Name (stored in 'nom' field)
-            if (preg_match('/\d/', $firstName)) {
-                $form->get('nom')->addError(new FormError('First name cannot contain numbers'));
-                $hasNameError = true;
-            }
-            
-            if (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $firstName)) {
-                $form->get('nom')->addError(new FormError('First name can only contain letters, spaces, hyphens and apostrophes'));
-                $hasNameError = true;
-            }
-            
-            // Check Last Name (stored in 'prenom' field)
-            if (preg_match('/\d/', $lastName)) {
-                $form->get('prenom')->addError(new FormError('Last name cannot contain numbers'));
-                $hasNameError = true;
-            }
-            
-            if (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $lastName)) {
-                $form->get('prenom')->addError(new FormError('Last name can only contain letters, spaces, hyphens and apostrophes'));
-                $hasNameError = true;
-            }
-            
-            if ($hasNameError) {
-                return $this->render('user/sign-up.html.twig', [
-                    'form' => $form->createView(),
-                ]);
-            }
-            
-            // Check name for inappropriate content with fallback method for better reliability
+    if ($form->isSubmitted()) {
+        // Current Mapping:
+        // $user->getNom() = First Name (despite 'nom' usually meaning 'last name' in French)
+        // $user->getPrenom() = Last Name (despite 'prenom' usually meaning 'first name' in French)
+        
+        // Get the entered field values (using the existing mapping)
+        $firstName = $user->getNom();      // First name is stored in 'nom' field
+        $lastName = $user->getPrenom();    // Last name is stored in 'prenom' field
+        $fullName = $firstName . ' ' . $lastName;
+        
+        // Track validation errors
+        $hasNameError = false;
+        
+        // IMPORTANT: Always check for inappropriate content first
+        // This ensures content moderation happens regardless of other validation errors
+        if ($firstName || $lastName) {
             $this->logger->debug('Checking name during signup', [
                 'name' => $fullName
             ]);
@@ -186,110 +160,138 @@ class UserController extends AbstractController
             
             if ($nameCheckResult['is_inappropriate']) {
                 $this->addFlash('error', 'The provided name contains inappropriate content: ' . $nameCheckResult['explanation']);
-                // Return early, don't proceed with registration
+                $hasNameError = true;
+                // Don't return early - let's also show any format errors
+            }
+        }
+        
+        // Check First Name (stored in 'nom' field)
+        if ($firstName && preg_match('/\d/', $firstName)) {
+            $form->get('nom')->addError(new FormError('First name cannot contain numbers'));
+            $hasNameError = true;
+        }
+        
+        if ($firstName && !preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $firstName)) {
+            $form->get('nom')->addError(new FormError('First name can only contain letters, spaces, hyphens and apostrophes'));
+            $hasNameError = true;
+        }
+        
+        // Check Last Name (stored in 'prenom' field)
+        if ($lastName && preg_match('/\d/', $lastName)) {
+            $form->get('prenom')->addError(new FormError('Last name cannot contain numbers'));
+            $hasNameError = true;
+        }
+        
+        if ($lastName && !preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $lastName)) {
+            $form->get('prenom')->addError(new FormError('Last name can only contain letters, spaces, hyphens and apostrophes'));
+            $hasNameError = true;
+        }
+        
+        // Only return if we have validation errors, but AFTER checking for inappropriate content
+        if ($hasNameError) {
+            return $this->render('user/sign-up.html.twig', [
+                'form' => $form->createView(),
+            ]);
+        }
+        
+        // Then proceed with other form validation checks
+        if ($form->isValid()) {
+            // Rest of your controller code remains the same
+            $hasValidationErrors = false;
+            
+            // Check for existing email before trying to persist
+            $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $user->getEmail()]);
+            if ($existingUser) {
+                // Add error directly to the email field
+                $form->get('email')->addError(new FormError('This email is already registered. Please use a different email or login.'));
+                $hasValidationErrors = true;
+            }
+            
+            // Check for existing phone if phone is provided
+            if ($user->getTel()) {
+                $existingPhone = $entityManager->getRepository(User::class)->findOneBy(['tel' => $user->getTel()]);
+                if ($existingPhone) {
+                    $form->get('tel')->addError(new FormError('This phone number is already registered.'));
+                    $hasValidationErrors = true;
+                }
+            }
+            
+            // If there are validation errors, return the form with all errors
+            if ($hasValidationErrors) {
                 return $this->render('user/sign-up.html.twig', [
                     'form' => $form->createView(),
                 ]);
             }
-            
-            // Then proceed with form validation check
-            if ($form->isValid()) {
-                // Flag to track if we have validation errors
-                $hasValidationErrors = false;
-                
-                // Check for existing email before trying to persist
-                $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $user->getEmail()]);
-                if ($existingUser) {
-                    // Add error directly to the email field
-                    $form->get('email')->addError(new FormError('This email is already registered. Please use a different email or login.'));
-                    $hasValidationErrors = true;
-                }
-                
-                // Check for existing phone if phone is provided
-                if ($user->getTel()) {
-                    $existingPhone = $entityManager->getRepository(User::class)->findOneBy(['tel' => $user->getTel()]);
-                    if ($existingPhone) {
-                        $form->get('tel')->addError(new FormError('This phone number is already registered.'));
-                        $hasValidationErrors = true;
-                    }
-                }
-                
-                // If there are validation errors, return the form with all errors
-                if ($hasValidationErrors) {
-                    return $this->render('user/sign-up.html.twig', [
-                        'form' => $form->createView(),
-                    ]);
-                }
 
-                // Hash the password
-                $hashedPassword = $passwordHasher->hashPassword(
-                    $user,
-                    $form->get('password')->getData()
-                );
-                $user->setPassword($hashedPassword);
+            // Hash the password
+            $hashedPassword = $passwordHasher->hashPassword(
+                $user,
+                $form->get('password')->getData()
+            );
+            $user->setPassword($hashedPassword);
 
-                // Set the default role to NON_MEMBRE
-                $user->setRole(RoleEnum::NON_MEMBRE);
+            // Set the default role to NON_MEMBRE
+            $user->setRole(RoleEnum::NON_MEMBRE);
 
+            try {
+                // Persist the user to the database
+                $entityManager->persist($user);
+                $entityManager->flush();
+
+                // Automatically send the confirmation email
                 try {
-                    // Persist the user to the database
-                    $entityManager->persist($user);
-                    $entityManager->flush();
-
-                    // Automatically send the confirmation email
-                    try {
-                        $userConfirmationService->sendConfirmationEmail($user);
-                        $this->addFlash('success', 'Check your email to confirm your account!');
-                    } catch (\Exception $e) {
-                        $this->logger->error('Failed to send confirmation email', [
-                            'error' => $e->getMessage(),
-                            'user_id' => $user->getId()
-                        ]);
-                        $this->addFlash('error', 'Failed to send confirmation email. Please contact support.');
-                    }
-
-                    // Redirect to success page
-                    return $this->redirectToRoute('app_home');
-                } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
-                    // Fallback for any other unique constraint violations
-                    $this->logger->error('Unique constraint violation during registration', [
-                        'error' => $e->getMessage(),
-                        'user_email' => $user->getEmail()
-                    ]);
-                    
-                    if (strpos($e->getMessage(), 'UNIQ_8D93D649E7927C74') !== false) {
-                        // Email constraint
-                        $form->get('email')->addError(new FormError('This email is already registered. Please use a different email or login.'));
-                    } elseif (strpos($e->getMessage(), 'tel') !== false) {
-                        // Phone constraint
-                        $form->get('tel')->addError(new FormError('This phone number is already registered.'));
-                    } else {
-                        $this->addFlash('error', 'Registration failed. This account information is already in use.');
-                    }
-                    
-                    return $this->render('user/sign-up.html.twig', [
-                        'form' => $form->createView(),
-                    ]);
+                    $userConfirmationService->sendConfirmationEmail($user);
+                    $this->addFlash('success', 'Check your email to confirm your account!');
                 } catch (\Exception $e) {
-                    // Generic exception handling
-                    $this->logger->error('Error during registration', [
+                    $this->logger->error('Failed to send confirmation email', [
                         'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString()
+                        'user_id' => $user->getId()
                     ]);
-                    $this->addFlash('error', 'An error occurred during registration. Please try again later.');
-                    
-                    return $this->render('user/sign-up.html.twig', [
-                        'form' => $form->createView(),
-                    ]);
+                    $this->addFlash('error', 'Failed to send confirmation email. Please contact support.');
                 }
+
+                // Redirect to success page
+                return $this->redirectToRoute('app_home');
+            } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+                // Fallback for any other unique constraint violations
+                $this->logger->error('Unique constraint violation during registration', [
+                    'error' => $e->getMessage(),
+                    'user_email' => $user->getEmail()
+                ]);
+                
+                if (strpos($e->getMessage(), 'UNIQ_8D93D649E7927C74') !== false) {
+                    // Email constraint
+                    $form->get('email')->addError(new FormError('This email is already registered. Please use a different email or login.'));
+                } elseif (strpos($e->getMessage(), 'tel') !== false) {
+                    // Phone constraint
+                    $form->get('tel')->addError(new FormError('This phone number is already registered.'));
+                } else {
+                    $this->addFlash('error', 'Registration failed. This account information is already in use.');
+                }
+                
+                return $this->render('user/sign-up.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            } catch (\Exception $e) {
+                // Generic exception handling
+                $this->logger->error('Error during registration', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                $this->addFlash('error', 'An error occurred during registration. Please try again later.');
+                
+                return $this->render('user/sign-up.html.twig', [
+                    'form' => $form->createView(),
+                ]);
             }
         }
-
-        // Render the form template
-        return $this->render('user/sign-up.html.twig', [
-            'form' => $form->createView(),
-        ]);
     }
+
+    // Render the form template
+    return $this->render('user/sign-up.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
     
     #[Route('/update-profile', name: 'app_update_profile', methods: ['POST'])]
     public function updateProfile(

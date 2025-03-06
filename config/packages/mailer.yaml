@@ -1,4 +1,4 @@
 framework:
     mailer:
-        dsn: '%env(MAILER_DSN)%'
+        dsn: '%env(MAILER_DSN2)%'
         message_bus: false
