@@ -105,7 +105,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTime $lastLoginAt = null;
-
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $warningCount = 0;
 
 
 
@@ -438,5 +439,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->lastLoginAt = new \DateTime();
         return $this;
+    }
+    public function getWarningCount(): int
+    {
+        return $this->warningCount;
+    }
+    
+    public function setWarningCount(int $warningCount): self
+    {
+        $this->warningCount = $warningCount;
+        return $this;
+    }
+    
+    /**
+     * Increment the warning count and return the new value
+     */
+    public function incrementWarningCount(): int
+    {
+        $this->warningCount++;
+        return $this->warningCount;
+    }
+    
+    /**
+     * Check if the user has reached the maximum number of warnings
+     */
+    public function hasReachedMaxWarnings(int $maxWarnings = 3): bool
+    {
+        return $this->warningCount >= $maxWarnings;
     }
 }

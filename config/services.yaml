@@ -10,13 +10,15 @@ parameters:
     
     profile_pictures_directory: "%kernel.project_dir%/public/uploads/profiles"
     huggingface_api_key: "%env(HUGGINGFACE_API_KEY)%"
-    llava_model_endpoint: "%env(default:llava_model_default:LLAVA_MODEL_ENDPOINT)%"
-    # CHANGED: Use a smaller model instead of the 14GB LLaVA model
-    llava_model_default: "Xenova/llava-7b" # Smaller model that should work with free tier
-    nsfw_detection_model: "Falconsai/nsfw_image_detection"
+    
+    # Content moderation models for specific categories
+    nsfw_model: "Falconsai/nsfw_image_detection"
+    violence_model: "Dabid/abusive-tagalog-profanity-detection"
+    hatespeech_model: "facebook/bart-large-mnli"
+    caption_model: "Salesforce/blip-image-captioning-base"
+    
     kernel.logs_dir: "%kernel.project_dir%/var/log"
     club_images_directory: '%kernel.project_dir%/public/uploads/clubs'
-
 
 services:
   # Access denied handler
@@ -57,16 +59,37 @@ services:
       $client: "@http_client"
       $apiKey: "%env(OPENAI_API_KEY)%"
 
-  # Configure LLaVA Content Moderation Service
-  App\Service\LLaVAContentModerationService:
+  # Configure Content Moderation Service
+  App\Service\ContentModerationService:
     arguments:
       $httpClient: "@http_client"
       $huggingFaceApiKey: "%huggingface_api_key%"
       $logger: "@logger"
-      $modelEndpoint: "%llava_model_endpoint%"
       $cache: "@cache.app"
-      $nsfwModelEndpoint: "%nsfw_detection_model%"
-
+      $nsfwModel: "%nsfw_model%"
+      $violenceModel: "%violence_model%"
+      $hateSpeechModel: "%hatespeech_model%"
+      $captionModel: "%caption_model%"
+      
+  # Configure Warning Email Service with mailtrap
+  App\Service\WarningEmailService:
+    arguments:
+      $mailer: '@mailer.mailtrap_mailer'
+      $twig: '@twig'
+      $logger: '@logger'
+      $senderEmail: 'no-reply@yourdomain.com'
+    
+  # Configure a mailtrap mailer instance using MAILER_DSN2
+  mailer.mailtrap_transport:
+    class: Symfony\Component\Mailer\Transport\TransportInterface
+    factory: ['Symfony\Component\Mailer\Transport', 'fromDsn']
+    arguments: ['%env(MAILER_DSN2)%']
+    
+  mailer.mailtrap_mailer:
+    class: Symfony\Component\Mailer\Mailer
+    arguments:
+      $transport: '@mailer.mailtrap_transport'
+  
   ecnickcom\Tcpdf\Tcpdf:
       public: true
       autowire: true     # Définir un transport personnalisé avec MAILER_DSN3

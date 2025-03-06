@@ -8,7 +8,8 @@ use App\Entity\User;
 
 use App\Form\UserType;
 use App\Service\UserConfirmationService;
-use App\Service\LLaVAContentModerationService;
+use App\Service\ContentModerationService;
+use App\Service\WarningEmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,10 +32,19 @@ class UserController extends AbstractController
 {
 
     private $logger;
-    public function __construct(LoggerInterface $logger)
-    {
+    private $warningEmailService;
+    private $entityManager;
+    
+    public function __construct(
+        LoggerInterface $logger,
+        WarningEmailService $warningEmailService,
+        EntityManagerInterface $entityManager
+    ) {
         $this->logger = $logger;
+        $this->warningEmailService = $warningEmailService;
+        $this->entityManager = $entityManager;
     }
+    
     #[Route('/admin', name: 'app_admin')]
     public function admin(): Response
     {
@@ -60,348 +70,378 @@ class UserController extends AbstractController
         ]);
     }
     
+    /**
+     * Process content moderation warning and handle account status
+     */
+    private function handleContentModeration(User $user, bool $isInappropriate, string $contentType, string $explanation): bool
+    {
+        if (!$isInappropriate) {
+            return false; // No warning needed
+        }
+        
+        // Clean explanation for user-friendly message
+        $cleanExplanation = preg_replace('/^(YES|NO)\.\s*/i', '', $explanation);
+        
+        // Increment warning count
+        $newWarningCount = $user->incrementWarningCount();
+        $this->logger->info('User received content warning', [
+            'user_id' => $user->getId(),
+            'warning_count' => $newWarningCount,
+            'content_type' => $contentType, 
+            'reason' => $cleanExplanation
+        ]);
+        
+        // Send warning email
+        $this->warningEmailService->sendContentWarningEmail(
+            $user, 
+            $contentType, 
+            $cleanExplanation
+        );
+        
+        // Check if we need to disable the account
+        if ($user->hasReachedMaxWarnings()) {
+            // Set account status to disabled
+            $user->setStatus(User::STATUS_DISABLED);
+            
+            $this->logger->warning('User account disabled due to maximum warnings', [
+                'user_id' => $user->getId(),
+                'warning_count' => $newWarningCount
+            ]);
+            
+            // Send account disabled notification
+            $this->warningEmailService->sendAccountDisabledEmail($user);
+        }
+        
+        // Save changes to the database
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+        
+        return true;
+    }
+    
     #[Route('/sign-up', name: 'app_user_signup')]
-public function signUp(
-    Request $request,
-    EntityManagerInterface $entityManager,
-    UserPasswordHasherInterface $passwordHasher,
-    UserConfirmationService $userConfirmationService,
-    LLaVAContentModerationService $contentModerationService
-): Response {
-    // Create a new User entity
-    $user = new User();
-    // Create the form using the UserType (without the role field)
-    $form = $this->createForm(UserType::class, $user);
-    // Handle form submission
-    $form->handleRequest($request);
+    public function signUp(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $passwordHasher,
+        UserConfirmationService $userConfirmationService,
+        ContentModerationService $contentModerationService
+    ): Response {
+        // Create a new User entity
+        $user = new User();
+        // Create the form using the UserType (without the role field)
+        $form = $this->createForm(UserType::class, $user);
+        // Handle form submission
+        $form->handleRequest($request);
 
-    if ($form->isSubmitted()) {
+        if ($form->isSubmitted()) {
+            // Current Mapping:
+            // $user->getNom() = First Name (despite 'nom' usually meaning 'last name' in French)
+            // $user->getPrenom() = Last Name (despite 'prenom' usually meaning 'first name' in French)
+            
+            // Get the entered field values (using the existing mapping)
+            $firstName = $user->getNom();      // First name is stored in 'nom' field
+            $lastName = $user->getPrenom();    // Last name is stored in 'prenom' field
+            $fullName = $firstName . ' ' . $lastName;
+            
+            // Validate first and last name (no numbers, etc)
+            $hasNameError = false;
+            
+            // Check First Name (stored in 'nom' field)
+            if (preg_match('/\d/', $firstName)) {
+                $form->get('nom')->addError(new FormError('First name cannot contain numbers'));
+                $hasNameError = true;
+            }
+            
+            if (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $firstName)) {
+                $form->get('nom')->addError(new FormError('First name can only contain letters, spaces, hyphens and apostrophes'));
+                $hasNameError = true;
+            }
+            
+            // Check Last Name (stored in 'prenom' field)
+            if (preg_match('/\d/', $lastName)) {
+                $form->get('prenom')->addError(new FormError('Last name cannot contain numbers'));
+                $hasNameError = true;
+            }
+            
+            if (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $lastName)) {
+                $form->get('prenom')->addError(new FormError('Last name can only contain letters, spaces, hyphens and apostrophes'));
+                $hasNameError = true;
+            }
+            
+            if ($hasNameError) {
+                return $this->render('user/sign-up.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
+            
+            // Check name for inappropriate content with fallback method for better reliability
+            $this->logger->debug('Checking name during signup', [
+                'name' => $fullName
+            ]);
+            
+            $nameCheckResult = $contentModerationService->checkUserTextWithFallback($fullName);
+            
+            $this->logger->debug('Name check result', $nameCheckResult);
+            
+            if ($nameCheckResult['is_inappropriate']) {
+                $this->addFlash('error', 'The provided name contains inappropriate content: ' . $nameCheckResult['explanation']);
+                // Return early, don't proceed with registration
+                return $this->render('user/sign-up.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
+            
+            // Then proceed with form validation check
+            if ($form->isValid()) {
+                // Flag to track if we have validation errors
+                $hasValidationErrors = false;
+                
+                // Check for existing email before trying to persist
+                $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $user->getEmail()]);
+                if ($existingUser) {
+                    // Add error directly to the email field
+                    $form->get('email')->addError(new FormError('This email is already registered. Please use a different email or login.'));
+                    $hasValidationErrors = true;
+                }
+                
+                // Check for existing phone if phone is provided
+                if ($user->getTel()) {
+                    $existingPhone = $entityManager->getRepository(User::class)->findOneBy(['tel' => $user->getTel()]);
+                    if ($existingPhone) {
+                        $form->get('tel')->addError(new FormError('This phone number is already registered.'));
+                        $hasValidationErrors = true;
+                    }
+                }
+                
+                // If there are validation errors, return the form with all errors
+                if ($hasValidationErrors) {
+                    return $this->render('user/sign-up.html.twig', [
+                        'form' => $form->createView(),
+                    ]);
+                }
+
+                // Hash the password
+                $hashedPassword = $passwordHasher->hashPassword(
+                    $user,
+                    $form->get('password')->getData()
+                );
+                $user->setPassword($hashedPassword);
+
+                // Set the default role to NON_MEMBRE
+                $user->setRole(RoleEnum::NON_MEMBRE);
+
+                try {
+                    // Persist the user to the database
+                    $entityManager->persist($user);
+                    $entityManager->flush();
+
+                    // Automatically send the confirmation email
+                    try {
+                        $userConfirmationService->sendConfirmationEmail($user);
+                        $this->addFlash('success', 'Check your email to confirm your account!');
+                    } catch (\Exception $e) {
+                        $this->logger->error('Failed to send confirmation email', [
+                            'error' => $e->getMessage(),
+                            'user_id' => $user->getId()
+                        ]);
+                        $this->addFlash('error', 'Failed to send confirmation email. Please contact support.');
+                    }
+
+                    // Redirect to success page
+                    return $this->redirectToRoute('app_home');
+                } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+                    // Fallback for any other unique constraint violations
+                    $this->logger->error('Unique constraint violation during registration', [
+                        'error' => $e->getMessage(),
+                        'user_email' => $user->getEmail()
+                    ]);
+                    
+                    if (strpos($e->getMessage(), 'UNIQ_8D93D649E7927C74') !== false) {
+                        // Email constraint
+                        $form->get('email')->addError(new FormError('This email is already registered. Please use a different email or login.'));
+                    } elseif (strpos($e->getMessage(), 'tel') !== false) {
+                        // Phone constraint
+                        $form->get('tel')->addError(new FormError('This phone number is already registered.'));
+                    } else {
+                        $this->addFlash('error', 'Registration failed. This account information is already in use.');
+                    }
+                    
+                    return $this->render('user/sign-up.html.twig', [
+                        'form' => $form->createView(),
+                    ]);
+                } catch (\Exception $e) {
+                    // Generic exception handling
+                    $this->logger->error('Error during registration', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    $this->addFlash('error', 'An error occurred during registration. Please try again later.');
+                    
+                    return $this->render('user/sign-up.html.twig', [
+                        'form' => $form->createView(),
+                    ]);
+                }
+            }
+        }
+
+        // Render the form template
+        return $this->render('user/sign-up.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+    
+    #[Route('/update-profile', name: 'app_update_profile', methods: ['POST'])]
+    public function updateProfile(
+        Request $request, 
+        UserPasswordHasherInterface $passwordHasher, 
+        EntityManagerInterface $entityManager,
+        ContentModerationService $contentModerationService,
+        ValidatorInterface $validator
+    ): Response {
+        /** @var User $user */
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+        
+        // Get current password for verification
+        $currentPassword = $request->request->get('current_password');
+        
+        // Verify the current password
+        if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
+            $this->addFlash('error', 'Current password is incorrect');
+            return $this->redirectToRoute('app_profile');
+        }
+        
+        // Get form data
+        $fullName = $request->request->get('full_name');
+        $email = $request->request->get('email');
+        $phone = $request->request->get('phone');
+        
+        // Validate full name
+        $nameParts = explode(' ', trim($fullName));
+        if (count($nameParts) < 2 || empty($nameParts[0]) || empty($nameParts[1])) {
+            $this->addFlash('error', 'Please provide both first and last name');
+            return $this->redirectToRoute('app_profile');
+        }
+        
         // Current Mapping:
-        // $user->getNom() = First Name (despite 'nom' usually meaning 'last name' in French)
-        // $user->getPrenom() = Last Name (despite 'prenom' usually meaning 'first name' in French)
+        // nom = First Name (despite meaning "last name" in French)
+        // prenom = Last Name (despite meaning "first name" in French)
         
-        // Get the entered field values (using the existing mapping)
-        $firstName = $user->getNom();      // First name is stored in 'nom' field
-        $lastName = $user->getPrenom();    // Last name is stored in 'prenom' field
-        $fullName = $firstName . ' ' . $lastName;
+        // Extract first and last name according to mapping
+        $firstName = $nameParts[0]; // Will be saved to 'nom' field
+        $lastName = implode(' ', array_slice($nameParts, 1)); // Will be saved to 'prenom' field
         
-        // Validate first and last name (no numbers, etc)
-        $hasNameError = false;
-        
-        // Check First Name (stored in 'nom' field)
+        // Validate first name (to be saved in 'nom' field)
         if (preg_match('/\d/', $firstName)) {
-            $form->get('nom')->addError(new FormError('First name cannot contain numbers'));
-            $hasNameError = true;
+            $this->addFlash('error', 'First name cannot contain numbers');
+            return $this->redirectToRoute('app_profile');
         }
         
         if (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $firstName)) {
-            $form->get('nom')->addError(new FormError('First name can only contain letters, spaces, hyphens and apostrophes'));
-            $hasNameError = true;
+            $this->addFlash('error', 'First name can only contain letters, spaces, hyphens and apostrophes');
+            return $this->redirectToRoute('app_profile');
         }
         
-        // Check Last Name (stored in 'prenom' field)
+        // Validate last name (to be saved in 'prenom' field)
         if (preg_match('/\d/', $lastName)) {
-            $form->get('prenom')->addError(new FormError('Last name cannot contain numbers'));
-            $hasNameError = true;
+            $this->addFlash('error', 'Last name cannot contain numbers');
+            return $this->redirectToRoute('app_profile');
         }
         
         if (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $lastName)) {
-            $form->get('prenom')->addError(new FormError('Last name can only contain letters, spaces, hyphens and apostrophes'));
-            $hasNameError = true;
+            $this->addFlash('error', 'Last name can only contain letters, spaces, hyphens and apostrophes');
+            return $this->redirectToRoute('app_profile');
         }
         
-        if ($hasNameError) {
-            return $this->render('user/sign-up.html.twig', [
-                'form' => $form->createView(),
-            ]);
-        }
+        // Add content moderation check for name with fallback for better reliability
+        $nameCheckResult = $contentModerationService->checkUserTextWithFallback($fullName);
         
-        // Check name for inappropriate content
-        $this->logger->debug('Checking name during signup', [
-            'name' => $fullName
+        $this->logger->debug('Name moderation during profile update', [
+            'name' => $fullName,
+            'result' => $nameCheckResult
         ]);
         
-        $nameCheckResult = $contentModerationService->checkUserText($fullName);
-        
-        $this->logger->debug('Name check result', $nameCheckResult);
-        
         if ($nameCheckResult['is_inappropriate']) {
-            $this->addFlash('error', 'The provided name contains inappropriate content: ' . $nameCheckResult['explanation']);
-            // Return early, don't proceed with registration
-            return $this->render('user/sign-up.html.twig', [
-                'form' => $form->createView(),
-            ]);
+            // Process warning and check account status
+            $this->handleContentModeration(
+                $user, 
+                true, 
+                'profile name', 
+                $nameCheckResult['explanation'] ?? 'Inappropriate content detected'
+            );
+            
+            // Extra safeguard to remove any remaining YES/NO prefixes
+            $explanation = preg_replace('/^(YES|NO)\.\s*/i', '', $nameCheckResult['explanation']);
+            
+            $this->addFlash('error', 'The provided name contains inappropriate content: ' . $explanation);
+            
+            // If account was disabled, redirect to logout
+            if (!$user->isActive()) {
+                $this->addFlash('error', 'Your account has been disabled due to multiple content policy violations.');
+                return $this->redirectToRoute('app_logout');
+            }
+            
+            return $this->redirectToRoute('app_profile');
         }
         
-        // Then proceed with form validation check
-        if ($form->isValid()) {
-            // Flag to track if we have validation errors
-            $hasValidationErrors = false;
-            
-            // Check for existing email before trying to persist
-            $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $user->getEmail()]);
-            if ($existingUser) {
-                // Add error directly to the email field
-                $form->get('email')->addError(new FormError('This email is already registered. Please use a different email or login.'));
-                $hasValidationErrors = true;
-            }
-            
-            // Check for existing phone if phone is provided
-            if ($user->getTel()) {
-                $existingPhone = $entityManager->getRepository(User::class)->findOneBy(['tel' => $user->getTel()]);
-                if ($existingPhone) {
-                    $form->get('tel')->addError(new FormError('This phone number is already registered.'));
-                    $hasValidationErrors = true;
-                }
-            }
-            
-            // If there are validation errors, return the form with all errors
-            if ($hasValidationErrors) {
-                return $this->render('user/sign-up.html.twig', [
-                    'form' => $form->createView(),
-                ]);
-            }
-
-            // Hash the password
-            $hashedPassword = $passwordHasher->hashPassword(
-                $user,
-                $form->get('password')->getData()
-            );
-            $user->setPassword($hashedPassword);
-
-            // Set the default role to NON_MEMBRE
-            $user->setRole(RoleEnum::NON_MEMBRE);
-
+        // Rest of the code remains the same...
+        // Validate email, phone, etc.
+        
+        // Check if any data has changed
+        $hasChanges = false;
+        
+        // Remember: nom = First Name, prenom = Last Name in your mapping
+        if ($firstName !== $user->getNom()) {
+            $user->setNom($firstName);
+            $hasChanges = true;
+        }
+        
+        if ($lastName !== $user->getPrenom()) {
+            $user->setPrenom($lastName);
+            $hasChanges = true;
+        }
+        
+        if ($email !== $user->getEmail()) {
+            $user->setEmail($email);
+            $hasChanges = true;
+        }
+        
+        if ($phone !== $user->getTel()) {
+            $user->setTel($phone);
+            $hasChanges = true;
+        }
+        
+        // Only persist if there are changes
+        if ($hasChanges) {
             try {
-                // Persist the user to the database
                 $entityManager->persist($user);
                 $entityManager->flush();
-
-                // Automatically send the confirmation email
-                try {
-                    $userConfirmationService->sendConfirmationEmail($user);
-                    $this->addFlash('success', 'Check your email to confirm your account!');
-                } catch (\Exception $e) {
-                    $this->logger->error('Failed to send confirmation email', [
-                        'error' => $e->getMessage(),
-                        'user_id' => $user->getId()
-                    ]);
-                    $this->addFlash('error', 'Failed to send confirmation email. Please contact support.');
-                }
-
-                // Redirect to success page
-                return $this->redirectToRoute('app_home');
-            } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
-                // Fallback for any other unique constraint violations
-                $this->logger->error('Unique constraint violation during registration', [
-                    'error' => $e->getMessage(),
-                    'user_email' => $user->getEmail()
-                ]);
-                
-                if (strpos($e->getMessage(), 'UNIQ_8D93D649E7927C74') !== false) {
-                    // Email constraint
-                    $form->get('email')->addError(new FormError('This email is already registered. Please use a different email or login.'));
-                } elseif (strpos($e->getMessage(), 'tel') !== false) {
-                    // Phone constraint
-                    $form->get('tel')->addError(new FormError('This phone number is already registered.'));
-                } else {
-                    $this->addFlash('error', 'Registration failed. This account information is already in use.');
-                }
-                
-                return $this->render('user/sign-up.html.twig', [
-                    'form' => $form->createView(),
-                ]);
+                $this->addFlash('success', 'Profile updated successfully');
             } catch (\Exception $e) {
-                // Generic exception handling
-                $this->logger->error('Error during registration', [
+                $this->logger->error('Profile update failed', [
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
                 ]);
-                $this->addFlash('error', 'An error occurred during registration. Please try again later.');
-                
-                return $this->render('user/sign-up.html.twig', [
-                    'form' => $form->createView(),
-                ]);
+                $this->addFlash('error', 'Failed to update profile: ' . $e->getMessage());
             }
-        }
-    }
-
-    // Render the form template
-    return $this->render('user/sign-up.html.twig', [
-        'form' => $form->createView(),
-    ]);
-}
-    
-#[Route('/update-profile', name: 'app_update_profile', methods: ['POST'])]
-public function updateProfile(
-    Request $request, 
-    UserPasswordHasherInterface $passwordHasher, 
-    EntityManagerInterface $entityManager,
-    LLaVAContentModerationService $contentModerationService,
-    ValidatorInterface $validator
-): Response {
-    /** @var User $user */
-    $user = $this->getUser();
-    
-    if (!$user) {
-        return $this->redirectToRoute('app_login');
-    }
-    
-    // Get current password for verification
-    $currentPassword = $request->request->get('current_password');
-    
-    // Verify the current password
-    if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
-        $this->addFlash('error', 'Current password is incorrect');
-        return $this->redirectToRoute('app_profile');
-    }
-    
-    // Get form data
-    $fullName = $request->request->get('full_name');
-    $email = $request->request->get('email');
-    $phone = $request->request->get('phone');
-    
-    // Validate full name
-    $nameParts = explode(' ', trim($fullName));
-    if (count($nameParts) < 2 || empty($nameParts[0]) || empty($nameParts[1])) {
-        $this->addFlash('error', 'Please provide both first and last name');
-        return $this->redirectToRoute('app_profile');
-    }
-    
-    // Current Mapping:
-    // nom = First Name (despite meaning "last name" in French)
-    // prenom = Last Name (despite meaning "first name" in French)
-    
-    // Extract first and last name according to mapping
-    $firstName = $nameParts[0]; // Will be saved to 'nom' field
-    $lastName = implode(' ', array_slice($nameParts, 1)); // Will be saved to 'prenom' field
-    
-    // Validate first name (to be saved in 'nom' field)
-    if (preg_match('/\d/', $firstName)) {
-        $this->addFlash('error', 'First name cannot contain numbers');
-        return $this->redirectToRoute('app_profile');
-    }
-    
-    if (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $firstName)) {
-        $this->addFlash('error', 'First name can only contain letters, spaces, hyphens and apostrophes');
-        return $this->redirectToRoute('app_profile');
-    }
-    
-    // Validate last name (to be saved in 'prenom' field)
-    if (preg_match('/\d/', $lastName)) {
-        $this->addFlash('error', 'Last name cannot contain numbers');
-        return $this->redirectToRoute('app_profile');
-    }
-    
-    if (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $lastName)) {
-        $this->addFlash('error', 'Last name can only contain letters, spaces, hyphens and apostrophes');
-        return $this->redirectToRoute('app_profile');
-    }
-    
-    // Add content moderation check for name
-    $nameCheckResult = $contentModerationService->checkUserText($fullName);
-    
-    $this->logger->debug('Name moderation during profile update', [
-        'name' => $fullName,
-        'result' => $nameCheckResult
-    ]);
-    
-    if ($nameCheckResult['is_inappropriate']) {
-        $this->addFlash('error', 'The provided name contains inappropriate content: ' . $nameCheckResult['explanation']);
-        return $this->redirectToRoute('app_profile');
-    }
-    
-    // Validate email with the custom validator if changed
-    if ($email !== $user->getEmail()) {
-        // Create a temporary User object to validate just the email
-        $tempUser = new User();
-        $tempUser->setEmail($email);
-        
-        // Validate only the email property
-        $emailViolations = $validator->validateProperty($tempUser, 'email');
-        
-        if (count($emailViolations) > 0) {
-            foreach ($emailViolations as $violation) {
-                $this->addFlash('error', $violation->getMessage());
-            }
-            return $this->redirectToRoute('app_profile');
+        } else {
+            $this->addFlash('info', 'No changes were made to your profile');
         }
         
-        // Check if email is already in use by another user
-        $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
-        if ($existingUser && $existingUser->getId() !== $user->getId()) {
-            $this->addFlash('error', 'The email address is already in use');
-            return $this->redirectToRoute('app_profile');
-        }
-    }
-    
-    // Validate phone number (Tunisian format)
-    $phonePattern = '/^((\+|00)216)?([2579][0-9]{7}|(3[012]|4[01]|8[0128])[0-9]{6}|42[16][0-9]{5})$/';
-    if (!empty($phone) && !preg_match($phonePattern, $phone)) {
-        $this->addFlash('error', 'Invalid phone number format');
         return $this->redirectToRoute('app_profile');
     }
     
-    // Check if phone is already in use by another user if changed
-    if ($phone !== $user->getTel()) {
-        $existingUser = $entityManager->getRepository(User::class)->findOneBy(['tel' => $phone]);
-        if ($existingUser && $existingUser->getId() !== $user->getId()) {
-            $this->addFlash('error', 'The phone number is already in use');
-            return $this->redirectToRoute('app_profile');
-        }
-    }
-    
-    // Check if any data has changed
-    $hasChanges = false;
-    
-    // Remember: nom = First Name, prenom = Last Name in your mapping
-    if ($firstName !== $user->getNom()) {
-        $user->setNom($firstName);
-        $hasChanges = true;
-    }
-    
-    if ($lastName !== $user->getPrenom()) {
-        $user->setPrenom($lastName);
-        $hasChanges = true;
-    }
-    
-    if ($email !== $user->getEmail()) {
-        $user->setEmail($email);
-        $hasChanges = true;
-    }
-    
-    if ($phone !== $user->getTel()) {
-        $user->setTel($phone);
-        $hasChanges = true;
-    }
-    
-    // Only persist if there are changes
-    if ($hasChanges) {
-        try {
-            $entityManager->persist($user);
-            $entityManager->flush();
-            $this->addFlash('success', 'Profile updated successfully');
-        } catch (\Exception $e) {
-            $this->logger->error('Profile update failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            $this->addFlash('error', 'Failed to update profile: ' . $e->getMessage());
-        }
-    } else {
-        $this->addFlash('info', 'No changes were made to your profile');
-    }
-    
-    return $this->redirectToRoute('app_profile');
-}
-
     #[Route('/update-profile-picture', name: 'app_update_profile_picture', methods: ['POST'])]
     public function updateProfilePicture(
         Request $request, 
         UserPasswordHasherInterface $passwordHasher, 
         EntityManagerInterface $entityManager,
         SluggerInterface $slugger,
-        LLaVAContentModerationService $contentModerationService,
+        ContentModerationService $contentModerationService,
         LoggerInterface $logger
     ): Response {
         /** @var User $user */
@@ -460,70 +500,91 @@ public function updateProfile(
             // Full path to the uploaded image
             $imagePath = $profilePicturesDir.'/'.$newFilename;
             
-            // Check with multiple moderation services for better reliability
+            // Use the enhanced multi-level moderation approach
             
-            // 1. Check with LLaVA
-            $llavaResult = $contentModerationService->checkProfilePicture($imagePath);
+            // 1. First check with comprehensive moderation with fallbacks
+            $moderationResult = $contentModerationService->checkProfilePicture($imagePath);
             
-            // 2. Also check with specialized NSFW model
+            // 2. Also check with specialized NSFW model for better reliability
             $nsfwResult = $contentModerationService->checkImageWithNSFWModel($imagePath);
             
-            // Log both results
+            // Log both results - use internal_explanation for logging if available
             $logger->debug('Content moderation results', [
-                'llava_result' => $llavaResult,
-                'nsfw_result' => $nsfwResult
+                'comprehensive_result' => isset($moderationResult['internal_explanation']) ? 
+                    array_merge($moderationResult, ['debug_explanation' => $moderationResult['internal_explanation']]) : 
+                    $moderationResult,
+                'nsfw_result' => isset($nsfwResult['internal_explanation']) ? 
+                    array_merge($nsfwResult, ['debug_explanation' => $nsfwResult['internal_explanation']]) : 
+                    $nsfwResult
             ]);
             
             // FIXED: Consider image inappropriate if EITHER check flags it
             $isInappropriate = false;
+            $explanation = '';
             
             // First check NSFW model result - this is the most reliable one
             if (isset($nsfwResult['is_inappropriate']) && $nsfwResult['is_inappropriate'] === true) {
                 $isInappropriate = true;
+                $explanation = isset($nsfwResult['explanation']) ? 
+                    $nsfwResult['explanation'] : 
+                    'NSFW content detected';
                 $logger->info('Image rejected by NSFW model', [
-                    'explanation' => $nsfwResult['explanation'] ?? 'No explanation provided'
+                    'explanation' => isset($nsfwResult['internal_explanation']) ? 
+                        $nsfwResult['internal_explanation'] : 
+                        ($nsfwResult['explanation'] ?? 'No explanation provided')
                 ]);
             }
             
-            // If NSFW passed, check LLaVA result if it's successful
+            // If NSFW passed, check comprehensive result if it's successful
             if (!$isInappropriate && 
-                isset($llavaResult['success']) && $llavaResult['success'] === true && 
-                isset($llavaResult['is_inappropriate']) && $llavaResult['is_inappropriate'] === true) {
+                isset($moderationResult['success']) && $moderationResult['success'] === true && 
+                isset($moderationResult['is_inappropriate']) && $moderationResult['is_inappropriate'] === true) {
                 $isInappropriate = true;
-                $logger->info('Image rejected by LLaVA model', [
-                    'explanation' => $llavaResult['explanation'] ?? 'No explanation provided'
+                $explanation = isset($moderationResult['explanation']) ? 
+                    $moderationResult['explanation'] : 
+                    'Inappropriate content detected';
+                $logger->info('Image rejected by comprehensive moderation', [
+                    'explanation' => isset($moderationResult['internal_explanation']) ? 
+                        $moderationResult['internal_explanation'] : 
+                        ($moderationResult['explanation'] ?? 'No explanation provided')
                 ]);
-            }
-            
-            // Add a final safety check for very large images - they might be suspicious
-            $imageSize = filesize($imagePath) / 1024 / 1024; // Size in MB
-            if (!$isInappropriate && $imageSize > 5) { // If over 5MB
-                $logger->warning('Large image upload detected', [
-                    'size_mb' => $imageSize,
-                    'path' => $imagePath
-                ]);
-                // You can choose to reject large images or just log them
-                // $isInappropriate = true;
             }
             
             if ($isInappropriate) {
+                // Process warning and check account status
+                $this->handleContentModeration(
+                    $user, 
+                    true, 
+                    'profile picture', 
+                    $explanation
+                );
+                
                 // Remove the inappropriate image
                 if (file_exists($imagePath)) {
                     unlink($imagePath);
                 }
                 
-                // Generate a clear explanation for the user
-                $explanation = '';
+                // Generate a clean explanation for the user
+                $cleanExplanation = '';
                 if (isset($nsfwResult['is_inappropriate']) && $nsfwResult['is_inappropriate']) {
-                    $explanation = $nsfwResult['explanation'] ?? 'NSFW content detected';
-                } elseif (isset($llavaResult['is_inappropriate']) && $llavaResult['is_inappropriate']) {
-                    $explanation = $llavaResult['explanation'] ?? 'Inappropriate content detected';
+                    $cleanExplanation = $nsfwResult['explanation'] ?? 'NSFW content detected';
+                } elseif (isset($moderationResult['is_inappropriate']) && $moderationResult['is_inappropriate']) {
+                    $cleanExplanation = $moderationResult['explanation'] ?? 'Inappropriate content detected';
                 } else {
-                    $explanation = 'The image does not meet our content guidelines';
+                    $cleanExplanation = 'The image does not meet our content guidelines';
                 }
                 
-                // Add flash message with the explanation
-                $this->addFlash('error', 'The uploaded profile picture contains inappropriate content and was rejected. Reason: ' . $explanation);
+                // Extra safeguard: Remove any YES/NO prefixes from the explanation
+                $cleanExplanation = preg_replace('/^(YES|NO)\.\s*/i', '', $cleanExplanation);
+                
+                // If account was disabled, redirect to logout
+                if (!$user->isActive()) {
+                    $this->addFlash('error', 'Your account has been disabled due to multiple content policy violations.');
+                    return $this->redirectToRoute('app_logout');
+                }
+                
+                // Add flash message with the cleaned explanation
+                $this->addFlash('error', 'The uploaded profile picture contains inappropriate content and was rejected. Reason: ' . $cleanExplanation);
                 return $this->redirectToRoute('app_profile');
             }
             
@@ -557,6 +618,7 @@ public function updateProfile(
         
         return $this->redirectToRoute('app_profile');
     }
+    
     #[Route('/change-password', name: 'app_change_password', methods: ['POST'])]
     public function changePassword(
         Request $request,

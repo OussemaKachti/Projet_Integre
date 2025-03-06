@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Warning</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: {% if isFinal %}#ff4444{% else %}#ffcc00{% endif %};
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            color: {% if isFinal %}#ffffff{% else %}#333333{% endif %};
+            font-size: 24px;
+        }
+        .warning-count {
+            font-weight: bold;
+            font-size: 18px;
+            margin: 15px 0;
+            color: {% if isFinal %}#ff0000{% else %}#cc6600{% endif %};
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{% if isFinal %}FINAL WARNING{% else %}CONTENT WARNING{% endif %}</h1>
+    </div>
+    
+    <p>Dear {{ fullName }},</p>
+    
+    <p>Our content moderation system has detected inappropriate content in your recent {{ contentType }} submission.</p>
+    
+    <p><strong>Reason:</strong> {{ reason }}</p>
+    
+    <div class="warning-count">
+        This is warning {{ warningCount }} of 3.
+        {% if isFinal %}
+        <p><strong>IMPORTANT: Your account will be automatically disabled if you receive one more warning.</strong></p>
+        {% endif %}
+    </div>
+    
+    <p>Please review our community guidelines and ensure your content adheres to our standards. Repeated violations can lead to account suspension or termination.</p>
+    
+    <p>If you believe this is an error, please contact our support team.</p>
+    
+    <p>Thank you for your understanding.</p>
+    
+    <div class="footer">
+        <p>This is an automated message. Please do not reply to this email.</p>
+    </div>
+</body>
+</html>

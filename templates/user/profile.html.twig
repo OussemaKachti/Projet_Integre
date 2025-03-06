@@ -811,57 +811,114 @@ profilePictureModal.show();
 });
 }
 
-// Preview image when selected
+// Profile picture JavaScript with enhanced client-side validation
+// Get the file input element
 const newProfilePicture = document.getElementById('new_profile_picture');
 const picturePreview = document.getElementById('picturePreview');
 const fileSelectedName = document.getElementById('fileSelectedName');
+const pictureError = document.getElementById('picture_error');
+const updatePictureBtn = document.getElementById('updatePictureBtn');
 
 if (newProfilePicture && picturePreview) {
-newProfilePicture.addEventListener('change', function (e) {
-if (this.files && this.files[0]) {
-const file = this.files[0];
-
-// Update the "file selected" text
-fileSelectedName.textContent = file.name;
-
-// Create a preview
-const reader = new FileReader();
-reader.onload = function (event) {
-picturePreview.src = event.target.result;
+    newProfilePicture.addEventListener('change', function(e) {
+        // Clear any previous errors
+        pictureError.textContent = '';
+        
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            
+            // Pre-validate the file
+            preScreenImage(file).then(() => {
+                // Update the "file selected" text
+                fileSelectedName.textContent = file.name;
+                
+                // Create a preview
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    picturePreview.src = event.target.result;
+                }
+                reader.readAsDataURL(file);
+                
+                // Enable the upload button
+                if (updatePictureBtn) {
+                    updatePictureBtn.disabled = false;
+                }
+            }).catch(error => {
+                // Show error message
+                pictureError.textContent = error;
+                
+                // Reset the file input
+                newProfilePicture.value = '';
+                
+                // Keep the old preview
+                fileSelectedName.textContent = 'No file selected';
+                
+                // Disable the upload button
+                if (updatePictureBtn) {
+                    updatePictureBtn.disabled = true;
+                }
+            });
+        }
+    });
 }
-reader.readAsDataURL(file);
 
-// Validate the file
-validateProfilePictureFile(file);
-}
-});
+// Pre-screen image for obvious issues before sending to server
+function preScreenImage(file) {
+    return new Promise((resolve, reject) => {
+        // Check file type
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+            reject("Please select a valid image file (JPG, PNG, or GIF)");
+            return;
+        }
+        
+        // Check file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            reject("Image is too large. Maximum size is 5MB.");
+            return;
+        }
+        
+        // Check image dimensions
+        const img = new Image();
+        img.onload = () => {
+            URL.revokeObjectURL(img.src);
+            
+            // Check minimum dimensions
+            if (img.width < 100 || img.height < 100) {
+                reject("Image is too small. Minimum dimensions are 100x100 pixels.");
+                return;
+            }
+            
+            // Check aspect ratio
+            const aspectRatio = img.width / img.height;
+            if (aspectRatio > 3 || aspectRatio < 0.33) {
+                reject("Image has an unusual aspect ratio. Please choose a more standard image.");
+                return;
+            }
+            
+            // Check for suspiciously large dimensions
+            if (img.width > 5000 || img.height > 5000) {
+                reject("Image dimensions are too large. Maximum dimensions are 5000x5000 pixels.");
+                return;
+            }
+            
+            // All checks passed
+            resolve();
+        };
+        
+        img.onerror = () => {
+            URL.revokeObjectURL(img.src);
+            reject("Failed to load image. Please select a valid image file.");
+        };
+        
+        img.src = URL.createObjectURL(file);
+    });
 }
 
 // Picture form validation
 const profilePictureForm = document.getElementById('profilePictureForm');
 const picturePasswordInput = document.getElementById('picture_password');
-const pictureError = document.getElementById('picture_error');
 const picturePasswordError = document.getElementById('picture_password_error');
-
-function validateProfilePictureFile(file) {
-pictureError.textContent = '';
-
-if (file) {
-const fileSize = file.size / 1024 / 1024; // in MB
-const fileType = file.type;
-
-if (! fileType.startsWith('image/')) {
-pictureError.textContent = 'Please upload an image file';
-return false;
-}
-
-if (fileSize > 5) {
-pictureError.textContent = 'File size should not exceed 5MB';
-return false;
-}
-}
-return true;
-}
 
 function validatePicturePassword() {
 picturePasswordError.textContent = '';
@@ -895,12 +952,6 @@ const isPasswordValid = validatePicturePassword();
 if (! isPasswordValid) {
 e.preventDefault();
 picturePasswordInput.focus();
-}
-
-// Validate image file again
-const isPictureValid = validateProfilePictureFile(newProfilePicture.files[0]);
-if (! isPictureValid) {
-e.preventDefault();
 }
 });
 }
