@@ -13,15 +13,17 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-
+use Symfony\Component\Form\FormError;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Psr\Log\LoggerInterface;
+
 
 
 #[Route(path: '/user')]
@@ -59,39 +61,107 @@ class UserController extends AbstractController
     }
     
     #[Route('/sign-up', name: 'app_user_signup')]
-    public function signUp(
-        Request $request,
-        EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $passwordHasher,
-        UserConfirmationService $userConfirmationService,
-        LLaVAContentModerationService $contentModerationService
-    ): Response {
-        // Create a new User entity
-        $user = new User();
-        // Create the form using the UserType (without the role field)
-        $form = $this->createForm(UserType::class, $user);
-        // Handle form submission
-        $form->handleRequest($request);
+public function signUp(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    UserPasswordHasherInterface $passwordHasher,
+    UserConfirmationService $userConfirmationService,
+    LLaVAContentModerationService $contentModerationService
+): Response {
+    // Create a new User entity
+    $user = new User();
+    // Create the form using the UserType (without the role field)
+    $form = $this->createForm(UserType::class, $user);
+    // Handle form submission
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Check name for inappropriate content
-            $fullName = $user->getPrenom() . ' ' . $user->getNom();
-            
-            $this->logger->debug('Checking name during signup', [
-                'name' => $fullName
+    if ($form->isSubmitted()) {
+        // Current Mapping:
+        // $user->getNom() = First Name (despite 'nom' usually meaning 'last name' in French)
+        // $user->getPrenom() = Last Name (despite 'prenom' usually meaning 'first name' in French)
+        
+        // Get the entered field values (using the existing mapping)
+        $firstName = $user->getNom();      // First name is stored in 'nom' field
+        $lastName = $user->getPrenom();    // Last name is stored in 'prenom' field
+        $fullName = $firstName . ' ' . $lastName;
+        
+        // Validate first and last name (no numbers, etc)
+        $hasNameError = false;
+        
+        // Check First Name (stored in 'nom' field)
+        if (preg_match('/\d/', $firstName)) {
+            $form->get('nom')->addError(new FormError('First name cannot contain numbers'));
+            $hasNameError = true;
+        }
+        
+        if (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $firstName)) {
+            $form->get('nom')->addError(new FormError('First name can only contain letters, spaces, hyphens and apostrophes'));
+            $hasNameError = true;
+        }
+        
+        // Check Last Name (stored in 'prenom' field)
+        if (preg_match('/\d/', $lastName)) {
+            $form->get('prenom')->addError(new FormError('Last name cannot contain numbers'));
+            $hasNameError = true;
+        }
+        
+        if (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $lastName)) {
+            $form->get('prenom')->addError(new FormError('Last name can only contain letters, spaces, hyphens and apostrophes'));
+            $hasNameError = true;
+        }
+        
+        if ($hasNameError) {
+            return $this->render('user/sign-up.html.twig', [
+                'form' => $form->createView(),
             ]);
+        }
+        
+        // Check name for inappropriate content
+        $this->logger->debug('Checking name during signup', [
+            'name' => $fullName
+        ]);
+        
+        $nameCheckResult = $contentModerationService->checkUserText($fullName);
+        
+        $this->logger->debug('Name check result', $nameCheckResult);
+        
+        if ($nameCheckResult['is_inappropriate']) {
+            $this->addFlash('error', 'The provided name contains inappropriate content: ' . $nameCheckResult['explanation']);
+            // Return early, don't proceed with registration
+            return $this->render('user/sign-up.html.twig', [
+                'form' => $form->createView(),
+            ]);
+        }
+        
+        // Then proceed with form validation check
+        if ($form->isValid()) {
+            // Flag to track if we have validation errors
+            $hasValidationErrors = false;
             
-            $nameCheckResult = $contentModerationService->checkUserText($fullName);
+            // Check for existing email before trying to persist
+            $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $user->getEmail()]);
+            if ($existingUser) {
+                // Add error directly to the email field
+                $form->get('email')->addError(new FormError('This email is already registered. Please use a different email or login.'));
+                $hasValidationErrors = true;
+            }
             
-            $this->logger->debug('Name check result', $nameCheckResult);
+            // Check for existing phone if phone is provided
+            if ($user->getTel()) {
+                $existingPhone = $entityManager->getRepository(User::class)->findOneBy(['tel' => $user->getTel()]);
+                if ($existingPhone) {
+                    $form->get('tel')->addError(new FormError('This phone number is already registered.'));
+                    $hasValidationErrors = true;
+                }
+            }
             
-            if ($nameCheckResult['is_inappropriate']) {
-                $this->addFlash('error', 'The provided name contains inappropriate content: ' . $nameCheckResult['explanation']);
+            // If there are validation errors, return the form with all errors
+            if ($hasValidationErrors) {
                 return $this->render('user/sign-up.html.twig', [
                     'form' => $form->createView(),
                 ]);
             }
-            
+
             // Hash the password
             $hashedPassword = $passwordHasher->hashPassword(
                 $user,
@@ -102,140 +172,228 @@ class UserController extends AbstractController
             // Set the default role to NON_MEMBRE
             $user->setRole(RoleEnum::NON_MEMBRE);
 
-            // Persist the user to the database
-            $entityManager->persist($user);
-            $entityManager->flush();
-
-            // Automatically send the confirmation email
             try {
-                $userConfirmationService->sendConfirmationEmail($user);
-                $this->addFlash('success', 'Check your email to confirm your account!');
-            } catch (\Exception $e) {
-                $this->logger->error('Failed to send confirmation email', [
+                // Persist the user to the database
+                $entityManager->persist($user);
+                $entityManager->flush();
+
+                // Automatically send the confirmation email
+                try {
+                    $userConfirmationService->sendConfirmationEmail($user);
+                    $this->addFlash('success', 'Check your email to confirm your account!');
+                } catch (\Exception $e) {
+                    $this->logger->error('Failed to send confirmation email', [
+                        'error' => $e->getMessage(),
+                        'user_id' => $user->getId()
+                    ]);
+                    $this->addFlash('error', 'Failed to send confirmation email. Please contact support.');
+                }
+
+                // Redirect to success page
+                return $this->redirectToRoute('app_home');
+            } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+                // Fallback for any other unique constraint violations
+                $this->logger->error('Unique constraint violation during registration', [
                     'error' => $e->getMessage(),
-                    'user_id' => $user->getId()
+                    'user_email' => $user->getEmail()
                 ]);
-                $this->addFlash('error', 'Failed to send confirmation email. Please contact support.');
+                
+                if (strpos($e->getMessage(), 'UNIQ_8D93D649E7927C74') !== false) {
+                    // Email constraint
+                    $form->get('email')->addError(new FormError('This email is already registered. Please use a different email or login.'));
+                } elseif (strpos($e->getMessage(), 'tel') !== false) {
+                    // Phone constraint
+                    $form->get('tel')->addError(new FormError('This phone number is already registered.'));
+                } else {
+                    $this->addFlash('error', 'Registration failed. This account information is already in use.');
+                }
+                
+                return $this->render('user/sign-up.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            } catch (\Exception $e) {
+                // Generic exception handling
+                $this->logger->error('Error during registration', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                $this->addFlash('error', 'An error occurred during registration. Please try again later.');
+                
+                return $this->render('user/sign-up.html.twig', [
+                    'form' => $form->createView(),
+                ]);
             }
-
-            // Redirect to success page
-            return $this->redirectToRoute('app_home');
         }
+    }
 
-        // Render the form template
-        return $this->render('user/sign-up.html.twig', [
-            'form' => $form->createView(),
-        ]);
+    // Render the form template
+    return $this->render('user/sign-up.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
+    
+#[Route('/update-profile', name: 'app_update_profile', methods: ['POST'])]
+public function updateProfile(
+    Request $request, 
+    UserPasswordHasherInterface $passwordHasher, 
+    EntityManagerInterface $entityManager,
+    LLaVAContentModerationService $contentModerationService,
+    ValidatorInterface $validator
+): Response {
+    /** @var User $user */
+    $user = $this->getUser();
+    
+    if (!$user) {
+        return $this->redirectToRoute('app_login');
     }
     
-    #[Route('/update-profile', name: 'app_update_profile', methods: ['POST'])]
-    public function updateProfile(
-        Request $request, 
-        UserPasswordHasherInterface $passwordHasher, 
-        EntityManagerInterface $entityManager,
-        LLaVAContentModerationService $contentModerationService
-    ): Response {
-        /** @var User $user */
-        $user = $this->getUser();
+    // Get current password for verification
+    $currentPassword = $request->request->get('current_password');
+    
+    // Verify the current password
+    if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
+        $this->addFlash('error', 'Current password is incorrect');
+        return $this->redirectToRoute('app_profile');
+    }
+    
+    // Get form data
+    $fullName = $request->request->get('full_name');
+    $email = $request->request->get('email');
+    $phone = $request->request->get('phone');
+    
+    // Validate full name
+    $nameParts = explode(' ', trim($fullName));
+    if (count($nameParts) < 2 || empty($nameParts[0]) || empty($nameParts[1])) {
+        $this->addFlash('error', 'Please provide both first and last name');
+        return $this->redirectToRoute('app_profile');
+    }
+    
+    // Current Mapping:
+    // nom = First Name (despite meaning "last name" in French)
+    // prenom = Last Name (despite meaning "first name" in French)
+    
+    // Extract first and last name according to mapping
+    $firstName = $nameParts[0]; // Will be saved to 'nom' field
+    $lastName = implode(' ', array_slice($nameParts, 1)); // Will be saved to 'prenom' field
+    
+    // Validate first name (to be saved in 'nom' field)
+    if (preg_match('/\d/', $firstName)) {
+        $this->addFlash('error', 'First name cannot contain numbers');
+        return $this->redirectToRoute('app_profile');
+    }
+    
+    if (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $firstName)) {
+        $this->addFlash('error', 'First name can only contain letters, spaces, hyphens and apostrophes');
+        return $this->redirectToRoute('app_profile');
+    }
+    
+    // Validate last name (to be saved in 'prenom' field)
+    if (preg_match('/\d/', $lastName)) {
+        $this->addFlash('error', 'Last name cannot contain numbers');
+        return $this->redirectToRoute('app_profile');
+    }
+    
+    if (!preg_match('/^[a-zA-ZÀ-ÿ\s\'-]+$/u', $lastName)) {
+        $this->addFlash('error', 'Last name can only contain letters, spaces, hyphens and apostrophes');
+        return $this->redirectToRoute('app_profile');
+    }
+    
+    // Add content moderation check for name
+    $nameCheckResult = $contentModerationService->checkUserText($fullName);
+    
+    $this->logger->debug('Name moderation during profile update', [
+        'name' => $fullName,
+        'result' => $nameCheckResult
+    ]);
+    
+    if ($nameCheckResult['is_inappropriate']) {
+        $this->addFlash('error', 'The provided name contains inappropriate content: ' . $nameCheckResult['explanation']);
+        return $this->redirectToRoute('app_profile');
+    }
+    
+    // Validate email with the custom validator if changed
+    if ($email !== $user->getEmail()) {
+        // Create a temporary User object to validate just the email
+        $tempUser = new User();
+        $tempUser->setEmail($email);
         
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
+        // Validate only the email property
+        $emailViolations = $validator->validateProperty($tempUser, 'email');
         
-        // Get current password for verification
-        $currentPassword = $request->request->get('current_password');
-        
-        // Verify the current password
-        if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
-            $this->addFlash('error', 'Current password is incorrect');
-            return $this->redirectToRoute('app_profile');
-        }
-        
-        // Get form data
-        $fullName = $request->request->get('full_name');
-        $email = $request->request->get('email');
-        $phone = $request->request->get('phone');
-        
-        // Validate full name
-        $nameParts = explode(' ', trim($fullName));
-        if (count($nameParts) < 2 || empty($nameParts[0]) || empty($nameParts[1])) {
-            $this->addFlash('error', 'Please provide both first and last name');
-            return $this->redirectToRoute('app_profile');
-        }
-        
-        // Add content moderation check for name
-        $nameCheckResult = $contentModerationService->checkUserText($fullName);
-        
-        $this->logger->debug('Name moderation during profile update', [
-            'name' => $fullName,
-            'result' => $nameCheckResult
-        ]);
-        
-        if ($nameCheckResult['is_inappropriate']) {
-            $this->addFlash('error', 'The provided name contains inappropriate content: ' . $nameCheckResult['explanation']);
-            return $this->redirectToRoute('app_profile');
-        }
-        
-        // Set first and last name
-        $firstName = $nameParts[0];
-        $lastName = implode(' ', array_slice($nameParts, 1));
-        
-        // Validate email
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->addFlash('error', 'Email address is not valid');
+        if (count($emailViolations) > 0) {
+            foreach ($emailViolations as $violation) {
+                $this->addFlash('error', $violation->getMessage());
+            }
             return $this->redirectToRoute('app_profile');
         }
         
         // Check if email is already in use by another user
-        if ($email !== $user->getEmail()) {
-            $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
-            if ($existingUser && $existingUser->getId() !== $user->getId()) {
-                $this->addFlash('error', 'The email address is already in use');
-                return $this->redirectToRoute('app_profile');
-            }
-        }
-        
-        // Validate phone number (Tunisian format)
-        $phonePattern = '/^((\+|00)216)?([2579][0-9]{7}|(3[012]|4[01]|8[0128])[0-9]{6}|42[16][0-9]{5})$/';
-        if (!empty($phone) && !preg_match($phonePattern, $phone)) {
-            $this->addFlash('error', 'Invalid phone number format');
+        $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+        if ($existingUser && $existingUser->getId() !== $user->getId()) {
+            $this->addFlash('error', 'The email address is already in use');
             return $this->redirectToRoute('app_profile');
         }
-        
-        // Check if any data has changed
-        $hasChanges = false;
-        
-        if ($firstName !== $user->getPrenom()) {
-            $user->setPrenom($firstName);
-            $hasChanges = true;
+    }
+    
+    // Validate phone number (Tunisian format)
+    $phonePattern = '/^((\+|00)216)?([2579][0-9]{7}|(3[012]|4[01]|8[0128])[0-9]{6}|42[16][0-9]{5})$/';
+    if (!empty($phone) && !preg_match($phonePattern, $phone)) {
+        $this->addFlash('error', 'Invalid phone number format');
+        return $this->redirectToRoute('app_profile');
+    }
+    
+    // Check if phone is already in use by another user if changed
+    if ($phone !== $user->getTel()) {
+        $existingUser = $entityManager->getRepository(User::class)->findOneBy(['tel' => $phone]);
+        if ($existingUser && $existingUser->getId() !== $user->getId()) {
+            $this->addFlash('error', 'The phone number is already in use');
+            return $this->redirectToRoute('app_profile');
         }
-        
-        if ($lastName !== $user->getNom()) {
-            $user->setNom($lastName);
-            $hasChanges = true;
-        }
-        
-        if ($email !== $user->getEmail()) {
-            $user->setEmail($email);
-            $hasChanges = true;
-        }
-        
-        if ($phone !== $user->getTel()) {
-            $user->setTel($phone);
-            $hasChanges = true;
-        }
-        
-        // Only persist if there are changes
-        if ($hasChanges) {
+    }
+    
+    // Check if any data has changed
+    $hasChanges = false;
+    
+    // Remember: nom = First Name, prenom = Last Name in your mapping
+    if ($firstName !== $user->getNom()) {
+        $user->setNom($firstName);
+        $hasChanges = true;
+    }
+    
+    if ($lastName !== $user->getPrenom()) {
+        $user->setPrenom($lastName);
+        $hasChanges = true;
+    }
+    
+    if ($email !== $user->getEmail()) {
+        $user->setEmail($email);
+        $hasChanges = true;
+    }
+    
+    if ($phone !== $user->getTel()) {
+        $user->setTel($phone);
+        $hasChanges = true;
+    }
+    
+    // Only persist if there are changes
+    if ($hasChanges) {
+        try {
             $entityManager->persist($user);
             $entityManager->flush();
             $this->addFlash('success', 'Profile updated successfully');
-        } else {
-            $this->addFlash('info', 'No changes were made to your profile');
+        } catch (\Exception $e) {
+            $this->logger->error('Profile update failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            $this->addFlash('error', 'Failed to update profile: ' . $e->getMessage());
         }
-        
-        return $this->redirectToRoute('app_profile');
+    } else {
+        $this->addFlash('info', 'No changes were made to your profile');
     }
+    
+    return $this->redirectToRoute('app_profile');
+}
 
     #[Route('/update-profile-picture', name: 'app_update_profile_picture', methods: ['POST'])]
     public function updateProfilePicture(

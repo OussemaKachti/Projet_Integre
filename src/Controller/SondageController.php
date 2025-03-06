@@ -204,15 +204,15 @@ class SondageController extends AbstractController
 public function getColorByPercentage(float $percentage): string
 {
     if ($percentage <= 20) {
-        return '#e74c3c'; // Rouge
+        return '#FFC0CB'; // Pink Light - faible participation
     } elseif ($percentage <= 40) {
-        return '#4682B4	'; // blue
+        return '#98FB98'; // Pale Green - participation modérée basse
     } elseif ($percentage <= 60) {
-        return '#f1c40f'; // Jaune
+        return '#87CEEB'; // Sky Blue - participation moyenne
     } elseif ($percentage <= 80) {
-        return '#2ecc71'; // Vert
+        return '#32CD32'; // Lime Green - bonne participation
     } else {
-        return '#3498db'; // Bleu
+        return '#228B22'; // Forest Green - excellente participation
     }
 }
 
@@ -628,7 +628,7 @@ public function create(Request $request, EntityManagerInterface $em): Response
                      $logger->info('Tentative d\'envoi d\'email à: ' . $member->getEmail());
                      
                      $email = (new Email())
-                         ->from("oussemakachti17@gmail.com")  
+                         ->from("admin@gmail.com")  
                          ->to($member->getEmail())            
                          ->subject('Nouveau sondage dans votre club: ' . $club->getNomC())
                          ->html($this->renderView(
