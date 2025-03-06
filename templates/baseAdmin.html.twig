@@ -28,11 +28,7 @@
 			<nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
 				<div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
 					<a class="navbar-brand brand-logo me-5" href="../../pages/tables/userAdmin.html">
-						<img src="{{asset('../../back_assets/images/log.png')}}" 
-							 class="me-2" 
-							 alt="logo"
-							 style="width: 150px; height: auto; object-fit: contain; max-height: 50px;"
-						/>
+						<img src="{{asset('../../back_assets/images/log.png')}}" class="me-2" alt="logo" style="width: 150px; height: auto; object-fit: contain; max-height: 50px;"/>
 					</a>
 				</div>
 				<div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
@@ -56,23 +52,18 @@
 							<a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" id="profileDropdown">
 								{{ app.user.nom}}
 								{{ app.user.prenom }}
-								<img src="{{asset('../../back_assets/images/faces/user.png')}}" 
-									 alt="profile"
-									 style="
-										width: 35px;
-										height: 35px;
-										border-radius: 50%;
-										object-fit: cover;
-										border: 2px solid #4B49AC;
-										padding: 2px;
-										background-color: white;
-										box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-										transition: all 0.3s ease;
-										cursor: pointer;
-									 "
-									 onmouseover="this.style.transform='scale(1.1)';this.style.borderColor='#6c63ff'"
-									 onmouseout="this.style.transform='scale(1)';this.style.borderColor='#4B49AC'"
-								/>
+								<img src="{{asset('../../back_assets/images/faces/user.png')}}" alt="profile" style="
+																			width: 35px;
+																			height: 35px;
+																			border-radius: 50%;
+																			object-fit: cover;
+																			border: 2px solid #4B49AC;
+																			padding: 2px;
+																			background-color: white;
+																			box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+																			transition: all 0.3s ease;
+																			cursor: pointer;
+																		 " onmouseover="this.style.transform='scale(1.1)';this.style.borderColor='#6c63ff'" onmouseout="this.style.transform='scale(1)';this.style.borderColor='#4B49AC'"/>
 							</a>
 							<div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
 								<a class="dropdown-item" href="{{path('app_admin_profile')}}">
@@ -97,11 +88,7 @@
 				<!-- partial:../../partials/_sidebar.html -->
 				<nav class="modern-sidebar">
 					<div class="sidebar-header">
-						<img src="{{ asset('back_assets/images/log.png') }}" 
-							 alt="Logo" 
-							 class="sidebar-logo"
-							 style="width: 35px; height: 35px; object-fit: contain; margin-right: 10px; filter: brightness(1.1) contrast(1.1);"
-						/>
+						<img src="{{ asset('back_assets/images/log.png') }}" alt="Logo" class="sidebar-logo" style="width: 35px; height: 35px; object-fit: contain; margin-right: 10px; filter: brightness(1.1) contrast(1.1);"/>
 						<span class="sidebar-title">Admin Panel</span>
 					</div>
 
@@ -172,6 +159,25 @@
 								<a href="{{ path('admin_commandes') }}" class="submenu-item">
 									<i class="mdi mdi-cart"></i>
 									<span>Orders</span>
+								</a>
+							</div>
+						</div>
+						<div class="menu-section">
+							<div class="menu-item has-submenu" onclick="toggleSubmenu(this)">
+								<div class="menu-title">
+									<i class="mdi mdi-trophy"></i>
+									<span>Competitions Management</span>
+								</div>
+								<i class="mdi mdi-chevron-right menu-arrow"></i>
+							</div>
+							<div class="submenu">
+								<a href="{{ path('app_competition_index') }}" class="submenu-item">
+									<i class="mdi mdi-medal"></i>
+									<span>Competitions List</span>
+								</a>
+								<a href="{{ path('app_saison_index') }}" class="submenu-item">
+									<i class="mdi mdi-calendar-clock"></i>
+									<span>Seasons List</span>
 								</a>
 							</div>
 						</div>
@@ -454,7 +460,7 @@ parentSection.classList.add('open');
 
 // Si c'est la page Users Management
 if (currentPath === '{{ path('app_admin_dashboard') }}') {
-document.querySelector('a[href="   {{ path('app_admin_dashboard') }}"]').classList.add('active');
+document.querySelector('a[href="    {{ path('app_admin_dashboard') }}"]').classList.add('active');
 }
 });
 
