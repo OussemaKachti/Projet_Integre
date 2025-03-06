@@ -578,13 +578,14 @@ document.removeEventListener('click', closeDropdown);
 				</div>
 			</div>
 		</footer>
-		 <script>
+		 {# <script>
   window.isUserLoggedIn = {% if app.user %}true{% else %}false{% endif %};
-// </script>
+  window.allowResetPassword = true;
+// </script> #}
 		<!-- footer area end -->
 
 		<!-- JS here -->
-		<script src="{{ asset('js/auth-check.js') }}"></script>
+		{# <script src="{{ asset('js/auth-check.js') }}?v={{ random() }}"></script> #}
 		<script src="{{ asset('front_assets/js/vendor/jquery.js') }}"></script>
 		<script src="{{ asset('front_assets/js/vendor/waypoints.js') }}"></script>
 		<script src="{{ asset('front_assets/js/bootstrap-bundle.js') }}"></script>

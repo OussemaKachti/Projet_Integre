@@ -1,7 +1,20 @@
 {# templates/admin/_table_body.html.twig #}
 {% for user in pagination %}
     <tr>
-        <td>{{ user.prenom }} {{ user.nom }}</td>
+        <td>
+            <div class="d-flex align-items-center">
+                {% if user.profilePicture is defined and user.profilePicture %}
+                    <img src="{{ asset('uploads/profiles/' ~ user.profilePicture) }}" alt="Profile" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                {% else %}
+                    <div class="rounded-circle me-2 d-flex align-items-center justify-content-center bg-light" style="width: 40px; height: 40px;">
+                        <i class="mdi mdi-account text-secondary" style="font-size: 24px;"></i>
+                    </div>
+                {% endif %}
+                <div>
+                    <span class="d-block fw-bold">{{ user.prenom }} {{ user.nom }}</span>
+                </div>
+            </div>
+        </td>
         <td>{{ user.email }}</td>
         <td>{{ user.tel }}</td>
         <td>{{ user.role.value }}</td>
@@ -17,6 +30,21 @@
                 <span class="badge bg-success">Active</span>
             {% else %}
                 <span class="badge bg-danger">Disabled</span>
+            {% endif %}
+        </td>
+        <td>
+            {% if user.warningCount is defined %}
+                {% if user.warningCount == 0 %}
+                    <span class="badge bg-success">0</span>
+                {% elseif user.warningCount == 1 %}
+                    <span class="badge bg-warning">1</span>
+                {% elseif user.warningCount == 2 %}
+                    <span class="badge bg-warning">2</span>
+                {% else %}
+                    <span class="badge bg-danger">{{ user.warningCount }}</span>
+                {% endif %}
+            {% else %}
+                <span class="badge bg-secondary">N/A</span>
             {% endif %}
         </td>
         <td class="d-flex">
@@ -35,6 +63,6 @@
     </tr>
 {% else %}
     <tr>
-        <td colspan="7">No users found.</td>
+        <td colspan="8">No users found.</td>
     </tr>
 {% endfor %}

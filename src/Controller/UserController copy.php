@@ -248,7 +248,7 @@ public function changePassword(
 
         // Create and send the email
         $email = (new Email())
-            ->from('no-reply@yourdomain.com') // Replace with your sender email
+            ->from('no-reply@uniclubs.com') // Replace with your sender email
             ->to($user->getEmail()) // Use the user's email
             ->subject('Password Changed Successfully')
             ->html($emailBody); // Use ->html() instead of ->text()

@@ -1,280 +1,455 @@
 {% extends 'baseAdmin.html.twig' %}
 {% block title %}Admin's Dashboard{% endblock %}
 {% block body %}
-<div class="content-wrapper p-0">
-    <div class="row m-0">
-        <div class="col-12 p-0">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="card-title mb-0">Admin's Dashboard</h4>
+<div class="content-wrapper">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h4 class="page-title mb-3">Admin's Dashboard</h4>
+                
+                <!-- Stats Cards Row -->
+                <div class="row mb-4">
+                    <!-- Total Users Card -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Users</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_user_count|default(pagination.getTotalItemCount()) }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="mdi mdi-account-multiple fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Users Card -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Active Users</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_users_count|default(0) }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="mdi mdi-account-check fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Users With Warnings Card -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-warning shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Users With Warnings</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ warned_users_count|default(0) }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="mdi mdi-alert-circle fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disabled Accounts Card -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-danger shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Disabled Accounts</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ disabled_users_count|default(0) }}</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="mdi mdi-account-cancel fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Management Table -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="card-title mb-0">User Management</h4>
+                            
+                            <!-- Export Button -->
+                            <a href="{{ path('app_admin_export_users', app.request.query.all|default({})) }}" class="btn btn-outline-primary">
+                                <i class="mdi mdi-file-export"></i> Export Users
+                            </a>
+                        </div>
                         
-                        <!-- Export Button -->
-                        <a href="{{ path('app_admin_export_users', app.request.query.all|default({})) }}" class="btn btn-outline-primary">
-                            <i class="mdi mdi-file-export"></i> Export Users
-                        </a>
-                    </div>
-                    
-                    {% for message in app.flashes('success') %}
-                        <div class="alert alert-success">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
+                        {% for message in app.flashes('success') %}
+                            <div class="alert alert-success">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
 
-                    {% for message in app.flashes('warning') %}
-                        <div class="alert alert-warning">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
+                        {% for message in app.flashes('warning') %}
+                            <div class="alert alert-warning">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
 
-                    {% for message in app.flashes('error') %}
-                        <div class="alert alert-danger">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
+                        {% for message in app.flashes('error') %}
+                            <div class="alert alert-danger">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
 
-                    <p class="card-description mb-4">List of users</p>
+                        <p class="card-description mb-4">List of users</p>
 
-                    <!-- Search Component (Inline to avoid missing templates) -->
-                    <div class="card mb-4">
-                      <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Search Users</h5>
-                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedSearchCollapse">
-                          <i class="mdi mdi-chevron-down"></i>
-                        </button>
-                      </div>
-                      <div class="collapse show" id="advancedSearchCollapse">
-                        <div class="card-body">
-                          <form id="advanced-search-form">
-                            <div class="row g-3">
-                              <!-- Basic Search -->
-                              <div class="col-md-12">
-                                <div class="input-group">
-                                  <input type="text" id="global-search" class="form-control" placeholder="Search by name, email or phone..." value="{{ searchQuery }}">
-                                  <div class="input-group-append">
-                                    <button id="search-button" class="btn btn-primary" type="button">
-                                      <i class="mdi mdi-magnify"></i>
-                                    </button>
+                        <!-- Search Component (Collapsed by default) -->
+                        <div class="card mb-4">
+                          <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Search Users</h5>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedSearchCollapse">
+                              <i class="mdi mdi-chevron-down"></i>
+                            </button>
+                          </div>
+                          <div class="collapse" id="advancedSearchCollapse">
+                            <div class="card-body">
+                              <form id="advanced-search-form">
+                                <div class="row g-3">
+                                  <!-- Basic Search -->
+                                  <div class="col-md-12">
+                                    <div class="input-group">
+                                      <input type="text" id="global-search" class="form-control" placeholder="Search by name, email or phone..." value="{{ searchQuery }}">
+                                      <div class="input-group-append">
+                                        <button id="search-button" class="btn btn-primary" type="button">
+                                          <i class="mdi mdi-magnify"></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <!-- Search Type -->
+                                  <div class="col-md-6">
+                                    <label for="search-type" class="form-label">Search Type</label>
+                                    <select id="search-type" class="form-select">
+                                      <option value="contains" {% if searchType == 'contains' %}selected{% endif %}>Contains</option>
+                                      <option value="exact" {% if searchType == 'exact' %}selected{% endif %}>Exact Match</option>
+                                      <option value="starts" {% if searchType == 'starts' %}selected{% endif %}>Starts With</option>
+                                      <option value="ends" {% if searchType == 'ends' %}selected{% endif %}>Ends With</option>
+                                    </select>
+                                  </div>
+                                  
+                                  <!-- Search Field -->
+                                  <div class="col-md-6">
+                                    <label for="search-field" class="form-label">Search In</label>
+                                    <select id="search-field" class="form-select">
+                                      <option value="all" {% if searchField == 'all' %}selected{% endif %}>All Fields</option>
+                                      <option value="name" {% if searchField == 'name' %}selected{% endif %}>Name</option>
+                                      <option value="email" {% if searchField == 'email' %}selected{% endif %}>Email</option>
+                                      <option value="phone" {% if searchField == 'phone' %}selected{% endif %}>Phone</option>
+                                    </select>
+                                  </div>
+                                  
+                                  <!-- Date Range - Show only if createdAt field exists -->
+                                  {% if field_exists is defined and field_exists.createdAt %}
+                                  <div class="col-md-6">
+                                    <label for="date-range" class="form-label">Registration Date</label>
+                                    <select id="date-range" class="form-select">
+                                      <option value="">Any Time</option>
+                                      <option value="today" {% if dateRange == 'today' %}selected{% endif %}>Today</option>
+                                      <option value="week" {% if dateRange == 'week' %}selected{% endif %}>This Week</option>
+                                      <option value="month" {% if dateRange == 'month' %}selected{% endif %}>This Month</option>
+                                      <option value="custom" {% if dateRange == 'custom' %}selected{% endif %}>Custom Range</option>
+                                    </select>
+                                  </div>
+                                  
+                                  <!-- Custom Date Range (shown only if dateRange = 'custom') -->
+                                  <div class="col-md-6 date-range-custom" {% if dateRange != 'custom' %}style="display: none;"{% endif %}>
+                                    <div class="row">
+                                      <div class="col-md-6">
+                                        <label for="date-from" class="form-label">From</label>
+                                        <input type="date" id="date-from" class="form-control" value="{{ dateFrom }}">
+                                      </div>
+                                      <div class="col-md-6">
+                                        <label for="date-to" class="form-label">To</label>
+                                        <input type="date" id="date-to" class="form-control" value="{{ dateTo }}">
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {% endif %}
+                                  
+                                  <div class="col-12 d-flex justify-content-end mt-3">
+                                    <button type="button" id="clear-search" class="btn btn-outline-secondary me-2">Clear</button>
+                                    <button type="submit" class="btn btn-primary">Search</button>
                                   </div>
                                 </div>
-                              </div>
-                              
-                              <!-- Search Type -->
-                              <div class="col-md-6">
-                                <label for="search-type" class="form-label">Search Type</label>
-                                <select id="search-type" class="form-select">
-                                  <option value="contains" {% if searchType == 'contains' %}selected{% endif %}>Contains</option>
-                                  <option value="exact" {% if searchType == 'exact' %}selected{% endif %}>Exact Match</option>
-                                  <option value="starts" {% if searchType == 'starts' %}selected{% endif %}>Starts With</option>
-                                  <option value="ends" {% if searchType == 'ends' %}selected{% endif %}>Ends With</option>
-                                </select>
-                              </div>
-                              
-                              <!-- Search Field -->
-                              <div class="col-md-6">
-                                <label for="search-field" class="form-label">Search In</label>
-                                <select id="search-field" class="form-select">
-                                  <option value="all" {% if searchField == 'all' %}selected{% endif %}>All Fields</option>
-                                  <option value="name" {% if searchField == 'name' %}selected{% endif %}>Name</option>
-                                  <option value="email" {% if searchField == 'email' %}selected{% endif %}>Email</option>
-                                  <option value="phone" {% if searchField == 'phone' %}selected{% endif %}>Phone</option>
-                                </select>
-                              </div>
-                              
-                              <!-- Date Range - Show only if createdAt field exists -->
-                              {% if field_exists is defined and field_exists.createdAt %}
-                              <div class="col-md-6">
-                                <label for="date-range" class="form-label">Registration Date</label>
-                                <select id="date-range" class="form-select">
-                                  <option value="">Any Time</option>
-                                  <option value="today" {% if dateRange == 'today' %}selected{% endif %}>Today</option>
-                                  <option value="week" {% if dateRange == 'week' %}selected{% endif %}>This Week</option>
-                                  <option value="month" {% if dateRange == 'month' %}selected{% endif %}>This Month</option>
-                                  <option value="custom" {% if dateRange == 'custom' %}selected{% endif %}>Custom Range</option>
-                                </select>
-                              </div>
-                              
-                              <!-- Custom Date Range (shown only if dateRange = 'custom') -->
-                              <div class="col-md-6 date-range-custom" {% if dateRange != 'custom' %}style="display: none;"{% endif %}>
-                                <div class="row">
-                                  <div class="col-md-6">
-                                    <label for="date-from" class="form-label">From</label>
-                                    <input type="date" id="date-from" class="form-control" value="{{ dateFrom }}">
-                                  </div>
-                                  <div class="col-md-6">
-                                    <label for="date-to" class="form-label">To</label>
-                                    <input type="date" id="date-to" class="form-control" value="{{ dateTo }}">
-                                  </div>
-                                </div>
-                              </div>
-                              {% endif %}
-                              
-                              <div class="col-12 d-flex justify-content-end mt-3">
-                                <button type="button" id="clear-search" class="btn btn-outline-secondary me-2">Clear</button>
-                                <button type="submit" class="btn btn-primary">Search</button>
-                              </div>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <!-- Filters Component (Inline to avoid missing templates) -->
-                    <div class="card mb-4">
-                      <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Filters</h5>
-                        <div>
-                          <span id="filter-count" class="badge bg-primary me-2" style="display: none;">0</span>
-                          <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
-                            <i class="mdi mdi-filter-outline"></i>
-                          </button>
-                        </div>
-                      </div>
-                      <div class="collapse show" id="filtersCollapse">
-                        <div class="card-body">
-                          <div class="row g-3">
-                            <!-- Roles with multi-select -->
-                            <div class="col-md-4">
-                              <label for="role-filter" class="form-label">Roles</label>
-                              <select id="role-filter" class="form-select">
-                                <option value="">All Roles</option>
-                                {% for role in availableRoles %}
-                                  <option value="{{ role }}" {% if roleFilter == role %} selected {% endif %}>{{ role }}</option>
-                                {% endfor %}
-                              </select>
-                            </div>
-                            
-                            <!-- Status with icons -->
-                            <div class="col-md-4">
-                              <label for="status-filter" class="form-label">Status</label>
-                              <select id="status-filter" class="form-select">
-                                <option value="">All Statuses</option>
-                                <option value="active" {% if statusFilter == 'active' %} selected {% endif %}>
-                                  Active
-                                </option>
-                                <option value="disabled" {% if statusFilter == 'disabled' %} selected {% endif %}>
-                                  Disabled
-                                </option>
-                              </select>
-                            </div>
-                            
-                            <!-- Verification -->
-                            <div class="col-md-4">
-                              <label for="verification-filter" class="form-label">Verification</label>
-                              <select id="verification-filter" class="form-select">
-                                <option value="">All Verification</option>
-                                <option value="verified" {% if verificationFilter == 'verified' %} selected {% endif %}>Verified</option>
-                                <option value="not-verified" {% if verificationFilter == 'not-verified' %} selected {% endif %}>Not Verified</option>
-                              </select>
-                            </div>
-                            
-                            <!-- Activity Filter - Show only if lastLoginAt field exists -->
-                            {% if field_exists is defined and field_exists.lastLoginAt %}
-                            <div class="col-md-4">
-                              <label for="activity-filter" class="form-label">Last Activity</label>
-                              <select id="activity-filter" class="form-select">
-                                <option value="">Any Time</option>
-                                <option value="today" {% if activityFilter == 'today' %}selected{% endif %}>Today</option>
-                                <option value="week" {% if activityFilter == 'week' %}selected{% endif %}>This Week</option>
-                                <option value="month" {% if activityFilter == 'month' %}selected{% endif %}>This Month</option>
-                                <option value="inactive" {% if activityFilter == 'inactive' %}selected{% endif %}>Inactive (30+ days)</option>
-                              </select>
-                            </div>
-                            {% endif %}
-                            
-                            <div class="col-12 d-flex justify-content-end mt-3">
-                              <button type="button" id="clear-filters" class="btn btn-outline-secondary me-2">Clear Filters</button>
-                              <button type="button" id="apply-filters" class="btn btn-primary">Apply Filters</button>
+                              </form>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
+                        
+                        <!-- Filters Component (Collapsed by default) -->
+                        <div class="card mb-4">
+                          <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Filters</h5>
+                            <div>
+                              <span id="filter-count" class="badge bg-primary me-2" style="display: none;">0</span>
+                              <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
+                                <i class="mdi mdi-filter-outline"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <div class="collapse" id="filtersCollapse">
+                            <div class="card-body">
+                              <div class="row g-3">
+                                <!-- Roles with multi-select -->
+                                <div class="col-md-4">
+                                  <label for="role-filter" class="form-label">Roles</label>
+                                  <select id="role-filter" class="form-select">
+                                    <option value="">All Roles</option>
+                                    {% for role in availableRoles %}
+                                      <option value="{{ role }}" {% if roleFilter == role %} selected {% endif %}>{{ role }}</option>
+                                    {% endfor %}
+                                  </select>
+                                </div>
+                                
+                                <!-- Status with icons -->
+                                <div class="col-md-4">
+                                  <label for="status-filter" class="form-label">Status</label>
+                                  <select id="status-filter" class="form-select">
+                                    <option value="">All Statuses</option>
+                                    <option value="active" {% if statusFilter == 'active' %} selected {% endif %}>
+                                      Active
+                                    </option>
+                                    <option value="disabled" {% if statusFilter == 'disabled' %} selected {% endif %}>
+                                      Disabled
+                                    </option>
+                                  </select>
+                                </div>
+                                
+                                <!-- Verification -->
+                                <div class="col-md-4">
+                                  <label for="verification-filter" class="form-label">Verification</label>
+                                  <select id="verification-filter" class="form-select">
+                                    <option value="">All Verification</option>
+                                    <option value="verified" {% if verificationFilter == 'verified' %} selected {% endif %}>Verified</option>
+                                    <option value="not-verified" {% if verificationFilter == 'not-verified' %} selected {% endif %}>Not Verified</option>
+                                  </select>
+                                </div>
+                                
+                                <!-- Activity Filter - Show only if lastLoginAt field exists -->
+                                {% if field_exists is defined and field_exists.lastLoginAt %}
+                                <div class="col-md-4">
+                                  <label for="activity-filter" class="form-label">Last Activity</label>
+                                  <select id="activity-filter" class="form-select">
+                                    <option value="">Any Time</option>
+                                    <option value="today" {% if activityFilter == 'today' %}selected{% endif %}>Today</option>
+                                    <option value="week" {% if activityFilter == 'week' %}selected{% endif %}>This Week</option>
+                                    <option value="month" {% if activityFilter == 'month' %}selected{% endif %}>This Month</option>
+                                    <option value="inactive" {% if activityFilter == 'inactive' %}selected{% endif %}>Inactive (30+ days)</option>
+                                  </select>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Warning Level Filter -->
+                                {% if field_exists is defined and field_exists.warningCount %}
+                                <div class="col-md-4">
+                                    <label for="warning-filter" class="form-label">Warning Level</label>
+                                    <select id="warning-filter" class="form-select">
+                                        <option value="">All Users</option>
+                                        <option value="0" {% if warningFilter == '0' %}selected{% endif %}>No Warnings</option>
+                                        <option value="1" {% if warningFilter == '1' %}selected{% endif %}>1 Warning</option>
+                                        <option value="2" {% if warningFilter == '2' %}selected{% endif %}>2 Warnings</option>
+                                        <option value="3" {% if warningFilter == '3' %}selected{% endif %}>3+ Warnings</option>
+                                    </select>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="col-12 d-flex justify-content-end mt-3">
+                                  <button type="button" id="clear-filters" class="btn btn-outline-secondary me-2">Clear Filters</button>
+                                  <button type="button" id="apply-filters" class="btn btn-primary">Apply Filters</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
 
-                    <!-- Loading Indicator -->
-                    <div id="loading-indicator" class="text-center mb-3" style="display: none;">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="sr-only">Loading...</span>
+                        <!-- Loading Indicator -->
+                        <div id="loading-indicator" class="text-center mb-3" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Active Filters Display -->
+                        <div id="active-filters" class="mb-3">
+                            {% if searchQuery or roleFilter or statusFilter or verificationFilter or dateRange or activityFilter or warningFilter %}
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                    <span class="text-muted">Active filters:</span>
+                                    
+                                    {% if searchQuery %}
+                                        <span class="badge bg-primary">Search: {{ searchQuery }}</span>
+                                    {% endif %}
+                                    
+                                    {% if roleFilter %}
+                                        <span class="badge bg-info">Role: {{ roleFilter }}</span>
+                                    {% endif %}
+                                    
+                                    {% if statusFilter %}
+                                        <span class="badge bg-secondary">Status: {{ statusFilter }}</span>
+                                    {% endif %}
+                                    
+                                    {% if verificationFilter %}
+                                        <span class="badge bg-warning text-dark">Verification: {{ verificationFilter }}</span>
+                                    {% endif %}
+                                    
+                                    {% if dateRange %}
+                                        <span class="badge bg-success">Date: {{ dateRange }}</span>
+                                    {% endif %}
+                                    
+                                    {% if activityFilter %}
+                                        <span class="badge bg-danger">Activity: {{ activityFilter }}</span>
+                                    {% endif %}
+                                    
+                                    {% if warningFilter %}
+                                        <span class="badge bg-warning">Warnings: {{ warningFilter }}</span>
+                                    {% endif %}
+                                    
+                                    <a href="{{ path('app_admin_dashboard') }}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="mdi mdi-close"></i> Clear All Filters
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone Number</th>
+                                        <th>Role</th>
+                                        <th>Verification</th>
+                                        <th>Status</th>
+                                        <th>Warnings</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-table-body">
+                                    {% include '_table_body.html.twig' with {'pagination': pagination} %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pagination Controls -->
+                <div class="d-flex justify-content-center pagination-container mb-4">
+                    {% if pagination.pageCount > 0 %}
+                        {{ knp_pagination_render(pagination, 'custom_template.html.twig', {}, {
+                            'q': app.request.query.get('q'),
+                            'role': app.request.query.get('role'),
+                            'status': app.request.query.get('status'),
+                            'verification': app.request.query.get('verification'),
+                            'searchType': app.request.query.get('searchType'),
+                            'searchField': app.request.query.get('searchField'),
+                            'dateRange': app.request.query.get('dateRange'),
+                            'dateFrom': app.request.query.get('dateFrom'),
+                            'dateTo': app.request.query.get('dateTo'),
+                            'activity': app.request.query.get('activity'),
+                            'warning': app.request.query.get('warning')
+                        }) }}
+                    {% endif %}
+                </div>
+                
+                <!-- Analytics Charts Row - MOVED BELOW THE TABLE -->
+                <h4 class="page-title mb-3">Dashboard Analytics</h4>
+                
+                <div class="row mb-4">
+                    <!-- User Registrations Chart -->
+                    <div class="col-xl-8 col-lg-7 mb-4">
+                        <div class="card shadow h-100">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">User Registrations (Last 30 Days)</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-area">
+                                    <canvas id="registrationsChart" height="300"></canvas>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- Active Filters Display -->
-                    <div id="active-filters" class="mb-3">
-                        {% if searchQuery or roleFilter or statusFilter or verificationFilter or dateRange or activityFilter %}
-                            <div class="d-flex flex-wrap gap-2 align-items-center">
-                                <span class="text-muted">Active filters:</span>
-                                
-                                {% if searchQuery %}
-                                    <span class="badge bg-primary">Search: {{ searchQuery }}</span>
-                                {% endif %}
-                                
-                                {% if roleFilter %}
-                                    <span class="badge bg-info">Role: {{ roleFilter }}</span>
-                                {% endif %}
-                                
-                                {% if statusFilter %}
-                                    <span class="badge bg-secondary">Status: {{ statusFilter }}</span>
-                                {% endif %}
-                                
-                                {% if verificationFilter %}
-                                    <span class="badge bg-warning text-dark">Verification: {{ verificationFilter }}</span>
-                                {% endif %}
-                                
-                                {% if dateRange %}
-                                    <span class="badge bg-success">Date: {{ dateRange }}</span>
-                                {% endif %}
-                                
-                                {% if activityFilter %}
-                                    <span class="badge bg-danger">Activity: {{ activityFilter }}</span>
-                                {% endif %}
-                                
-                                <a href="{{ path('app_admin_dashboard') }}" class="btn btn-sm btn-outline-secondary">
-                                    <i class="mdi mdi-close"></i> Clear All Filters
-                                </a>
+                    <!-- Role Distribution Chart -->
+                    <div class="col-xl-4 col-lg-5 mb-4">
+                        <div class="card shadow h-100">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">User Role Distribution</h6>
                             </div>
-                        {% endif %}
+                            <div class="card-body">
+                                <div class="chart-pie pt-4 pb-2">
+                                    <canvas id="roleDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-hover w-100">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Phone Number</th>
-                                    <th>Role</th>
-                                    <th>Verification</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="user-table-body">
-                                {% include '_table_body.html.twig' with {'pagination': pagination} %}
-                            </tbody>
-                        </table>
+                </div>
+                
+                <!-- Second Analytics Row -->
+                <div class="row mb-4">
+                    <!-- Warning Distribution Chart -->
+                    <div class="col-xl-6 col-lg-6 mb-4">
+                        <div class="card shadow h-100">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Warning Distribution</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-pie pt-4 pb-2">
+                                    <canvas id="warningDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Warnings List -->
+                    <div class="col-xl-6 col-lg-6 mb-4">
+                        <div class="card shadow h-100">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Recent Content Warnings</h6>
+                            </div>
+                            <div class="card-body">
+                                {% if recent_warnings|default(false) %}
+                                    <div class="list-group">
+                                        {% for warning in recent_warnings %}
+                                            <div class="list-group-item">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h6 class="mb-1">{{ warning.user.prenom }} {{ warning.user.nom }}</h6>
+                                                    <small>Warning #{{ warning.count }}</small>
+                                                </div>
+                                                <p class="mb-1 small">{{ warning.content_type }}</p>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="text-center text-muted py-4">
+                                        <i class="mdi mdi-check-circle-outline" style="font-size: 3rem;"></i>
+                                        <p class="mt-2">No recent content warnings</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<!-- Pagination Controls -->
-<div class="mt-4 d-flex justify-content-center pagination-container">
-    {% if pagination.pageCount > 0 %}
-        {{ knp_pagination_render(pagination, 'custom_template.html.twig', {}, {
-            'q': app.request.query.get('q'),
-            'role': app.request.query.get('role'),
-            'status': app.request.query.get('status'),
-            'verification': app.request.query.get('verification'),
-            'searchType': app.request.query.get('searchType'),
-            'searchField': app.request.query.get('searchField'),
-            'dateRange': app.request.query.get('dateRange'),
-            'dateFrom': app.request.query.get('dateFrom'),
-            'dateTo': app.request.query.get('dateTo'),
-            'activity': app.request.query.get('activity')
-        }) }}
-    {% endif %}
 </div>
 
 <!-- Modal templates (inline) -->
@@ -320,54 +495,70 @@
 </div>
 
 <style>
+    /* Make content fit properly with sidebar */
     .content-wrapper {
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100% !important;
+        padding: 20px;
+        margin-left: 250px; /* Adjust based on your sidebar width */
+        width: calc(100% - 250px);
+        overflow-x: hidden;
+        transition: all 0.3s ease;
     }
-    .card {
-        margin: 0 !important;
-        border-radius: 0 !important;
-    }
-    .table-responsive {
-        margin: -1rem !important; /* Compensate for card-body padding */
-        padding: 1rem !important;
-    }
-    .table {
-        margin-bottom: 0 !important;
-    }
-
-    .footer {
-        position: fixed;
-        bottom: 0;
-        right: 0;
-        width: calc(100% - 260px); /* Adjust for sidebar width */
-        background: white;
-        z-index: 1;
-        padding: 1rem;
-        border-top: 1px solid #e5e5e5;
-    }
-
-    .main-panel {
-        padding-bottom: 60px; /* Add padding to prevent content from being hidden behind footer */
-    }
-
-    /* Adjust footer width when sidebar is collapsed */
-    .sidebar-icon-only .footer {
+    
+    /* When sidebar is collapsed */
+    .sidebar-icon-only .content-wrapper {
+        margin-left: 70px;
         width: calc(100% - 70px);
     }
-
-    .actions-column {
-        text-align: center;
+    
+    /* Responsive container */
+    .container-fluid {
+        padding: 0;
     }
-
-    .action-buttons {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
+    
+    /* Responsive table */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
     }
-
+    
+    .table {
+        width: 100%;
+        margin-bottom: 0;
+        white-space: nowrap;
+    }
+    
+    /* Allow text wrapping in specific columns */
+    .table td:nth-child(1),
+    .table td:nth-child(2) {
+        white-space: normal;
+    }
+    
+    /* Stats card styling */
+    .border-left-primary {
+        border-left: 4px solid #4e73df;
+    }
+    .border-left-success {
+        border-left: 4px solid #1cc88a;
+    }
+    .border-left-info {
+        border-left: 4px solid #36b9cc;
+    }
+    .border-left-warning {
+        border-left: 4px solid #f6c23e;
+    }
+    .border-left-danger {
+        border-left: 4px solid #e74a3b;
+    }
+    .card {
+        transition: transform 0.2s ease-in-out;
+        margin-bottom: 20px;
+        border-radius: 0.25rem;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
     /* Badge styling */
     .badge {
         font-size: 0.8rem;
@@ -383,6 +574,62 @@
     /* Gap utility */
     .gap-2 {
         gap: 0.5rem;
+    }
+    
+    /* Chart styles */
+    .chart-area, .chart-pie {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    
+    /* Text utilities */
+    .text-xs {
+        font-size: 0.7rem;
+    }
+    .fa-2x {
+        color: rgba(0,0,0,0.1);
+    }
+    
+    /* Media queries for responsive layout */
+    @media (max-width: 991.98px) {
+        .content-wrapper {
+            margin-left: 0;
+            width: 100%;
+        }
+        
+        .sidebar-icon-only .content-wrapper {
+            margin-left: 0;
+            width: 100%;
+        }
+        
+        /* Adjust card heights */
+        .card {
+            height: auto !important;
+        }
+        
+        /* Ensure charts are responsive */
+        .chart-area, .chart-pie {
+            height: 250px;
+        }
+    }
+    
+    /* Better action buttons display */
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+    }
+    
+    /* Ensure forms don't overflow */
+    form {
+        max-width: 100%;
+    }
+    
+    /* Improve Select elements */
+    .form-select {
+        width: 100%;
     }
 </style>
 
@@ -401,6 +648,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const statusFilter = document.getElementById('status-filter');
   const verificationFilter = document.getElementById('verification-filter');
   const activityFilter = document.getElementById('activity-filter');
+  const warningFilter = document.getElementById('warning-filter');
   const tableBody = document.getElementById('user-table-body');
   const loadingIndicator = document.getElementById('loading-indicator');
   const clearSearch = document.getElementById('clear-search');
@@ -449,6 +697,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Attach handlers to pagination links on initial load
   attachPaginationHandlers();
   
+  // Render charts
+  renderCharts();
+  
   // Functions
   function debounceSearch() {
     clearTimeout(debounceTimeout);
@@ -471,6 +722,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (verificationFilter && verificationFilter.value) activeFilters++;
     if (dateRange && dateRange.value) activeFilters++;
     if (activityFilter && activityFilter && activityFilter.value) activeFilters++;
+    if (warningFilter && warningFilter.value) activeFilters++;
     
     // Update UI
     const filterCount = document.getElementById('filter-count');
@@ -506,6 +758,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (statusFilter) statusFilter.value = '';
     if (verificationFilter) verificationFilter.value = '';
     if (activityFilter) activityFilter.value = '';
+    if (warningFilter) warningFilter.value = '';
     
     // Update count and fetch results
     countActiveFilters();
@@ -570,6 +823,11 @@ document.addEventListener('DOMContentLoaded', function() {
       params.append('activity', activityFilter.value);
     }
     
+    // Add warning filter
+    if (warningFilter && warningFilter.value !== '') {
+      params.append('warning', warningFilter.value);
+    }
+    
     const url = '/admin?' + params.toString();
     console.log('Fetching:', url);
     
@@ -627,7 +885,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       if (tableBody) {
-        tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error loading data: ' + error.message + '</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error loading data: ' + error.message + '</td></tr>';
       }
     });
   }
@@ -667,6 +925,227 @@ document.addEventListener('DOMContentLoaded', function() {
           console.error('Error parsing pagination URL:', error);
         }
       });
+    });
+  }
+  
+  // Render analytics charts
+  function renderCharts() {
+    if (typeof Chart === 'undefined') {
+      console.warn('Chart.js not loaded. Please include Chart.js for visualization.');
+      loadChartJS();
+      return;
+    }
+    
+    renderRegistrationsChart();
+    renderRoleDistributionChart();
+    renderWarningDistributionChart();
+  }
+  
+  // Load Chart.js dynamically if not present
+  function loadChartJS() {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+    script.onload = renderCharts;
+    document.head.appendChild(script);
+  }
+  
+  // Render registration trends chart
+  function renderRegistrationsChart() {
+    const ctx = document.getElementById('registrationsChart');
+    if (!ctx) return;
+    
+    // Sample data - replace with actual data from your backend
+    const labels = Array.from({length: 30}, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - 29 + i);
+      return d.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
+    });
+    
+    // Generate sample data or use the registration_data from controller if available
+    const registrationData = typeof registration_data !== 'undefined' ? 
+      registration_data.map(item => item.count) : 
+      Array.from({length: 30}, () => Math.floor(Math.random() * 5));
+    
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'New Registrations',
+          backgroundColor: 'rgba(78, 115, 223, 0.05)',
+          borderColor: 'rgba(78, 115, 223, 1)',
+          pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
+          data: registrationData,
+          tension: 0.4
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: {
+              display: false
+            }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+  }
+  
+  // Render role distribution pie chart
+ // Render role distribution pie chart
+function renderRoleDistributionChart() {
+  const ctx = document.getElementById('roleDistributionChart');
+  if (!ctx) return;
+  
+  // Check if role_distribution data is available from controller
+  if (typeof role_distribution !== 'undefined') {
+    // Use real data from controller
+    const roleLabels = [];
+    const roleCounts = [];
+    
+    // Map the enum values to more readable labels
+    const roleLabelsMap = {
+      'nonMembre': 'Non-Member',
+      'membre': 'Member',
+      'presidentClub': 'Club President',
+      'user': 'Regular User'
+      // administrateur is excluded as per requirements
+    };
+    
+    // Process the role distribution data
+    role_distribution.forEach(item => {
+      // Skip administrator role
+      if (item.role === 'administrateur') return;
+      
+      // Use friendly name if available, otherwise use the original
+      const roleLabel = roleLabelsMap[item.role] || item.role;
+      roleLabels.push(roleLabel);
+      roleCounts.push(item.count);
+    });
+    
+    createRoleChart(ctx, roleLabels, roleCounts);
+  } else {
+    // Use sample data based on RoleEnum
+    const roleData = [
+      { role: 'Non-Member', count: {{ active_users_count|default(20) * 0.3 }}, color: 'rgba(78, 115, 223, 0.8)' },
+      { role: 'Member', count: {{ active_users_count|default(20) * 0.4 }}, color: 'rgba(28, 200, 138, 0.8)' },
+      { role: 'Club President', count: {{ active_users_count|default(20) * 0.2 }}, color: 'rgba(54, 185, 204, 0.8)' },
+      { role: 'Regular User', count: {{ active_users_count|default(20) * 0.1 }}, color: 'rgba(246, 194, 62, 0.8)' }
+    ];
+    
+    createRoleChart(
+      ctx, 
+      roleData.map(item => item.role),
+      roleData.map(item => item.count),
+      roleData.map(item => item.color)
+    );
+  }
+}
+
+// Helper function to create the role chart
+function createRoleChart(ctx, labels, data, customColors) {
+  const backgroundColors = customColors || [
+    'rgba(78, 115, 223, 0.8)',  // Blue
+    'rgba(28, 200, 138, 0.8)',  // Green
+    'rgba(54, 185, 204, 0.8)',  // Cyan
+    'rgba(246, 194, 62, 0.8)',  // Yellow
+    'rgba(231, 74, 59, 0.8)'    // Red
+  ];
+  
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: backgroundColors.slice(0, data.length),
+        hoverBackgroundColor: backgroundColors.slice(0, data.length).map(color => color.replace('0.8', '1')),
+        hoverBorderColor: "rgba(234, 236, 244, 1)",
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            font: {
+              size: 12
+            },
+            padding: 10
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.raw || 0;
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = Math.round((value / total) * 100);
+              return `${label}: ${value} (${percentage}%)`;
+            }
+          }
+        }
+      },
+      cutout: '70%'
+    }
+  });
+}
+  
+  // Render warning distribution chart
+  function renderWarningDistributionChart() {
+    const ctx = document.getElementById('warningDistributionChart');
+    if (!ctx) return;
+    
+    // Sample warning data - should be replaced with actual data from controller
+    const warningData = [
+      { label: 'No Warnings', count: {{ (pagination.getTotalItemCount() - warned_users_count|default(0)) }} },
+      { label: '1 Warning', count: {{ warned_users_count|default(10) * 0.6 }} },
+      { label: '2 Warnings', count: {{ warned_users_count|default(10) * 0.3 }} },
+      { label: '3+ Warnings', count: {{ warned_users_count|default(10) * 0.1 }} }
+    ];
+    
+    const backgroundColors = [
+      'rgba(28, 200, 138, 0.8)',  // Green - No warnings
+      'rgba(246, 194, 62, 0.8)',  // Yellow - 1 warning
+      'rgba(255, 159, 64, 0.8)',  // Orange - 2 warnings
+      'rgba(231, 74, 59, 0.8)'    // Red - 3+ warnings
+    ];
+    
+    new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: warningData.map(item => item.label),
+        datasets: [{
+          data: warningData.map(item => item.count),
+          backgroundColor: backgroundColors,
+          hoverBackgroundColor: backgroundColors.map(color => color.replace('0.8', '1')),
+          hoverBorderColor: "rgba(234, 236, 244, 1)",
+        }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right'
+          }
+        }
+      }
     });
   }
 });

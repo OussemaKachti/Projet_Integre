@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Enum\RoleEnum;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,35 +24,33 @@ class AdminController extends AbstractController {
     {
         $this->entityManager = $entityManager;
     }
- 
 
-
-#[Route('/admin/profile', name: 'app_admin_profile')]
-public function profile(Request $request): Response
-{
-    // Get the current admin user
-    $user = $this->getUser();
-    
-    // Make sure it's an authenticated user
-    if (!$user) {
-        return $this->redirectToRoute('app_login');
+    #[Route('/admin/profile', name: 'app_admin_profile')]
+    public function profile(Request $request): Response
+    {
+        // Get the current admin user
+        $user = $this->getUser();
+        
+        // Make sure it's an authenticated user
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+        
+        // Check if user has admin role
+        if (!$this->isGranted('ROLE_ADMINISTRATEUR')) {
+            return $this->redirectToRoute('access_denied');
+        }
+        
+        // Handle cleanup parameter for password tab session
+        if ($request->query->get('cleanup')) {
+            $request->getSession()->remove('password_tab_active');
+        }
+        
+        // Render the admin profile template
+        return $this->render('admin_profile.html.twig', [
+            'user' => $user,
+        ]);
     }
-    
-    // Check if user has admin role
-    if (!$this->isGranted('ROLE_ADMINISTRATEUR')) {
-        return $this->redirectToRoute('access_denied');
-    }
-    
-    // Handle cleanup parameter for password tab session
-    if ($request->query->get('cleanup')) {
-        $request->getSession()->remove('password_tab_active');
-    }
-    
-    // Render the admin profile template
-    return $this->render('admin_profile.html.twig', [
-        'user' => $user,
-    ]);
-}
     
     #[Route('/admin', name: 'app_admin_dashboard')]
     public function dashboard(Request $request, PaginatorInterface $paginator): Response
@@ -62,6 +61,7 @@ public function profile(Request $request): Response
             $roleFilter = $request->query->get('role', '');
             $statusFilter = $request->query->get('status', '');
             $verificationFilter = $request->query->get('verification', '');
+            $warningFilter = $request->query->get('warning', '');  // New parameter for warnings
             
             // Advanced search parameters
             $searchType = $request->query->get('searchType', 'contains');
@@ -78,14 +78,18 @@ public function profile(Request $request): Response
             // Check if fields exist in User entity
             $fieldExists = [
                 'createdAt' => property_exists(User::class, 'createdAt'),
-                'lastLoginAt' => property_exists(User::class, 'lastLoginAt')
+                'lastLoginAt' => property_exists(User::class, 'lastLoginAt'),
+                'warningCount' => property_exists(User::class, 'warningCount')
             ];
+            
+            // Get dashboard statistics
+            $statsData = $this->getDashboardStats();
             
             // Create base query builder
             $queryBuilder = $this->entityManager->getRepository(User::class)
                 ->createQueryBuilder('user')
-                ->where('user.role NOT LIKE :role')
-                ->setParameter('role', '%administrateur%');
+                ->where('user.role != :role')
+                ->setParameter('role', RoleEnum::ADMINISTRATEUR);
             
             // Apply search filter with optimized query building
             if (!empty($searchQuery)) {
@@ -125,6 +129,24 @@ public function profile(Request $request): Response
                 $isVerified = $verificationFilter === 'verified';
                 $queryBuilder->andWhere('user.isVerified = :verifiedFilter')
                     ->setParameter('verifiedFilter', $isVerified);
+            }
+            
+            // Add warning filter - only if the warningCount field exists
+            if (!empty($warningFilter) && $fieldExists['warningCount']) {
+                switch ($warningFilter) {
+                    case '0':
+                        $queryBuilder->andWhere('user.warningCount = 0');
+                        break;
+                    case '1':
+                        $queryBuilder->andWhere('user.warningCount = 1');
+                        break;
+                    case '2':
+                        $queryBuilder->andWhere('user.warningCount = 2');
+                        break;
+                    case '3':
+                        $queryBuilder->andWhere('user.warningCount >= 3');
+                        break;
+                }
             }
             
             // Add date range filter - only if the createdAt field exists
@@ -202,7 +224,7 @@ public function profile(Request $request): Response
                 // Handle pagination errors gracefully
                 if ($request->isXmlHttpRequest()) {
                     return new Response(
-                        '<tr><td colspan="7" class="text-center text-danger">Pagination error: ' . $paginationError->getMessage() . '</td></tr>'
+                        '<tr><td colspan="8" class="text-center text-danger">Pagination error: ' . $paginationError->getMessage() . '</td></tr>'
                     );
                 }
                 
@@ -225,8 +247,8 @@ public function profile(Request $request): Response
             $rolesQuery = $this->entityManager->getRepository(User::class)
                 ->createQueryBuilder('u')
                 ->select('DISTINCT u.role')
-                ->where('u.role NOT LIKE :adminRole')
-                ->setParameter('adminRole', '%administrateur%')
+                ->where('u.role != :adminRole')
+                ->setParameter('adminRole', RoleEnum::ADMINISTRATEUR)
                 ->getQuery();
             
             $roles = array_map(function($item) {
@@ -241,6 +263,7 @@ public function profile(Request $request): Response
                     'roleFilter' => $roleFilter,
                     'statusFilter' => $statusFilter,
                     'verificationFilter' => $verificationFilter,
+                    'warningFilter' => $warningFilter,
                     'searchType' => $searchType,
                     'searchField' => $searchField,
                     'dateRange' => $dateRange,
@@ -254,7 +277,7 @@ public function profile(Request $request): Response
             if ($request->isXmlHttpRequest()) {
                 // Check if no results are found
                 if ($pagination->count() === 0) {
-                    return new Response('<tr><td colspan="7" class="text-center">No users found matching your criteria.</td></tr>');
+                    return new Response('<tr><td colspan="8" class="text-center">No users found matching your criteria.</td></tr>');
                 }
                 
                 return $this->render('_table_body.html.twig', [
@@ -263,12 +286,13 @@ public function profile(Request $request): Response
             }
             
             // Otherwise return the full page
-            return $this->render('admin.html.twig', [
+            return $this->render('admin.html.twig', array_merge([
                 'pagination' => $pagination,
                 'searchQuery' => $searchQuery,
                 'roleFilter' => $roleFilter,
                 'statusFilter' => $statusFilter,
                 'verificationFilter' => $verificationFilter,
+                'warningFilter' => $warningFilter,
                 'searchType' => $searchType,
                 'searchField' => $searchField,
                 'dateRange' => $dateRange,
@@ -277,12 +301,12 @@ public function profile(Request $request): Response
                 'activityFilter' => $activityFilter,
                 'availableRoles' => $roles,
                 'field_exists' => $fieldExists
-            ]);
+            ], $statsData));
         } catch (\Exception $e) {
             // Handle errors gracefully
             if ($request->isXmlHttpRequest()) {
                 return new Response(
-                    '<tr><td colspan="7" class="text-center text-warning">' . $e->getMessage() . '</td></tr>'
+                    '<tr><td colspan="8" class="text-center text-warning">' . $e->getMessage() . '</td></tr>'
                 );
             }
             
@@ -342,19 +366,24 @@ public function profile(Request $request): Response
             }
             
             // Create CSV content
-            $csv = "ID,Name,Email,Phone,Role,Status,Verification\n";
+            $csv = "ID,Name,Email,Phone,Role,Status,Verification,Warnings\n";
             
             foreach ($users as $user) {
+                $warningCount = property_exists(User::class, 'warningCount') ? $user->getWarningCount() : 'N/A';
+                $role = $user->getRole();
+                $roleValue = $role instanceof RoleEnum ? $role->value : $role;
+                
                 $csv .= sprintf(
-                    "%s,%s %s,%s,%s,%s,%s,%s\n",
+                    "%s,%s %s,%s,%s,%s,%s,%s,%s\n",
                     $user->getId(),
                     str_replace(',', ' ', $user->getNom()), // Escape commas
                     str_replace(',', ' ', $user->getPrenom()),
                     $user->getEmail(),
-                    $user->getTel(),
-                    $user->getRole()->value, // Assuming it's an enum
+                    $user->getTel() ?: 'N/A',
+                    $roleValue, // Use the string value
                     $user->isActive() ? 'Active' : 'Disabled',
-                    $user->isVerified() ? 'Yes' : 'No'
+                    $user->isVerified() ? 'Yes' : 'No',
+                    $warningCount
                 );
             }
             
@@ -437,6 +466,7 @@ public function profile(Request $request): Response
         $roleFilter = $request->query->get('role', '');
         $statusFilter = $request->query->get('status', '');
         $verificationFilter = $request->query->get('verification', '');
+        $warningFilter = $request->query->get('warning', '');
         $searchType = $request->query->get('searchType', 'contains');
         $searchField = $request->query->get('searchField', 'all');
         $dateRange = $request->query->get('dateRange', '');
@@ -447,14 +477,15 @@ public function profile(Request $request): Response
         // Check if fields exist in User entity
         $fieldExists = [
             'createdAt' => property_exists(User::class, 'createdAt'),
-            'lastLoginAt' => property_exists(User::class, 'lastLoginAt')
+            'lastLoginAt' => property_exists(User::class, 'lastLoginAt'),
+            'warningCount' => property_exists(User::class, 'warningCount')
         ];
         
         // Create base query builder
         $queryBuilder = $this->entityManager->getRepository(User::class)
             ->createQueryBuilder('user')
-            ->where('user.role NOT LIKE :role')
-            ->setParameter('role', '%administrateur%');
+            ->where('user.role != :role')
+            ->setParameter('role', RoleEnum::ADMINISTRATEUR);
         
         // Apply search filter
         if (!empty($searchQuery)) {
@@ -489,6 +520,24 @@ public function profile(Request $request): Response
             $isVerified = $verificationFilter === 'verified';
             $queryBuilder->andWhere('user.isVerified = :verifiedFilter')
                 ->setParameter('verifiedFilter', $isVerified);
+        }
+        
+        // Add warning filter - only if the warningCount field exists
+        if (!empty($warningFilter) && $fieldExists['warningCount']) {
+            switch ($warningFilter) {
+                case '0':
+                    $queryBuilder->andWhere('user.warningCount = 0');
+                    break;
+                case '1':
+                    $queryBuilder->andWhere('user.warningCount = 1');
+                    break;
+                case '2':
+                    $queryBuilder->andWhere('user.warningCount = 2');
+                    break;
+                case '3':
+                    $queryBuilder->andWhere('user.warningCount >= 3');
+                    break;
+            }
         }
         
         // Add date range filter - only if the createdAt field exists
@@ -549,103 +598,281 @@ public function profile(Request $request): Response
         return $queryBuilder;
     }
     
-//     /**
-//      * Log query execution time for debugging
-//      * @return array The query results
-//      */
-//     private function logQueryTime(QueryBuilder $queryBuilder, string $label = 'Query'): array
-//     {
-//         if ($_ENV['APP_ENV'] === 'dev') {
-//             $start = microtime(true);
-//             $result = $queryBuilder->getQuery()->getResult();
-//             $executionTime = microtime(true) - $start;
-            
-//             // Log the execution time
-//             error_log(sprintf("%s execution time: %.2f ms", $label, $executionTime * 1000));
-            
-//             return $result;
-//         }
+    /**
+     * Get role distribution data for chart, excluding administrators
+     */
+    private function getRoleDistributionData(): array
+    {
+        // Query to get role counts, excluding administrators
+        $roleDistributionQuery = $this->entityManager->getRepository(User::class)
+            ->createQueryBuilder('u')
+            ->select('u.role, COUNT(u.id) as count')
+            ->where('u.role != :adminRole')
+            ->setParameter('adminRole', RoleEnum::ADMINISTRATEUR)
+            ->groupBy('u.role')
+            ->getQuery();
         
-//         return $queryBuilder->getQuery()->getResult();
-//     }
-#[Route('/change-password-admin', name: 'app_admin_password', methods: ['POST'])]
-public function changePassword(
-    Request $request,
-    UserPasswordHasherInterface $passwordHasher,
-    Security $security,
-    EntityManagerInterface $entityManager,
-    SessionInterface $session,
-    MailerInterface $mailer,
-    \Twig\Environment $twig // Inject Twig to render the template
-): Response {
-    // Set a flag in the session to keep the password tab active
-    $session->set('password_tab_active', true);
-
-    // Get the logged-in user
-    $user = $security->getUser();
-
-    if (!$user) {
-        $this->addFlash('error', 'You must be logged in to change your password');
-        return $this->redirectToRoute('app_login');
+        $roleDistribution = $roleDistributionQuery->getResult();
+        
+        // Convert to array format for chart
+        $formattedData = [];
+        foreach ($roleDistribution as $item) {
+            $role = $item['role'];
+            
+            // Skip if it's somehow an administrator (extra safeguard)
+            if ($role == RoleEnum::ADMINISTRATEUR) {
+                continue;
+            }
+            
+            // Get string value if it's an enum object
+            if ($role instanceof RoleEnum) {
+                $role = $role->value;
+            }
+            
+            $formattedData[] = [
+                'role' => $role,
+                'count' => (int)$item['count']
+            ];
+        }
+        
+        return $formattedData;
     }
+    
+    /**
+     * Get dashboard statistics including role distribution data (excluding admins)
+     */
+    private function getDashboardStats(): array
+    {
+        $stats = [];
+        
+        // Get active users count (excluding admins)
+        $activeUsersCount = $this->entityManager->getRepository(User::class)
+            ->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.status = :status')
+            ->andWhere('u.role != :adminRole')
+            ->setParameter('status', User::STATUS_ACTIVE)
+            ->setParameter('adminRole', RoleEnum::ADMINISTRATEUR)
+            ->getQuery()
+            ->getSingleScalarResult();
+        
+        $stats['active_users_count'] = $activeUsersCount;
+        
+        // Get disabled users count (excluding admins)
+        $disabledUsersCount = $this->entityManager->getRepository(User::class)
+            ->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.status = :status')
+            ->andWhere('u.role != :adminRole')
+            ->setParameter('status', User::STATUS_DISABLED)
+            ->setParameter('adminRole', RoleEnum::ADMINISTRATEUR)
+            ->getQuery()
+            ->getSingleScalarResult();
+        
+        $stats['disabled_users_count'] = $disabledUsersCount;
+        
+        // Get users with warnings (if warningCount field exists) (excluding admins)
+        if (property_exists(User::class, 'warningCount')) {
+            $warnedUsersCount = $this->entityManager->getRepository(User::class)
+                ->createQueryBuilder('u')
+                ->select('COUNT(u.id)')
+                ->where('u.warningCount > 0')
+                ->andWhere('u.role != :adminRole')
+                ->setParameter('adminRole', RoleEnum::ADMINISTRATEUR)
+                ->getQuery()
+                ->getSingleScalarResult();
+            
+            $stats['warned_users_count'] = $warnedUsersCount;
+            
+            // Get warning distribution statistics (excluding admins)
+            $warningDistribution = [
+                0 => 0,
+                1 => 0,
+                2 => 0,
+                3 => 0  // 3+ warnings
+            ];
+            
+            $warningStats = $this->entityManager->getRepository(User::class)
+                ->createQueryBuilder('u')
+                ->select('u.warningCount, COUNT(u.id) as count')
+                ->where('u.role != :adminRole')
+                ->setParameter('adminRole', RoleEnum::ADMINISTRATEUR)
+                ->groupBy('u.warningCount')
+                ->getQuery()
+                ->getResult();
+            
+            foreach ($warningStats as $stat) {
+                $warningCount = $stat['warningCount'];
+                $count = $stat['count'];
+                
+                if ($warningCount >= 3) {
+                    $warningDistribution[3] += $count;
+                } else {
+                    $warningDistribution[$warningCount] = $count;
+                }
+            }
+            
+            $stats['warning_distribution'] = $warningDistribution;
+            
+            // Get recent warnings (last 5) (excluding admins)
+            $recentWarnings = [];
+            
+            // This is a placeholder - you'll need to implement a proper warnings table
+            // For now, just get users with warnings ordered by most recent
+            $usersWithWarnings = $this->entityManager->getRepository(User::class)
+                ->createQueryBuilder('u')
+                ->where('u.warningCount > 0')
+                ->andWhere('u.role != :adminRole')
+                ->setParameter('adminRole', RoleEnum::ADMINISTRATEUR)
+                ->orderBy('u.id', 'DESC')
+                ->setMaxResults(5)
+                ->getQuery()
+                ->getResult();
+            
+            foreach ($usersWithWarnings as $user) {
+                $recentWarnings[] = [
+                    'user' => $user,
+                    'content_type' => 'Content policy violation', // placeholder
+                    'count' => $user->getWarningCount(),
+                    'created_at' => new \DateTime() // placeholder
+                ];
+            }
+            
+            $stats['recent_warnings'] = $recentWarnings;
+        } else {
+            $stats['warned_users_count'] = 0;
+            $stats['recent_warnings'] = [];
+        }
+        
+        // Get registration data for chart (last 30 days) (excluding admins)
+        if (property_exists(User::class, 'createdAt')) {
+            $registrationData = [];
+            
+            // This would normally be done with a group by query but we'll keep it simple
+            // Get registrations by day for the last 30 days
+            for ($i = 29; $i >= 0; $i--) {
+                $date = new \DateTime("-$i days");
+                $startDate = clone $date;
+                $startDate->setTime(0, 0, 0);
+                $endDate = clone $date;
+                $endDate->setTime(23, 59, 59);
+                
+                $count = $this->entityManager->getRepository(User::class)
+                    ->createQueryBuilder('u')
+                    ->select('COUNT(u.id)')
+                    ->where('u.createdAt BETWEEN :start AND :end')
+                    ->andWhere('u.role != :adminRole')
+                    ->setParameter('start', $startDate)
+                    ->setParameter('end', $endDate)
+                    ->setParameter('adminRole', RoleEnum::ADMINISTRATEUR)
+                    ->getQuery()
+                    ->getSingleScalarResult();
+                
+                $registrationData[] = [
+                    'date' => $date->format('M d'),
+                    'count' => (int)$count
+                ];
+            }
+            
+            $stats['registration_data'] = $registrationData;
+        }
+        
+        // Get role distribution data
+        $stats['role_distribution'] = $this->getRoleDistributionData();
+        
+        // Get total user count (excluding admins) for dashboard header
+        $totalUserCount = $this->entityManager->getRepository(User::class)
+            ->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.role != :adminRole')
+            ->setParameter('adminRole', RoleEnum::ADMINISTRATEUR)
+            ->getQuery()
+            ->getSingleScalarResult();
+        
+        $stats['total_user_count'] = $totalUserCount;
+        
+        return $stats;
+    }
+    
+    #[Route('/change-password-admin', name: 'app_admin_password', methods: ['POST'])]
+    public function changePassword(
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher,
+        Security $security,
+        EntityManagerInterface $entityManager,
+        SessionInterface $session,
+        MailerInterface $mailer,
+        \Twig\Environment $twig // Inject Twig to render the template
+    ): Response {
+        // Set a flag in the session to keep the password tab active
+        $session->set('password_tab_active', true);
 
-    // Get form data
-    $oldPassword = $request->request->get('oldPassword');
-    $newPassword = $request->request->get('newPassword');
-    $confirmPassword = $request->request->get('confirmPassword');
+        // Get the logged-in user
+        $user = $security->getUser();
 
-    // Verify old password
-    if (!$passwordHasher->isPasswordValid($user, $oldPassword)) {
-        $this->addFlash('error', 'Current password is incorrect');
+        if (!$user) {
+            $this->addFlash('error', 'You must be logged in to change your password');
+            return $this->redirectToRoute('app_login');
+        }
+
+        // Get form data
+        $oldPassword = $request->request->get('oldPassword');
+        $newPassword = $request->request->get('newPassword');
+        $confirmPassword = $request->request->get('confirmPassword');
+
+        // Verify old password
+        if (!$passwordHasher->isPasswordValid($user, $oldPassword)) {
+            $this->addFlash('error', 'Current password is incorrect');
+            return $this->redirectToRoute('app_admin_profile');
+        }
+
+        // Check if new password is the same as the old password
+        if ($passwordHasher->isPasswordValid($user, $newPassword)) {
+            $this->addFlash('error', 'New password must be different from current password');
+            return $this->redirectToRoute('app_admin_profile');
+        }
+
+        // Check if new passwords match
+        if ($newPassword !== $confirmPassword) {
+            $this->addFlash('error', 'New passwords do not match');
+            return $this->redirectToRoute('app_admin_profile');
+        }
+
+        // Hash new password
+        $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
+        $user->setPassword($hashedPassword);
+
+        // Save to database
+        try {
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            // Combine `prenom` and `nom` to create the full name
+            $fullName = $user->getPrenom() . ' ' . $user->getNom();
+
+            // Render the Twig template for the email
+            $emailBody = $twig->render('security/password_change_notification.html.twig', [
+                'fullName' => $fullName, // Pass the combined full name to the template
+            ]);
+
+            // Create and send the email
+            $email = (new Email())
+                ->from('no-reply@yourdomain.com') // Replace with your sender email
+                ->to($user->getEmail()) // Use the user's email
+                ->subject('Password Changed Successfully')
+                ->html($emailBody); // Use ->html() instead of ->text()
+
+            $mailer->send($email);
+
+            $this->addFlash('success', 'Password updated successfully');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'An error occurred while updating your password');
+        }
+
         return $this->redirectToRoute('app_admin_profile');
     }
-
-    // Check if new password is the same as the old password
-    if ($passwordHasher->isPasswordValid($user, $newPassword)) {
-        $this->addFlash('error', 'New password must be different from current password');
-        return $this->redirectToRoute('app_admin_profile');
-    }
-
-    // Check if new passwords match
-    if ($newPassword !== $confirmPassword) {
-        $this->addFlash('error', 'New passwords do not match');
-        return $this->redirectToRoute('app_admin_profile');
-    }
-
-    // Hash new password
-    $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
-    $user->setPassword($hashedPassword);
-
-    // Save to database
-    try {
-        $entityManager->persist($user);
-        $entityManager->flush();
-
-        // Combine `prenom` and `nom` to create the full name
-        $fullName = $user->getPrenom() . ' ' . $user->getNom();
-
-        // Render the Twig template for the email
-        $emailBody = $twig->render('security/password_change_notification.html.twig', [
-            'fullName' => $fullName, // Pass the combined full name to the template
-        ]);
-
-        // Create and send the email
-        $email = (new Email())
-            ->from('no-reply@yourdomain.com') // Replace with your sender email
-            ->to($user->getEmail()) // Use the user's email
-            ->subject('Password Changed Successfully')
-            ->html($emailBody); // Use ->html() instead of ->text()
-
-        $mailer->send($email);
-
-        $this->addFlash('success', 'Password updated successfully');
-    } catch (\Exception $e) {
-        $this->addFlash('error', 'An error occurred while updating your password');
-    }
-
-    return $this->redirectToRoute('app_admin_profile');
-}
-#[Route('/update-profile', name: 'admin_update_profile', methods: ['POST'])]
+    
+    #[Route('/update-profile', name: 'admin_update_profile', methods: ['POST'])]
     public function updateProfile(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): Response
     {
         /** @var User $user */

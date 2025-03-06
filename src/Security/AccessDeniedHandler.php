@@ -23,6 +23,19 @@ class AccessDeniedHandler implements AccessDeniedHandlerInterface
 
     public function handle(Request $request, AccessDeniedException $accessDeniedException): ?Response
     {
+        // Get the requested path
+        $path = $request->getPathInfo();
+        
+        // SPECIAL CASE: Skip handling for reset password paths
+        if (strpos($path, '/reset-password') === 0) {
+            // Log the event for debugging
+            error_log('Reset password path detected in AccessDeniedHandler: ' . $path);
+            
+            // Return null to let the default handler take over
+            // This effectively ignores the access denied and lets the request continue
+            return null;
+        }
+        
         // If the request is AJAX, return a 403 JSON response
         if ($request->isXmlHttpRequest()) {
             return new Response(json_encode(['error' => 'Access Denied']), 403, [

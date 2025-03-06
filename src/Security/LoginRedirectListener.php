@@ -14,7 +14,7 @@ class LoginRedirectListener implements EventSubscriberInterface
     private $security;
     private $urlGenerator;
     
-    // List of paths that don't require authentication
+    // List of paths that don't require authentication - simplified for clarity
     private $publicPaths = [
         '/login',
         '/logout',
@@ -23,7 +23,7 @@ class LoginRedirectListener implements EventSubscriberInterface
         '/',                 // Root path
         '/access-denied',
         '/confirm-email',
-        
+        '/assets/',
     ];
 
     // List of admin-only paths
@@ -31,17 +31,10 @@ class LoginRedirectListener implements EventSubscriberInterface
         '/admin'
     ];
 
-    // FUTURE ENHANCEMENT: Add role-specific path restrictions
-    // You can uncomment and customize these arrays when you're ready to implement more granular access control
-    /*
-    private $membrePaths = [
-        '/membre-only'
+    // List of reset password paths - explicitly handled
+    private $resetPasswordPaths = [
+        '/reset-password'
     ];
-
-    private $presidentClubPaths = [
-        '/president-club'
-    ];
-    */
 
     public function __construct(Security $security, UrlGeneratorInterface $urlGenerator)
     {
@@ -57,6 +50,13 @@ class LoginRedirectListener implements EventSubscriberInterface
 
         $request = $event->getRequest();
         $path = $request->getPathInfo();
+        
+        // SPECIAL CASE: Always allow reset password paths
+        foreach ($this->resetPasswordPaths as $resetPath) {
+            if (strpos($path, $resetPath) === 0) {
+                return; // Exit immediately - no checks for reset password
+            }
+        }
         
         // Skip for public paths - always accessible
         foreach ($this->publicPaths as $publicPath) {
@@ -82,31 +82,7 @@ class LoginRedirectListener implements EventSubscriberInterface
             }
         }
 
-        // FUTURE ENHANCEMENT: Add role-specific access checks here
-        // Example:
-        /*
-        // Check MEMBRE paths
-        foreach ($this->membrePaths as $membrePath) {
-            if (strpos($path, $membrePath) === 0) {
-                if (!$this->security->isGranted('ROLE_MEMBRE')) {
-                    $event->setResponse(new RedirectResponse($this->urlGenerator->generate('access_denied')));
-                }
-                return;
-            }
-        }
-
-        // Check PRESIDENT_CLUB paths
-        foreach ($this->presidentClubPaths as $presidentClubPath) {
-            if (strpos($path, $presidentClubPath) === 0) {
-                if (!$this->security->isGranted('ROLE_PRESIDENT_CLUB')) {
-                    $event->setResponse(new RedirectResponse($this->urlGenerator->generate('access_denied')));
-                }
-                return;
-            }
-        }
-        */
-
-        // For all other paths, any authenticated user (including NON_MEMBRE) is allowed
+        // For all other paths, any authenticated user is allowed
         // No action needed here - the request will continue normally
     }
 

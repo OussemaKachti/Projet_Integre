@@ -19,7 +19,7 @@ class WarningEmailService
         MailerInterface $mailer,
         Environment $twig,
         LoggerInterface $logger,
-        string $senderEmail = 'no-reply@yourdomain.com'
+        string $senderEmail = 'no-reply@uniclubs.com'
     ) {
         $this->mailer = $mailer;
         $this->twig = $twig;

@@ -77,7 +77,7 @@ services:
       $mailer: '@mailer.mailtrap_mailer'
       $twig: '@twig'
       $logger: '@logger'
-      $senderEmail: 'no-reply@yourdomain.com'
+      $senderEmail: 'no-reply@uniclubs.com'
     
   # Configure a mailtrap mailer instance using MAILER_DSN2
   mailer.mailtrap_transport:
