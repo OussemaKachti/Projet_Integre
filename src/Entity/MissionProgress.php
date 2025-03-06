@@ -67,10 +67,9 @@ class MissionProgress
         return $this->progress;
     }
 
-    public function setProgress(int $progress, EntityManagerInterface $entityManager): static
+    public function setProgress(int $progress): static
     {
         $this->progress = $progress;
-        $this->checkCompletion($entityManager);
         return $this;
     }
 
@@ -121,4 +120,19 @@ class MissionProgress
             $entityManager->flush();
         }
     }
+    public function isGoalReached(): bool
+{
+    if (!$this->competition) {
+        return false;
+    }
+
+    switch ($this->competition->getGoalType()) {
+        case GoalTypeEnum::EVENT_COUNT:
+        case GoalTypeEnum::EVENT_LIKES:
+        case GoalTypeEnum::MEMBER_COUNT:
+            return $this->progress >= $this->competition->getGoal();
+        default:
+            return false;
+    }
+}
 }

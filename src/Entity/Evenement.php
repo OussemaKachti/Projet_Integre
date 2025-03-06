@@ -10,7 +10,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-
+use App\EventListener\EventCreationListener;
+#[ORM\EntityListeners([EventCreationListener::class])]
 #[ORM\Entity(repositoryClass: EvenementRepository::class)]
 class Evenement
 {

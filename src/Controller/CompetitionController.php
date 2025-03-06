@@ -23,7 +23,7 @@ use App\Enum\GoalTypeEnum;
 class CompetitionController extends AbstractController
 {
     #[Route('/', name: 'app_competition_index', methods: ['GET'])]
-    public function index(Request $request,CompetitionRepository $competitionRepository ,EntityManagerInterface $entityManager): Response
+    public function index(Request $request,ClubRepository $clubRepository ,CompetitionRepository $competitionRepository ,EntityManagerInterface $entityManager): Response
     {
         $competition = new Competition();
     $form = $this->createForm(CompetitionType::class, $competition);
@@ -35,11 +35,19 @@ class CompetitionController extends AbstractController
 
         return $this->redirectToRoute('app_competition_index'); 
     }
+
+
     
+    $leaderboard = $clubRepository->getLeaderboardData();
+
+
+
 
     return $this->render('competition/index.html.twig', [
         'missions' => $competitionRepository->findAll(),
         'form' => $form->createView(), // ✅ Pass the form to Twig
+        'leaderboard' => $leaderboard,
+        
     ]);
     }
 
@@ -112,12 +120,14 @@ class CompetitionController extends AbstractController
 
 
     #[Route('/admin/update-missions', name: 'update_missions')]
-    public function updateMissions(MissionCompletionChecker $checker): Response
-    {
-        $checker->checkAndUpdateMissionStatus();
-
-        return new Response("Competition statuses updated successfully!");
-    }
+public function updateMissions(MissionCompletionChecker $checker): Response
+{
+    $checker->checkAndUpdateMissionStatus();
+    
+    $this->addFlash('success', 'Mission statuses have been checked and updated.');
+    
+    return $this->redirectToRoute('app_competition_index');
+}
 
    // Method to create MissionProgress for all clubs
    public function initializeMissionProgress(Competition $competition, EntityManagerInterface $entityManager): void
