@@ -109,4 +109,5 @@ public function findById(int $id): ?Club
         
         return $result->fetchAllAssociative();
     }
+    
 }
