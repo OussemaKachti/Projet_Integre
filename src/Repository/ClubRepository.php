@@ -110,4 +110,12 @@ public function findById(int $id): ?Club
         return $result->fetchAllAssociative();
     }
     
+    public function getTopThreeClubs(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->orderBy('c.points', 'DESC')
+            ->setMaxResults(3)
+            ->getQuery()
+            ->getResult();
+    }
 }
