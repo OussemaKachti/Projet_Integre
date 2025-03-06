@@ -31,14 +31,23 @@
             </div>
             <div class="row">
                 <div class="col-xxl-6 offset-xxl-3 col-xl-6 offset-xl-3 col-lg-8 offset-lg-2">
-                    <!-- CONTENT MODERATION ALERTS - Only display flash messages, not form errors -->
-                    {% for label, messages in app.flashes %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} mb-4 text-center">
-                                <strong>Content Alert:</strong> {{ message }}
-                            </div>
+                    <!-- Content moderation alerts - ONLY showing flash messages -->
+                    <div id="alerts-container">
+                        {% for label, messages in app.flashes %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} mb-4">
+                                    {% if label == 'error' %}
+                                        <strong><i class="fas fa-exclamation-triangle"></i> Content Alert:</strong> 
+                                    {% elseif label == 'success' %}
+                                        <strong><i class="fas fa-check-circle"></i> Success:</strong> 
+                                    {% else %}
+                                        <strong><i class="fas fa-info-circle"></i> Info:</strong> 
+                                    {% endif %}
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
                         {% endfor %}
-                    {% endfor %}
+                    </div>
                     
                     <div class="sign__wrapper white-bg">
                         <div class="sign__form">
@@ -108,24 +117,32 @@
                                 }
                             </style>
                             
-                            {{ form_start(form, {'attr': {'class': 'signup-form','novalidate':'novalidate'}}) }}
-                            
-                            <!-- Hidden fields for server-side validation -->
-                            {{ form_errors(form) }}
+                            {# Start form with render_rest=false to prevent automatic error rendering #}
+                            {{ form_start(form, {'attr': {'class': 'signup-form','novalidate':'novalidate'}, 'render_rest': false}) }}
                             
                             <div class="sign__input-wrapper">
                                 <h5>{{ 'First Name'|trans }}</h5>
                                 <div class="sign__input">
                                     <i class="fal fa-user"></i>
-                                    {{ form_widget(form.nom, {'attr': {'placeholder': 'First name', 'class': form_errors(form.nom) ? 'form-control input-error' : 'form-control'}}) }}
-                                    {% if form_errors(form.nom) %}
+                                    {{ form_widget(form.nom, {
+                                        'attr': {
+                                            'placeholder': 'First name',
+                                            'class': form.nom.vars.errors|length > 0 ? 'form-control input-error' : 'form-control'
+                                        }
+                                    }) }}
+                                    {% if form.nom.vars.errors|length > 0 %}
                                         <span class="input-error-icon">
                                             <i class="fas fa-exclamation-circle"></i>
                                         </span>
                                     {% endif %}
                                 </div>
-                                {% if form_errors(form.nom) %}
-                                    <div class="form-error-message">{{ form_errors(form.nom) }}</div>
+                                {% if form.nom.vars.errors|length > 0 %}
+                                    <div class="form-error-message">
+                                        {% for error in form.nom.vars.errors %}
+                                            {{ error.message }}
+                                            {% if not loop.last %}<br>{% endif %}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
 
@@ -133,45 +150,75 @@
                                 <h5>{{ 'Last Name'|trans }}</h5>
                                 <div class="sign__input">
                                     <i class="fal fa-user"></i>
-                                    {{ form_widget(form.prenom, {'attr': {'placeholder': 'Last name', 'class': form_errors(form.prenom) ? 'form-control input-error' : 'form-control'}}) }}
-                                    {% if form_errors(form.prenom) %}
+                                    {{ form_widget(form.prenom, {
+                                        'attr': {
+                                            'placeholder': 'Last name',
+                                            'class': form.prenom.vars.errors|length > 0 ? 'form-control input-error' : 'form-control'
+                                        }
+                                    }) }}
+                                    {% if form.prenom.vars.errors|length > 0 %}
                                         <span class="input-error-icon">
                                             <i class="fas fa-exclamation-circle"></i>
                                         </span>
                                     {% endif %}
                                 </div>
-                                {% if form_errors(form.prenom) %}
-                                    <div class="form-error-message">{{ form_errors(form.prenom) }}</div>
+                                {% if form.prenom.vars.errors|length > 0 %}
+                                    <div class="form-error-message">
+                                        {% for error in form.prenom.vars.errors %}
+                                            {{ error.message }}
+                                            {% if not loop.last %}<br>{% endif %}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
 
                             <div class="sign__input-wrapper">
-                                <h5>{{ form_label(form.email) }}</h5>
+                                <h5>{{ form.email.vars.label }}</h5>
                                 <div class="sign__input">
                                     <i class="fal fa-envelope"></i>
-                                    {{ form_widget(form.email, {'attr': {'placeholder': 'Email address', 'class': form_errors(form.email) ? 'form-control input-error' : 'form-control'}}) }}
-                                    {% if form_errors(form.email) %}
+                                    {{ form_widget(form.email, {
+                                        'attr': {
+                                            'placeholder': 'Email address',
+                                            'class': form.email.vars.errors|length > 0 ? 'form-control input-error' : 'form-control'
+                                        }
+                                    }) }}
+                                    {% if form.email.vars.errors|length > 0 %}
                                         <span class="input-error-icon">
                                             <i class="fas fa-exclamation-circle"></i>
                                         </span>
                                     {% endif %}
                                 </div>
-                                {% if form_errors(form.email) %}
-                                    <div class="form-error-message">{{ form_errors(form.email) }}</div>
+                                {% if form.email.vars.errors|length > 0 %}
+                                    <div class="form-error-message">
+                                        {% for error in form.email.vars.errors %}
+                                            {{ error.message }}
+                                            {% if not loop.last %}<br>{% endif %}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
 
                             <div class="sign__input-wrapper">
-                                <h5>{{ form_label(form.password) }}</h5>
+                                <h5>{{ form.password.vars.label }}</h5>
                                 <div class="sign__input password-field">
                                     <i class="fal fa-lock"></i>
-                                    {{ form_widget(form.password, {'attr': {'placeholder': 'Password', 'class': form_errors(form.password) ? 'form-control input-error' : 'form-control'}}) }}
+                                    {{ form_widget(form.password, {
+                                        'attr': {
+                                            'placeholder': 'Password',
+                                            'class': form.password.vars.errors|length > 0 ? 'form-control input-error' : 'form-control'
+                                        }
+                                    }) }}
                                     <span class="toggle-password">
                                         <i class="fa fa-eye"></i>
                                     </span>
                                 </div>
-                                {% if form_errors(form.password) %}
-                                    <div class="form-error-message">{{ form_errors(form.password) }}</div>
+                                {% if form.password.vars.errors|length > 0 %}
+                                    <div class="form-error-message">
+                                        {% for error in form.password.vars.errors %}
+                                            {{ error.message }}
+                                            {% if not loop.last %}<br>{% endif %}
+                                        {% endfor %}
+                                    </div>
                                 {% else %}
                                     <div class="password-requirements">
                                         Password must include uppercase, lowercase, numbers, and special characters
@@ -183,15 +230,25 @@
                                 <h5>{{ 'Phone Number'|trans }}</h5>
                                 <div class="sign__input">
                                     <i class="fal fa-phone"></i>
-                                    {{ form_widget(form.tel, {'attr': {'placeholder': 'Phone number', 'class': form_errors(form.tel) ? 'form-control input-error' : 'form-control'}}) }}
-                                    {% if form_errors(form.tel) %}
+                                    {{ form_widget(form.tel, {
+                                        'attr': {
+                                            'placeholder': 'Phone number',
+                                            'class': form.tel.vars.errors|length > 0 ? 'form-control input-error' : 'form-control'
+                                        }
+                                    }) }}
+                                    {% if form.tel.vars.errors|length > 0 %}
                                         <span class="input-error-icon">
                                             <i class="fas fa-exclamation-circle"></i>
                                         </span>
                                     {% endif %}
                                 </div>
-                                {% if form_errors(form.tel) %}
-                                    <div class="form-error-message">{{ form_errors(form.tel) }}</div>
+                                {% if form.tel.vars.errors|length > 0 %}
+                                    <div class="form-error-message">
+                                        {% for error in form.tel.vars.errors %}
+                                            {{ error.message }}
+                                            {% if not loop.last %}<br>{% endif %}
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
 
@@ -203,6 +260,9 @@
                                     </label>
                                 </div>
                             </div>
+
+                            {# Render any hidden fields #}
+                            {{ form_rest(form) }}
 
                             <button class="tp-btn w-100" type="submit">Sign Up</button>
                             <div class="sign__new text-center mt-20">
@@ -217,39 +277,89 @@
         </div>
     </section>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Find the password field directly using its class/structure
-        const passwordField = document.querySelector('.password-field input[type="password"]');
-        const toggleButton = document.querySelector('.toggle-password');
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Debug field detection to confirm field names
+    console.log("First name field (nom):", document.querySelector('input[name="user[nom]"]'));
+    console.log("Last name field (prenom):", document.querySelector('input[name="user[prenom]"]'));
+    
+    // Form field identification - CORRECTLY identify which is which
+    // IMPORTANT: In this implementation:
+    // The field named 'user[nom]' is used for LAST NAME 
+    // The field named 'user[prenom]' is used for FIRST NAME
+    // This is opposite of what the French names suggest but matches your implementation
+    const lastNameInput = document.querySelector('input[name="user[nom]"]'); // nom = last name field
+    const firstNameInput = document.querySelector('input[name="user[prenom]"]'); // prenom = first name field
+    const signupForm = document.querySelector('.signup-form');
+    
+    if (firstNameInput && lastNameInput && signupForm) {
+        // Add input validation with the CORRECT labels
+        firstNameInput.addEventListener('input', function() {
+            validateName(this, 'First name');
+        });
         
-        if (passwordField && toggleButton) {
-            toggleButton.addEventListener('click', function() {
-                // Toggle the password field visibility
-                if (passwordField.type === 'password') {
-                    passwordField.type = 'text';
-                    toggleButton.querySelector('i').classList.remove('fa-eye');
-                    toggleButton.querySelector('i').classList.add('fa-eye-slash');
-                } else {
-                    passwordField.type = 'password';
-                    toggleButton.querySelector('i').classList.remove('fa-eye-slash');
-                    toggleButton.querySelector('i').classList.add('fa-eye');
-                }
-            });
+        lastNameInput.addEventListener('input', function() {
+            validateName(this, 'Last name');
+        });
+        
+        // Form submission validation
+        signupForm.addEventListener('submit', function(e) {
+            const isFirstNameValid = validateName(firstNameInput, 'First name');
+            const isLastNameValid = validateName(lastNameInput, 'Last name');
+            
+            if (!isFirstNameValid || !isLastNameValid) {
+                e.preventDefault();
+            }
+        });
+        
+        // Validation function
+        function validateName(input, fieldName) {
+            const inputWrapper = input.closest('.sign__input-wrapper');
+            let errorElement = inputWrapper.querySelector('.form-error-message');
+            
+            // Create error element if it doesn't exist
+            if (!errorElement) {
+                errorElement = document.createElement('div');
+                errorElement.className = 'form-error-message';
+                inputWrapper.appendChild(errorElement);
+            }
+            
+            const value = input.value.trim();
+            
+            // Reset existing errors
+            errorElement.innerHTML = '';
+            input.classList.remove('input-error');
+            
+            let isValid = true;
+            let errors = [];
+            
+            // Check if empty
+            if (!value) {
+                errors.push(fieldName + ' cannot be empty');
+                isValid = false;
+            } 
+            // Check if contains numbers
+            else if (/\d/.test(value)) {
+                errors.push(fieldName + ' cannot contain numbers');
+                isValid = false;
+            } 
+            // Check for valid characters
+            else if (!/^[a-zA-ZÀ-ÿ\s\'-]+$/u.test(value)) {
+                errors.push(fieldName + ' can only contain letters, spaces, hyphens and apostrophes');
+                isValid = false;
+            }
+            
+            // Update UI based on validation
+            if (!isValid) {
+                // Display each error on a new line
+                errorElement.innerHTML = errors.join('<br>');
+                input.classList.add('input-error');
+            }
+            
+            return isValid;
         }
-        
-        // Required checkbox validation
-        const form = document.querySelector('.signup-form');
-        const agreeCheckbox = document.getElementById('m-agree');
-        
-        if (form && agreeCheckbox) {
-            form.addEventListener('submit', function(event) {
-                if (!agreeCheckbox.checked) {
-                    event.preventDefault();
-                    alert('You must agree to the Terms & Conditions to proceed.');
-                }
-            });
-        }
-    });
-    </script>
+    }
+});
+</script>
+    {% include 'user/terms-modal.html.twig' %}
 {% endblock %}

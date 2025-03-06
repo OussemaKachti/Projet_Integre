@@ -101,4 +101,8 @@ services:
         tags:
             - { name: doctrine.orm.entity_listener, event: postPersist }
   App\Service\MissionCompletionChecker:
-        
+  App\Validator\Constraints\ValidEmailValidator:
+        arguments:
+            $logger: '@logger'
+        tags:
+            - { name: validator.constraint_validator }
