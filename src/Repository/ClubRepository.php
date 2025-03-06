@@ -7,6 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
+use App\DTO\LeaderboardEntry;
 
 
 
@@ -92,4 +93,21 @@ public function findById(int $id): ?Club
             ->getQuery()
             ->getOneOrNullResult();
     }
+    
+    public function getLeaderboardData(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        
+        $sql = '
+            SELECT c.nom_c as club, c.points 
+            FROM club c
+            ORDER BY c.points DESC, c.nom_c ASC
+        ';
+        
+        $stmt = $conn->prepare($sql);
+        $result = $stmt->executeQuery();
+        
+        return $result->fetchAllAssociative();
+    }
+    
 }

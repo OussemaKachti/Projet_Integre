@@ -3,6 +3,8 @@
 
 
 {% block body %}
+<div style="display: none;">
+</div>
     <!-- Seasons Section -->
     <section class="season__area pt-115 season__bg">
         <div class="container">
@@ -77,15 +79,15 @@
                                     <th>Points</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                {% for leader in leaderboard %}
-                                    <tr>
-                                        <td>{{ loop.index }}</td>
-                                        <td>{{ leader.club }}</td>
-                                        <td>{{ leader.points }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
+                           <tbody>
+    {% for leader in leaderboard %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ leader.club }}</td> {# Access the nomC property of the Club entity #}
+            <td>{{ leader.points }}</td>
+        </tr>
+    {% endfor %}
+</tbody>
                         </table>
                     </div>
                 </div>

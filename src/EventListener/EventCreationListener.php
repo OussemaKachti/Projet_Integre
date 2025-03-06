@@ -1,59 +1,107 @@
 <?php
+// src/EventListener/EventCreationListener.php
 
 namespace App\EventListener;
-
+use Doctrine\ORM\Event\PostPersist;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
-use Symfony\Component\HttpKernel\Event\TerminateEvent;
-use Symfony\Component\HttpKernel\KernelEvents;
+use Doctrine\ORM\Event\LifecycleEventArgs;
 use App\Entity\Evenement;
 use App\Repository\MissionProgressRepository;
+use App\Repository\CompetitionRepository;
 use App\Service\MissionCompletionChecker;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Enum\GoalTypeEnum;
+use Psr\Log\LoggerInterface;
 
+#[AsEventListener(event: 'postPersist', method: 'postPersist')]
 class EventCreationListener
 {
     private MissionProgressRepository $progressRepository;
-    private MissionCompletionChecker $missionChecker;
+    private CompetitionRepository $competitionRepository;
     private EntityManagerInterface $entityManager;
+    private MissionCompletionChecker $completionChecker;
+    private LoggerInterface $logger;
 
     public function __construct(
         MissionProgressRepository $progressRepository,
-        MissionCompletionChecker $missionChecker,
-        EntityManagerInterface $entityManager
+        CompetitionRepository $competitionRepository,
+        EntityManagerInterface $entityManager,
+        MissionCompletionChecker $completionChecker,
+        LoggerInterface $logger
     ) {
         $this->progressRepository = $progressRepository;
-        $this->missionChecker = $missionChecker;
+        $this->competitionRepository = $competitionRepository;
         $this->entityManager = $entityManager;
+        $this->completionChecker = $completionChecker;
+        $this->logger = $logger;
     }
 
-    public function onKernelTerminate(TerminateEvent $event)
+    public function postPersist(Evenement $event): void
     {
-        // Get the newly created event from the request
-        $request = $event->getRequest();
-        $eventEntity = $request->attributes->get('event');
+        
+        // Log the event for debugging
+        $this->logger->info('PostPersist event triggered for class: ' . get_class($event));
 
-        if (!$eventEntity instanceof Event) {
-            return; // Not an event, ignore
+        // Only proceed if the entity is an Evenement
+        if (!$event instanceof Evenement) {
+            return;
         }
 
-        $club = $eventEntity->getClub(); // Assuming the Event entity has a club relation
+        $this->logger->info('Processing event: ' . $event->getNomEvent());
+        
+        $club = $event->getClub();
 
-        // Get the active mission progress for this club
-        $progress = $this->progressRepository->findOneBy([
-            'club' => $club,
-            'isCompleted' => false
+        if (!$club) {
+            $this->logger->warning('Event has no club associated');
+            return; // No club, nothing to update
+        }
+
+        // Find all activated competitions for this club with EVENT_COUNT goal type
+        $competitions = $this->competitionRepository->findBy([
+            'status' => 'activated',
+            'goalType' => GoalTypeEnum::EVENT_COUNT,
         ]);
 
-        if ($progress) {
-            // Increase progress by 1
-            $progress->setProgress($progress->getProgress() + 1);
+        $this->logger->info('Found ' . count($competitions) . ' active competitions for event count');
 
-            // Persist update
-            $this->entityManager->persist($progress);
+        $updated = false;
+        foreach ($competitions as $competition) {
+            // Find the MissionProgress for this club and competition
+            $progress = $this->progressRepository->findOneBy([
+                'club' => $club,
+                'competition' => $competition,
+                'isCompleted' => false,
+            ]);
+
+            if ($progress) {
+                // Increment progress
+                $currentProgress = $progress->getProgress();
+                $progress->setProgress($currentProgress + 1);
+                $this->entityManager->persist($progress);
+                $updated = true;
+                
+                $this->logger->info(sprintf(
+                    'Updated progress for club %s in competition %s: %d/%d',
+                    $club->getNomC(),
+                    $competition->getNomComp(),
+                    $progress->getProgress(),
+                    $competition->getGoal()
+                ));
+                
+                // Use the MissionCompletionChecker to check if the mission is completed
+                $this->completionChecker->checkSingleProgress($progress);
+            } else {
+                $this->logger->warning(sprintf(
+                    'No progress entry found for club %s in competition %s',
+                    $club->getNomC(),
+                    $competition->getNomComp()
+                ));
+            }
+        }
+
+        // Flush if we made progress updates
+        if ($updated) {
             $this->entityManager->flush();
-
-            // Check if mission is completed
-            $this->missionChecker->checkAndUpdateMissionStatus();
         }
     }
 }

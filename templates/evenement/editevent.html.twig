@@ -4,7 +4,6 @@
 
 {% block body %}
 <main>
-
     <!-- breadcrumb area start -->
     <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="{{ asset('front_assets/img/breadcrumb/event.png') }}">
         <div class="container">
@@ -13,7 +12,6 @@
                     <div class="breadcrumb__content text-center p-relative z-index-1">
                         <h3 class="breadcrumb__title">Event</h3>
                         <div class="breadcrumb__list">
-                          
                             <span class="dvdr"><i class="fa-regular fa-angle-right"></i></span>
                             <span>Edit Event</span>
                         </div>
@@ -38,106 +36,144 @@
 
             <div class="row">
                 <div class="col-xxl-12">
-
-                    <!-- Afficher les messages flash -->
+                    <!-- Flash messages display -->
                     {% for label, messages in app.flashes %}
-                        <div class="alert alert-{{ label }}">
+                        <div class="alert alert-{{ label }} mb-4">
                             {% for message in messages %}
-                                <p>{{ message }}</p>
+                                <p class="mb-0">{{ message }}</p>
                             {% endfor %}
                         </div>
                     {% endfor %}
 
-                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
-                    <div class="event__form white-bg p-30 transition-3">
-
-                        <div class="row">
+                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                    <div class="event__form white-bg p-4 rounded shadow-sm transition-3">
+                        <div class="row mb-4">
                             <!-- Event Name -->
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    {{ form_label(form.nomEvent) }}
-                                    {{ form_widget(form.nomEvent, {'attr': {'class': 'form-control'}}) }}
-                                    {{ form_errors(form.nomEvent) }}
+                            <div class="col-md-12 mb-4">
+                                <div class="form-group">
+                                    {{ form_label(form.nomEvent, 'Event Name', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                    {{ form_widget(form.nomEvent, {'attr': {'class': 'form-control', 'placeholder': 'Enter event name'}}) }}
+                                    <div class="text-danger mt-1">
+                                        {{ form_errors(form.nomEvent) }}
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Event Description -->
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    {{ form_label(form.descEvent) }}
-                                    {{ form_widget(form.descEvent, {'attr': {'class': 'form-control'}}) }}
-                                    {{ form_errors(form.descEvent) }}
+                            <div class="col-md-12 mb-4">
+                                <div class="form-group">
+                                    {{ form_label(form.descEvent, 'Event Description', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                    {{ form_widget(form.descEvent, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Describe your event'}}) }}
+                                    <div class="text-danger mt-1">
+                                        {{ form_errors(form.descEvent) }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
+                        <div class="row mb-4">
                             <!-- Event Location -->
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    {{ form_label(form.lieux) }}
-                                    {{ form_widget(form.lieux, {'attr': {'class': 'form-control'}}) }}
-                                    {{ form_errors(form.lieux) }}
+                            <div class="col-md-6 mb-4">
+                                <div class="form-group">
+                                    {{ form_label(form.lieux, 'Event Location', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                    {{ form_widget(form.lieux, {'attr': {'class': 'form-control', 'placeholder': 'Where will the event take place?'}}) }}
+                                    <div class="text-danger mt-1">
+                                        {{ form_errors(form.lieux) }}
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Event Type -->
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    {{ form_label(form.type) }}
-                                    {{ form_widget(form.type, {'attr': {'class': 'form-control'}}) }}
-                                    {{ form_errors(form.type) }}
+                            <div class="col-md-6 mb-4">
+                                <div class="form-group">
+                                    {{ form_label(form.type, 'Event Type', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                    {{ form_widget(form.type, {'attr': {'class': 'form-control form-select'}}) }}
+                                    <div class="text-danger mt-1">
+                                        {{ form_errors(form.type) }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
+                        <div class="row mb-4">
                             <!-- Event Start Date -->
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    {{ form_label(form.startDate) }}
+                            <div class="col-md-6 mb-4">
+                                <div class="form-group">
+                                    {{ form_label(form.startDate, 'Start Date', {'label_attr': {'class': 'form-label fw-bold'}}) }}
                                     {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
-                                    {{ form_errors(form.startDate) }}
+                                    <div class="text-danger mt-1">
+                                        {{ form_errors(form.startDate) }}
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Event End Date -->
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    {{ form_label(form.endDate) }}
+                            <div class="col-md-6 mb-4">
+                                <div class="form-group">
+                                    {{ form_label(form.endDate, 'End Date', {'label_attr': {'class': 'form-label fw-bold'}}) }}
                                     {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
-                                    {{ form_errors(form.endDate) }}
+                                    <div class="text-danger mt-1">
+                                        {{ form_errors(form.endDate) }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Event Image (Image Description) -->
-                        <div class="col-md-12">
-                            <div class="form-group mb-3">
-                                {{ form_label(form.imageDescription) }}
-                                {{ form_widget(form.imageDescription, {'attr': {'class': 'form-control'}}) }}
-                                {{ form_errors(form.imageDescription) }}
+                        <div class="row mb-4">
+                            <!-- Event Image -->
+                            <div class="col-md-12 mb-4">
+                                <div class="form-group">
+                                    {{ form_label(form.imageDescription, 'Event Image', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                    {{ form_widget(form.imageDescription, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger mt-1">
+                                        {{ form_errors(form.imageDescription) }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                         
-                        <div class="form-group mb-3">
-                            {{ form_label(form.club) }} 
-                            {{ form_widget(form.club, {'attr': {'class': 'form-control'}}) }} 
-                            {{ form_errors(form.club) }}
-                        </div>
 
-                        <div class="form-group mb-3">
-                            {{ form_label(form.categorie) }}
-                            {{ form_widget(form.categorie, {'attr': {'class': 'form-control'}}) }} 
-                            {{ form_errors(form.categorie) }} 
-                            <a href="{{ path('app_categorie_index') }}" class="btn btn-success">Ajouter une autre catégorie</a>
+                        <div class="row mb-4">
+                            <!-- Organizing Club -->
+                            <div class="col-md-6 mb-4">
+                                <div class="form-group">
+                                    {{ form_label(form.club, 'Organizing Club', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                    {{ form_widget(form.club, {'attr': {'class': 'form-control form-select'}}) }}
+                                    <div class="text-danger mt-1">
+                                        {{ form_errors(form.club) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Event Category -->
+                            <div class="col-md-6 mb-4">
+                                <div class="form-group">
+                                    {{ form_label(form.categorie, 'Category', {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                    {{ form_widget(form.categorie, {'attr': {'class': 'form-control form-select'}}) }}
+                                    <div class="text-danger mt-1">
+                                        {{ form_errors(form.categorie) }}
+                                    </div>
+                                    <div class="mt-2">
+                                        <a href="{{ path('app_categorie_index') }}" class="btn btn-outline-success btn-sm">
+                                            <i class="fa fa-plus me-1"></i> Add New Category
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Submit Button -->
-                        <div class="form-group mb-3">
-                            <button type="submit" class="tp-btn-5 tp-btn-7 w-100">Update Event</button>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ path('event') }}" class="btn btn-outline-secondary px-4">
+                                        <i class="fa fa-arrow-left me-1"></i> Back to List
+                                    </a>
+                                   <button type="submit" class="btn btn-success px-5 py-2 ">
+    <i class="fa fa-save me-1"></i> Update Event
+</button>
+                                </div>
+                            </div>
                         </div>
-
                     </div>
                     {{ form_end(form) }}
                 </div>
@@ -145,6 +181,38 @@
         </div>
     </section>
     <!-- Event Editing Area End -->
-
 </main>
+
+{% block stylesheets %}
+<style>
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .text-danger {
+        font-size: 0.875rem;
+    }
+    
+    .event__form {
+        background-color: #fff;
+        border-radius: 8px;
+    }
+    
+    .shadow-sm {
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;
+    }
+    
+    /* Improve spacing for validation errors */
+    .form-group {
+        position: relative;
+    }
+</style>
+{% endblock %}
+
 {% endblock %}

@@ -87,18 +87,19 @@ class SondageController extends AbstractController
             // Vérifier si le sondage existe
             $sondage = $em->getRepository(Sondage::class)->find($id);
             
-            // Si le sondage n'est pas trouvé, renvoyer une erreur 404
             if (!$sondage) {
                 return new JsonResponse(['error' => 'Sondage not found'], Response::HTTP_NOT_FOUND);
             }
-    
-            
-           // $user = $em->getRepository(User::class)->find(1);  // Utilisateur statique pour tester
-           $user = $security->getUser();
 
-           
-    
-            // Supprimer manuellement les réponses liées à ce sondage
+            $user = $security->getUser();
+
+            // Supprimer d'abord les commentaires liés au sondage
+            $commentaires = $em->getRepository(Commentaire::class)->findBy(['sondage' => $sondage]);
+            foreach ($commentaires as $commentaire) {
+                $em->remove($commentaire);
+            }
+
+            // Supprimer les réponses liées au sondage
             $reponses = $em->getRepository(Reponse::class)->findBy(['sondage' => $sondage]);
             foreach ($reponses as $reponse) {
                 $em->remove($reponse);
@@ -107,13 +108,11 @@ class SondageController extends AbstractController
             // Supprimer le sondage
             $em->remove($sondage);
             $em->flush();
-    
-            // Retourner une réponse simple après la suppression
+
             return new JsonResponse(['message' => 'Survey successfully deleted'], Response::HTTP_OK);
         } catch (\Exception $e) {
             return new JsonResponse([
-                'error' => 'An error occurred: ' . $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'error' => 'An error occurred: ' . $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -204,15 +203,15 @@ class SondageController extends AbstractController
 public function getColorByPercentage(float $percentage): string
 {
     if ($percentage <= 20) {
-        return '#e74c3c'; // Rouge
+        return '#FFC0CB'; // Pink Light - faible participation
     } elseif ($percentage <= 40) {
-        return '#4682B4	'; // blue
+        return '#98FB98'; // Pale Green - participation modérée basse
     } elseif ($percentage <= 60) {
-        return '#f1c40f'; // Jaune
+        return '#87CEEB'; // Sky Blue - participation moyenne
     } elseif ($percentage <= 80) {
-        return '#2ecc71'; // Vert
+        return '#32CD32'; // Lime Green - bonne participation
     } else {
-        return '#3498db'; // Bleu
+        return '#228B22'; // Forest Green - excellente participation
     }
 }
 
@@ -628,7 +627,7 @@ public function create(Request $request, EntityManagerInterface $em): Response
                      $logger->info('Tentative d\'envoi d\'email à: ' . $member->getEmail());
                      
                      $email = (new Email())
-                         ->from("oussemakachti17@gmail.com")  
+                         ->from("admin@gmail.com")  
                          ->to($member->getEmail())            
                          ->subject('Nouveau sondage dans votre club: ' . $club->getNomC())
                          ->html($this->renderView(

@@ -2,9 +2,51 @@
 
 {% block body %}
     <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-primary">Clubs requests</h2>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary mb-0">Clubs Requests</h2>
+
+        <!-- Barre de recherche stylisée -->
+        <form action="{{ path('app_club_index2') }}" method="get" class="search-form d-flex align-items-center">
+            <div class="search-container position-relative">
+                <span class="search-icon position-absolute"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" name="query" class="form-control search-input" 
+       placeholder=" 🔍Find a club..." 
+       value="{{ keyword }}">
+            </div>
+            <button type="submit" class="btn btn-primary ms-2">Search</button>
+        </form>
+    </div>
+</div>
+
+<!-- 🎨 Custom CSS pour embellir la barre de recherche -->
+<style>
+    .search-container {
+        position: relative;
+        width: 280px;
+    }
+
+    .search-input {
+        padding-left: 40px; /* Espace pour l'icône */
+        border-radius: 25px;
+        border: 1px solid #ccc;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .search-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
+        outline: none;
+    }
+
+    .search-icon {
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        color: #666;
+    }
+</style>
+
 
         <div class="table-responsive">
             <table class="table table-striped table-bordered shadow-sm">

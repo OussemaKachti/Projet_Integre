@@ -7,7 +7,7 @@ use App\Repository\MissionProgressRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\EntityManagerInterface;
-
+use App\Enum\GoalTypeEnum;
 #[ORM\Entity(repositoryClass: MissionProgressRepository::class)]
 class MissionProgress
 {
@@ -25,8 +25,6 @@ class MissionProgress
     private ?Competition $competition = null;
 
     #[ORM\Column(type: Types::INTEGER)]
-    #[Assert\NotNull(message: "Progress must be set.")]
-    #[Assert\PositiveOrZero(message: "Progress must be zero or a positive number.")]
     private int $progress = 0;
 
     #[ORM\Column(type: Types::BOOLEAN)]
@@ -69,10 +67,9 @@ class MissionProgress
         return $this->progress;
     }
 
-    public function setProgress(int $progress, EntityManagerInterface $entityManager): static
+    public function setProgress(int $progress): static
     {
         $this->progress = $progress;
-        $this->checkCompletion($entityManager);
         return $this;
     }
 
@@ -123,4 +120,19 @@ class MissionProgress
             $entityManager->flush();
         }
     }
+    public function isGoalReached(): bool
+{
+    if (!$this->competition) {
+        return false;
+    }
+
+    switch ($this->competition->getGoalType()) {
+        case GoalTypeEnum::EVENT_COUNT:
+        case GoalTypeEnum::EVENT_LIKES:
+        case GoalTypeEnum::MEMBER_COUNT:
+            return $this->progress >= $this->competition->getGoal();
+        default:
+            return false;
+    }
+}
 }

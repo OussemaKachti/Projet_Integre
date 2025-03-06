@@ -12,10 +12,14 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+
 class EvenementType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        // Récupérer le club du président depuis les options
+        $presidentClub = $options['president_club'];
+        
         $builder
             ->add('nomEvent')
             ->add('descEvent')
@@ -29,7 +33,7 @@ class EvenementType extends AbstractType
                 'multiple' => false,
             ])
             ->add('imageDescription', FileType::class, [
-                'label' => 'Image de la description (facultatif)',
+                'label' => 'Description image (optional)',
                 'required' => false,
                 'mapped' => false,
                 'attr' => ['accept' => 'image/*'],
@@ -52,14 +56,16 @@ class EvenementType extends AbstractType
             ->add('club', EntityType::class, [
                 'class' => Club::class,
                 'choice_label' => 'nomC',
-                'label' => 'Sélectionner un club',
-                'placeholder' => 'Choisir un club',
+                'label' => 'Club organisateur',
+                'data' => $presidentClub, // Maintenant $presidentClub est défini
+                'disabled' => true,
+                'attr' => ['class' => 'form-control']
             ])
             ->add('categorie', EntityType::class, [
                 'class' => Categorie::class,
                 'choice_label' => 'nomCat',
-                'label' => 'Sélectionner une catégorie',
-                'placeholder' => 'Choisir une cat',
+                'label' => 'Select a category',
+                'placeholder' => 'Choose a cat',
             ])
         ;
     }
@@ -68,6 +74,7 @@ class EvenementType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Evenement::class,
+            'president_club' => null, // Option par défaut à null
         ]);
     }
 }

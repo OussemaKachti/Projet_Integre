@@ -27,7 +27,13 @@
 			<!-- partial:../../partials/_navbar.html -->
 			<nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
 				<div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
-					<a class="navbar-brand brand-logo me-5" href="../../pages/tables/userAdmin.html"><img src=" {{asset('../../back_assets/images/log.png')}}" class="me-2" alt="logo"/></a>
+					<a class="navbar-brand brand-logo me-5" href="../../pages/tables/userAdmin.html">
+						<img src="{{asset('../../back_assets/images/log.png')}}" 
+							 class="me-2" 
+							 alt="logo"
+							 style="width: 150px; height: auto; object-fit: contain; max-height: 50px;"
+						/>
+					</a>
 				</div>
 				<div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
 					<button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
@@ -50,7 +56,23 @@
 							<a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" id="profileDropdown">
 								{{ app.user.nom}}
 								{{ app.user.prenom }}
-								<img src=" {{asset('../../back_assets/images/faces/user.png')}}" alt="profile"/>
+								<img src="{{asset('../../back_assets/images/faces/user.png')}}" 
+									 alt="profile"
+									 style="
+										width: 35px;
+										height: 35px;
+										border-radius: 50%;
+										object-fit: cover;
+										border: 2px solid #4B49AC;
+										padding: 2px;
+										background-color: white;
+										box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+										transition: all 0.3s ease;
+										cursor: pointer;
+									 "
+									 onmouseover="this.style.transform='scale(1.1)';this.style.borderColor='#6c63ff'"
+									 onmouseout="this.style.transform='scale(1)';this.style.borderColor='#4B49AC'"
+								/>
 							</a>
 							<div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
 								<a class="dropdown-item" href="{{path('app_admin_profile')}}">
@@ -73,271 +95,113 @@
 			<div
 				class="container-fluid page-body-wrapper">
 				<!-- partial:../../partials/_sidebar.html -->
-				<nav class="sidebar sidebar-offcanvas" id="sidebar" style="width: 260px !important; min-width: 260px !important;">
-					<ul
-						class="nav">
-						{# <li class="nav-item">
-																																																																																																													<a class="nav-link" href={{ path('app_admin_dashboard') }}>
-																																																																																																														<i class="icon-columns menu-icon"></i>
-																																																																																																														<span class="menu-title">User</span>
-																																																																																																													</a>
-																																																																																																												</li> #}
-						<li class="nav-item">
-							<a class="nav-link" href={{ path('app_admin_dashboard') }}>
-								<i class="icon-head menu-icon"></i>
-								<span class="menu-title">User</span>
-							</a>
+				<nav class="modern-sidebar">
+					<div class="sidebar-header">
+						<img src="{{ asset('back_assets/images/log.png') }}" 
+							 alt="Logo" 
+							 class="sidebar-logo"
+							 style="width: 35px; height: 35px; object-fit: contain; margin-right: 10px; filter: brightness(1.1) contrast(1.1);"
+						/>
+						<span class="sidebar-title">Admin Panel</span>
+					</div>
 
-						</li>
-						 <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic" >
-              
-                <i class="icon-layout menu-icon"></i>
-                <span class="menu-title">Clubs</span>
-                <i class="menu-arrow"></i>
-              </a>
-              <div class="collapse" id="ui-basic">
-    <ul class="nav flex-column sub-menu">
-        <li class="nav-item">
-            <a class="nav-link" href="{{ path('app_club_index2') }}">Club</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{{ path('app_participation_membre_index') }}">Member List</a>
-        </li>
-    </ul>
-</div>
+					<div
+						class="sidebar-menu">
+						<!-- Users Section -->
+						<a href="{{ path('app_admin_dashboard') }}" class="menu-item {% if app.request.get('_route') == 'app_admin_dashboard' %}active{% endif %}">
+							<i class="mdi mdi-account-group"></i>
+							<span>Users Management</span>
+						</a>
 
-            </li>
-							<li class="nav-item">
-							<a class="nav-link" data-bs-toggle="collapse" href="#Events" aria-expanded="false" aria-controls="Events">
-
-								<i class="icon-layout menu-icon"></i>
-								<span class="menu-title">Event</span>
-								<i class="menu-arrow"></i>
-
-              
-              </a>
-             <div class="collapse" id="Events">
-  <ul class="nav flex-column sub-menu">
-    <li class="nav-item">
-      <a class="nav-link" href="{{ path('admin_page') }}">Events</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{{ path('admincat_page') }}">Category</a>
-    </li>
-  </ul>
-</div>
-
-</li>
-
-
-
-
-						<li class="nav-item">
-							<a class="nav-link" data-bs-toggle="collapse" href="#tables" aria-expanded="false" aria-controls="tables">
-								<i class="icon-grid-2 menu-icon"></i>
-								<span class="menu-title">Products</span>
-								<i class="menu-arrow"></i>
-							</a>
-							<div class="collapse" id="tables">
-								<ul class="nav flex-column sub-menu">
-									<li class="nav-item">
-										<a class="nav-link" href="../../pages/tables/products_admin.html">Products</a>
-									</li>
-									<li class="nav-item">
-										<a class="nav-link" href="../../pages/tables/commands_admin.html">Orders</a>
-									</li>
-
-								</ul>
+						<!-- Clubs Section -->
+						<div class="menu-section">
+							<div class="menu-item has-submenu" onclick="toggleSubmenu(this)">
+								<div class="menu-title">
+									<i class="mdi mdi-shield"></i>
+									<span>Clubs Management</span>
+								</div>
+								<i class="mdi mdi-chevron-right menu-arrow"></i>
 							</div>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" data-bs-toggle="collapse" href="#icons" aria-expanded="false" aria-controls="icons">
-								<i class="icon-contract menu-icon"></i>
-								<span class="menu-title">Competitions</span>
-								<i class="menu-arrow"></i>
-							</a>
-							<div class="collapse" id="icons">
-								<ul class="nav flex-column sub-menu">
-									<li class="nav-item">
-										<a class="nav-link" href="{{ path('app_competition_index') }}">Competitions</a>
-									</li>
-									<li class="nav-item">
-										<a class="nav-link" href="{{ path('app_saison_index') }}">Seasons</a>
-									</li>
-								</ul>
+							<div class="submenu">
+								<a href="{{ path('app_club_index2') }}" class="submenu-item {% if app.request.get('_route') == 'app_club_index2' %}active{% endif %}">
+									<i class="mdi mdi-shield-outline"></i>
+									<span>Clubs List</span>
+								</a>
+								<a href="{{ path('app_participation_membre_index') }}" class="submenu-item {% if app.request.get('_route') == 'app_participation_membre_index' %}active{% endif %}">
+									<i class="mdi mdi-account-multiple"></i>
+									<span>Members List</span>
+								</a>
 							</div>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
-								<i class="icon-head menu-icon"></i>
-								<span class="menu-title">Polls</span>
-								<i class="menu-arrow"></i>
-							</a>
-							<div class="collapse" id="auth">
-								<ul class="nav flex-column sub-menu">
-									<li class="nav-item">
-										<a class="nav-link" href="{{ path('app_sondage_index2') }}">
-											Polls
-										</a>
-									</li>
-									<li class="nav-item">
-										<a class="nav-link" href="{{ path('app_commentaire_index') }}">
-											Comments
-										</a>
-									</li>
+						</div>
 
-								</ul>
+						<!-- Events Section -->
+						<div class="menu-section">
+							<div class="menu-item has-submenu" onclick="toggleSubmenu(this)">
+								<div class="menu-title">
+									<i class="mdi mdi-calendar"></i>
+									<span>Events Management</span>
+								</div>
+								<i class="mdi mdi-chevron-right menu-arrow"></i>
 							</div>
-						</li>
+							<div class="submenu">
+								<a href="{{ path('admin_page') }}" class="submenu-item {% if app.request.get('_route') == 'admin_page' %}active{% endif %}">
+									<i class="mdi mdi-calendar-text"></i>
+									<span>Events List</span>
+								</a>
+								<a href="{{ path('admincat_page') }}" class="submenu-item {% if app.request.get('_route') == 'admincat_page' %}active{% endif %}">
+									<i class="mdi mdi-format-list-bulleted"></i>
+									<span>Categories</span>
+								</a>
+							</div>
+						</div>
 
-					</ul>
-					<script>
-						document.addEventListener('DOMContentLoaded', function () { // First, check if we're on the admin page
-if (window.location.pathname.includes('/admin')) { // Try to find the search input - adjust this selector to match your actual search input
-const searchInput = document.getElementById('navbar-search-input') || document.querySelector('input[type="search"]') || document.querySelector('.search-input');
+						<!-- Products Section -->
+						<div class="menu-section">
+							<div class="menu-item has-submenu" onclick="toggleSubmenu(this)">
+								<div class="menu-title">
+									<i class="mdi mdi-shopping"></i>
+									<span>Products Management</span>
+								</div>
+								<i class="mdi mdi-chevron-right menu-arrow"></i>
+							</div>
+							<div class="submenu">
+								<a href="{{ path('produit_admin') }}" class="submenu-item">
+									<i class="mdi mdi-package-variant"></i>
+									<span>Products List</span>
+								</a>
+								<a href="{{ path('admin_commandes') }}" class="submenu-item">
+									<i class="mdi mdi-cart"></i>
+									<span>Orders</span>
+								</a>
+							</div>
+						</div>
 
-const userTableBody = document.getElementById('user-table-body');
-
-// Debug: Check if elements are found
-console.log('Search input found:', searchInput);
-console.log('Table body found:', userTableBody);
-
-if (searchInput && userTableBody) { // Set initial value from URL if exists
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.has('q')) {
-searchInput.value = urlParams.get('q');
-}
-
-let timeoutId;
-
-searchInput.addEventListener('input', function () {
-clearTimeout(timeoutId);
-
-// Add a small delay to prevent sending too many requests
-timeoutId = setTimeout(function () {
-const query = searchInput.value.trim();
-console.log('Searching for:', query);
-
-// Show loading indicator if available
-const searchIcon = document.querySelector('#navbar-search-icon i');
-if (searchIcon) {
-searchIcon.className = 'mdi mdi-refresh mdi-spin';
-}
-
-// Fetch search results with or without a query
-fetchSearchResults(query);
-}, 300);
-});
-
-console.log('Search event listener added');
-} else {
-console.error('Could not find search input or table body');
-// If the navbar search input doesn't exist, let's create a search form
-if (! searchInput && userTableBody) {
-createSearchForm();
-}
-}
-}
-
-function createSearchForm() {
-const tableContainer = document.querySelector('.table-responsive');
-if (! tableContainer) 
-return;
-
-
-
-// Create a search form above the table
-const searchForm = document.createElement('div');
-searchForm.className = 'mb-3';
-searchForm.innerHTML = `
-															<div class="input-group">
-																<input type="text" id="custom-search-input" class="form-control" placeholder="Search users...">
-																<button class="btn btn-primary" type="button" id="search-button">
-																	<i class="mdi mdi-magnify"></i>
-																</button>
-															</div>
-														`;
-
-tableContainer.parentNode.insertBefore(searchForm, tableContainer);
-
-// Add event listeners to the new search input
-const customSearchInput = document.getElementById('custom-search-input');
-const searchButton = document.getElementById('search-button');
-
-let timeoutId;
-customSearchInput.addEventListener('input', function () {
-clearTimeout(timeoutId);
-
-timeoutId = setTimeout(function () {
-const query = customSearchInput.value.trim();
-console.log('Searching for:', query);
-fetchSearchResults(query);
-}, 300);
-});
-
-searchButton.addEventListener('click', function () {
-const query = customSearchInput.value.trim();
-fetchSearchResults(query);
-});
-
-console.log('Custom search form created');
-}
-
-function fetchSearchResults(query) { // Build the URL with the search query
-const url = '/admin' + (
-query ? `?q=${
-encodeURIComponent(query)
-}` : ''
-);
-console.log('Fetching results from:', url);
-
-// Update browser's address bar without triggering page reload
-window.history.replaceState(null, '', url);
-
-fetch(url, {
-headers: {
-'X-Requested-With': 'XMLHttpRequest'
-}
-}).then(response => {
-console.log('Response status:', response.status);
-if (!response.ok) {
-throw new Error('Network response was not ok');
-}
-return response.text();
-}).then(html => {
-console.log('Got HTML response');
-const userTableBody = document.getElementById('user-table-body');
-if (userTableBody) {
-userTableBody.innerHTML = html;
-console.log('Table body updated');
-}
-
-// Restore search icon
-const searchIcon = document.querySelector('#navbar-search-icon i');
-if (searchIcon) {
-searchIcon.className = 'icon-search';
-}
-}).catch(error => {
-console.error('Error fetching search results:', error);
-
-// Restore search icon
-const searchIcon = document.querySelector('#navbar-search-icon i');
-if (searchIcon) {
-searchIcon.className = 'icon-search';
-}
-});
-}
-});
-					</script>
+						<!-- Polls Section -->
+						<div class="menu-section">
+							<div class="menu-item has-submenu" onclick="toggleSubmenu(this)">
+								<div class="menu-title">
+									<i class="mdi mdi-poll"></i>
+									<span>Polls Management</span>
+								</div>
+								<i class="mdi mdi-chevron-right menu-arrow"></i>
+							</div>
+							<div class="submenu">
+								<a href="{{ path('app_sondage_index2') }}" class="submenu-item {% if app.request.get('_route') == 'app_sondage_index2' %}active{% endif %}">
+									<i class="mdi mdi-chart-bar" style="font-size: 18px; margin-right: 10px;"></i>
+									<span>Polls List</span>
+								</a>
+								<a href="{{ path('app_commentaire_index') }}" class="submenu-item {% if app.request.get('_route') == 'app_commentaire_index' %}active{% endif %}">
+									<i class="mdi mdi-comment-multiple"></i>
+									<span>Comments</span>
+								</a>
+							</div>
+						</div>
+					</div>
 				</nav>
 
 				<!-- main content area -->
-				<br>
-				<br>
-				<br>
-				<div class="main-panel" style="flex: 1; width: auto !important; margin-left: 0 !important;">
-					<div class="content-wrapper" style="padding: 70px 20px 0 20px !important;"> {% block body %}{% endblock %}
+				<div class="main-panel">
+					<div class="content-wrapper"> {% block body %}{% endblock %}
 						</div>
 
 						<footer class="footer">
@@ -362,123 +226,185 @@ searchIcon.className = 'icon-search';
 					margin: 0 !important;
 				}
 
-				.sidebar {
-					width: 180px !important;
-					min-width: 180px !important;
+				.modern-sidebar {
+					width: 260px;
+					height: 100vh;
+					background: #fff;
+					border-right: 1px solid #e0e0e0;
 					position: fixed;
-					top: 55px !important; /* Ajout de la marge top pour commencer après la navbar */
-					height: calc(100vh - 50px) !important; /* Ajustement de la hauteur */
-					overflow-y: auto !important; /* Pour permettre le défilement si nécessaire */
 					left: 0;
+					top: 60px;
+					overflow-y: auto;
+					box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+					z-index: 100;
+				}
 
+				.sidebar-header {
+					padding: 20px;
+					display: flex;
+					align-items: center;
+					border-bottom: 1px solid #e0e0e0;
+				}
+
+				.sidebar-logo {
+					width: 35px;
+					height: 35px;
+					margin-right: 10px;
+				}
+
+				.sidebar-title {
+					font-size: 18px;
+					font-weight: 600;
+					color: #333;
+				}
+
+				.sidebar-menu {
+					padding: 15px 0;
+				}
+
+				.menu-section {
+					margin-bottom: 5px;
+				}
+
+				.menu-item {
+					display: flex;
+					align-items: center;
+					padding: 12px 20px;
+					color: #555;
+					text-decoration: none;
+					transition: all 0.3s ease;
+					cursor: pointer;
+				}
+
+				.menu-item:hover {
+					background: #f8f9fa;
+					color: #4B49AC;
+				}
+
+				.menu-item.active {
+					background: #4B49AC;
+					color: #fff;
+				}
+
+				.menu-item i {
+					font-size: 20px;
+					margin-right: 10px;
+				}
+
+				.menu-item span {
+					font-size: 14px;
+				}
+
+				.has-submenu {
+					justify-content: space-between;
+				}
+
+				.menu-title {
+					display: flex;
+					align-items: center;
+				}
+
+				.menu-arrow {
+					transition: transform 0.3s ease;
+				}
+
+				.menu-section.open .menu-arrow {
+					transform: rotate(90deg);
+				}
+
+				.submenu {
+					display: none;
+					padding-left: 20px;
+					background: #f8f9fa;
+				}
+
+				.menu-section.open .submenu {
+					display: block;
+				}
+
+				.submenu-item {
+					display: flex;
+					align-items: center;
+					padding: 10px 20px;
+					color: #666;
+					text-decoration: none;
+					transition: all 0.3s ease;
+				}
+
+				.submenu-item:hover {
+					color: #4B49AC;
+					background: #f1f1f1;
+				}
+
+				.submenu-item.active {
+					color: #4B49AC;
+					background: #e8e8e8;
+				}
+
+				.submenu-item i {
+					font-size: 18px;
+					margin-right: 10px;
 				}
 
 				.main-panel {
-					margin-left: 280px !important; /* Augmenté de 260px à 280px pour plus d'espace */
-					width: calc(100% - 300px) !important; /* Ajusté pour le nouveau margin */
+					flex: 1;
+					width: auto !important;
+					margin-left: 260px !important;
+					min-height: calc(100vh - 60px);
+					padding-top: 60px;
 				}
 
 				.content-wrapper {
-					padding: 40px 40px 0 !important; /* Augmenté le padding des côtés */
-					width: 100% !important;
+					padding: 20px 20px 20px 40px;
 				}
 
-				/* Reste des styles inchangés */
-				.sidebar .nav .nav-item .nav-link {
-					color: #6C7383 !important;
-					background: transparent !important;
+				/* Ajout des nouveaux styles pour les colonnes */
+				.col-xl-3.col-md-6.mb-4 {
+					padding-left: 30px; /* Ajoute un padding à gauche pour les colonnes */
 				}
 
-				.sidebar .nav .nav-item.active .nav-link {
-					background: #4B49AC !important;
-					color: #ffffff !important;
+				/* Ajustement pour le conteneur des colonnes */
+				.row {
+					margin-left: 15px; /* Décale légèrement toute la rangée vers la gauche */
 				}
 
-				.sidebar .nav.sub-menu {
-					padding-left: 1.5rem !important;
-					background: transparent !important;
+				/* Ajustement pour le conteneur principal */
+				.container-fluid {
+					padding-left: 30px !important;
 				}
 
-				/* Responsive */
 				@media(max-width: 991px) {
+					.modern-sidebar {
+						transform: translateX(-260px);
+						transition: transform 0.3s ease;
+					}
+
+					.modern-sidebar.show {
+						transform: translateX(0);
+					}
+
 					.main-panel {
 						margin-left: 0 !important;
 						width: 100% !important;
 					}
+				}
 
-					.sidebar {
-						top: 70px !important;
-						z-index: 999;
-					}
+				/* Style pour le logo dans la navbar */
+				.navbar-brand img {
+					transition: transform 0.3s ease;
+				}
 
-					.content-wrapper {
-						padding: 40px 20px 0 !important; /* Padding réduit en mode mobile */
-					}
+				.navbar-brand:hover img {
+					transform: scale(1.05);
 				}
-				.table-striped th:nth-child(2), /* Colonne "Question" */
-				.table-striped td:nth-child(2),
-				.table-striped th:nth-child(3), /* Colonne "Options" */
-				.table-striped td:nth-child(3) {
-					max-width: 200px; /* Définit la largeur maximale avant retour à la ligne */
-					word-wrap: break-word; /* Permet de couper les mots longs */
-					overflow-wrap: break-word;
-					white-space: normal; /* Permet au texte de revenir à la ligne */
-				}
-				/* From Uiverse.io by OnCloud125252 */
-				/* Note that you only needs to edit the config to customize the button! */
 
-    .actions-column {
-      text-align: center;
-    }
+				/* Style pour le logo dans la sidebar */
+				.sidebar-logo {
+					transition: all 0.3s ease;
+				}
 
-    .action-buttons {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .plusButton {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid white;
-      width: 1.8rem;
-      height: 1.8rem;
-      background-color: #000;
-      overflow: hidden;
-    }
-
-				.bin-button {
-					display: flex;
-					flex-direction: column;
-					align-items: center;
-					justify-content: center;
-					width: 25px;
-					height: 25px;
-					border-radius: 5px;
-					background-color: rgb(255, 95, 95);
-					cursor: pointer;
-					border: 3px solid rgb(255, 201, 201);
-					transition-duration: 0.3s;
-				}
-				.bin-bottom {
-					width: 15px;
-				}
-				.bin-top {
-					width: 17px;
-					transform-origin: right;
-					transition-duration: 0.3s;
-				}
-				.bin-button:hover .bin-top {
-					transform: rotate(45deg);
-				}
-				.bin-button:hover {
-					background-color: rgb(255, 0, 0);
-				}
-				.bin-button:active {
-					transform: scale(0.9);
+				.sidebar-header:hover .sidebar-logo {
+					transform: rotate(5deg);
 				}
 			</style>
 
@@ -493,11 +419,48 @@ searchIcon.className = 'icon-search';
 			<script src=" {{asset('../../back_assets/js/todolist.js')}}"></script>
 			<script src=" {{asset('../../back_assets/js/chart.js')}}"></script>
 			<script src=" {{asset('../../back_assets/vendors/chart.js/chart.umd.js')}}"></script>
-				<script src="{{ asset('back_assets/vendors/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+			<script src="{{ asset('back_assets/vendors/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
 
 			<!-- endinject -->
-		<!-- Custom js for this page-->
+			<!-- Custom js for this page-->
 			<!-- End custom js for this page-->
-		</body>
-	</html>
+
+				<script>
+function toggleSubmenu(element) { // Fermer tous les autres sous-menus
+document.querySelectorAll('.menu-section').forEach(section => {
+if (section !== element.parentElement) {
+section.classList.remove('open');
+}
+});
+
+// Toggle le sous-menu actuel
+element.parentElement.classList.toggle('open');
+}
+
+document.addEventListener('DOMContentLoaded', function () { // Marquer le menu actif basé sur l'URL courante
+const currentPath = window.location.pathname;
+const menuItems = document.querySelectorAll('.submenu-item');
+
+menuItems.forEach(item => {
+if (item.getAttribute('href') === currentPath) {
+item.classList.add('active');
+const parentSection = item.closest('.menu-section');
+if (parentSection) {
+parentSection.classList.add('open');
+}
+}
+});
+
+// Si c'est la page Users Management
+if (currentPath === '{{ path('app_admin_dashboard') }}') {
+document.querySelector('a[href="   {{ path('app_admin_dashboard') }}"]').classList.add('active');
+}
+});
+
+document.querySelector('.navbar-toggler').addEventListener('click', function () {
+document.querySelector('.modern-sidebar').classList.toggle('show');
+});
+		</script>
+	</body>
+</html>
