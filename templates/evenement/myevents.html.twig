@@ -170,8 +170,8 @@
                       <span class="input-group-text"><i class="fas fa-tag"></i></span>
                       <select id="type" name="type" class="form-select">
                         <option value="">All Types</option>
-                        <option value="open" {% if type == 'open' %}selected{% endif %}>Open</option>
-                        <option value="closed" {% if type == 'closed' %}selected{% endif %}>Closed</option>
+                        <option value="open" {% if type is defined and type == 'open' %}selected{% endif %}>Open</option>
+                        <option value="closed" {% if type is defined and type == 'closed' %}selected{% endif %}>Closed</option>
                       </select>
                     </div>
                   </div>
@@ -241,7 +241,7 @@
   <section class="event__area pt-50">
     <div class="container">
       <div class="row" id="eventList">
-        {% if evenements is not empty %}
+        {% if evenements is defined and evenements is not empty %}
           {% for evenement in evenements %}
             <div class="col-xxl-12">
               <div class="event__item white-bg mb-10 transition-3 p-relative d-lg-flex align-items-center justify-content-between">
@@ -299,12 +299,21 @@
           {% endfor %}
         {% else %}
           <div class="col-12 text-center">
-            <p>No events found matching your criteria.</p>
-            {% if search is defined or type is defined or date is defined or club is defined %}
-              <p>Try adjusting your filters or <a href="{{ path('my_events') }}">view all your events</a>.</p>
-            {% else %}
-              <p>You have no events yet.</p>
-            {% endif %}
+            <div class="alert alert-info p-5 mt-4">
+              <i class="fas fa-info-circle fa-2x mb-3"></i>
+              <h4 class="alert-heading">No Events Found</h4>
+              {% if search is defined or type is defined or date is defined or club is defined %}
+                <p>No events match your search criteria.</p>
+                <a href="{{ path('my_events') }}" class="btn btn-outline-primary mt-3">
+                  <i class="fas fa-undo"></i> Clear All Filters
+                </a>
+              {% else %}
+                <p>You haven't joined any events yet.</p>
+                <a href="{{ path('event') }}" class="btn btn-primary mt-3">
+                  <i class="fas fa-calendar-plus"></i> Browse Available Events
+                </a>
+              {% endif %}
+            </div>
           </div>
         {% endif %}
       </div>

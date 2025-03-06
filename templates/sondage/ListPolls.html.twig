@@ -45,8 +45,9 @@
 										{% for sondage in sondages %}
 											<div class="poll-container" data-sondage-id="{{ sondage.id }}">
 												<div class="user-info">
-													<img src="{{ asset('uploads/profiles/' ~ sondage.user.profilePicture) }}" alt="{{ sondage.user.prenom }} {{ sondage.user.nom }}" class="profile-picture">
-
+<img src="{{ sondage.user.profilePicture ? asset('uploads/profiles/' ~ sondage.user.profilePicture) : asset('front_assets/img/blog/comments/user.png') }}" 
+     alt="{{ sondage.user.prenom }} {{ sondage.user.nom }}" 
+     class="profile-picture">
 													<b>{{ sondage.user.nom }}
 														{{ sondage.user.prenom }}</b>
 													|
