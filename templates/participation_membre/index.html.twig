@@ -1,6 +1,12 @@
 {% extends 'baseAdmin.html.twig' %}
 
 {% block body %}
+
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Symfony App</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <h1 class="mb-4">Join Requests</h1>
 
     <div class="table-responsive">
@@ -44,9 +50,80 @@
             </tbody>
         </table>
     </div>
+    {# Nouveau bloc pour le graphique des clubs les plus populaires #}
+<section class="container mt-5">
+    <h2 class="mb-4">📊 Most Popular Clubs Based on Participants</h2>
+    <canvas id="topClubsChart"></canvas>
+</section>
+
+{# Script pour le graphique #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("{{ path('popular_clubs') }}")
+            .then(response => response.json())
+            .then(data => {
+                console.log("Données reçues :", data); // Debugging
+
+                if (!data.length) {
+                    console.warn("Aucune donnée reçue pour le graphique.");
+                    return;
+                }
+
+                const labels = data.map(item => item.clubName); // Changer item.nomProd → item.clubName
+                const values = data.map(item => item.totalParticipants); // Changer item.totalVentes → item.totalParticipants
+
+                const ctx = document.getElementById('topClubsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Number of Participants',
+                            data: values,
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Participants'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Clubs'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Top Most Popular Clubs'
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Erreur lors de la récupération des statistiques:', error));
+    });
+</script>
+
 
     <!-- Pagination -->
     <div class="pagination">
         {{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig') }}
     </div>
+    <!-- Bootstrap JS (with Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
 {% endblock %}
+

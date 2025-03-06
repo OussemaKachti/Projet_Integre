@@ -74,7 +74,7 @@ services:
         class: Symfony\Component\Mailer\Transport\TransportInterface
         factory: ['@mailer.transport_factory', 'fromString']
         arguments:
-            $dsn: '%env(MAILER_DSN3)%'
+            $dsn: '%env(MAILER_DSN)%'
 
     # Définir un service de mailer personnalisé utilisant le transport personnalisé
   app.custom_mailer:
@@ -85,12 +85,7 @@ services:
             $dispatcher: '@event_dispatcher'
 
     # Injecter le mailer personnalisé dans OrderValidationService
-  App\Services\OrderValidationService:
-        arguments:
-            $mailer: '@app.custom_mailer'
-            $entityManager: '@doctrine.orm.entity_manager'
-            
-        
+ 
   App\EventListener\MissionProgressListener:
         arguments:
             $missionCompletionChecker: '@App\Service\MissionCompletionChecker'
