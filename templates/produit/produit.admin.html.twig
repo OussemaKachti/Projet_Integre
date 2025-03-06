@@ -1,123 +1,128 @@
-{% extends 'base.admin.html.twig' %}
+{% extends 'baseAdmin.html.twig' %}
 
-{% block title %}Table of products{% endblock %}
+{% block title %}Table of products
+{% endblock %}
 
 {% block body %}
-<style>
-.product-actions .btn-group {
-    display: flex;
-    gap: 10px; /* Espace entre les boutons */
-    justify-content: center; /* Centre les boutons */
-    align-items: center; /* Alignement vertical */
-}
+	<style>
+		.product-actions .btn-group {
+			display: flex;
+			gap: 10px; /* Espace entre les boutons */
+			justify-content: center; /* Centre les boutons */
+			align-items: center; /* Alignement vertical */
+		}
 
-.trash-button {
-    background-color: white;
-    border: 1px solid #d1d5db;
-    border-radius: 9999px;
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.2s ease;
-    padding: 0;
-}
+		.trash-button {
+			background-color: white;
+			border: 1px solid #d1d5db;
+			border-radius: 9999px;
+			width: 40px;
+			height: 40px;
+			cursor: pointer;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			transition: all 0.2s ease;
+			padding: 0;
+		}
 
-.trash-button:hover {
-    background-color: #ef4444;
-    border-color: #ef4444;
-}
+		.trash-button:hover {
+			background-color: #ef4444;
+			border-color: #ef4444;
+		}
 
-.trash-button:hover svg {
-    color: white;
-}
+		.trash-button:hover svg {
+			color: white;
+		}
 
-.trash-button:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.5);
-}
+		.trash-button:focus {
+			outline: none;
+			box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.5);
+		}
 
-.trash-icon {
-    width: 16px;
-    height: 16px;
-    color: #6b7280;
-    transition: color 0.2s ease;
-}
-.pagination-container {
-    margin-top: 70px;
-}
-</style>
+		.trash-icon {
+			width: 16px;
+			height: 16px;
+			color: #6b7280;
+			transition: color 0.2s ease;
+		}
+		.pagination-container {
+			margin-top: 70px;
+		}
+	</style>
 
-<section class="cart-area pt-120 pb-120">
-    <div class="container">
-    <form method="get" action="{{ path('produit_admin') }}" class="d-flex mb-4">
-    <input type="text" name="q" value="{{ keyword|default('') }}" placeholder="Research for ..." class="form-control me-2" style="width: 300px;">
-    <button type="submit" class="btn btn-primary">Research</button>
-</form>
-        <div class="row">
-            <h1>Table of products</h1>
-            <div class="col-12">
-                <form action="#">
-                    <div class="table-content table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>ImgProd</th>
-                                    <th>NomProd</th>
-                                    <th>Prix</th>
-                                    <th>Quantité</th>
-                                    <th>Créé le</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for produit in produits %}
-                                <tr>
-                                    <td>{{ produit.id }}</td>
-                                    <td>
-                                        <img src="{{ asset('uploads/' ~ produit.imgProd) }}" alt="" style="width: 90px; height: 90px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                                    </td>
-                                    <td>{{ produit.nomProd }}</td>
-                                    <td><span class="amount">{{ produit.prix }}</span></td>
-                                    <td><span class="amount">{{ produit.quantity }}</span></td>
-                                    <td>{{ produit.createdAt|date('Y-m-d H:i') }}</td>
-                                    <td class="product-actions">
-                                        <div class="btn-group">
-                                            <form action="{{ path('produit.admin_delete', {'id': produit.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ produit.id) }}">
-                                                <button type="submit" class="trash-button" aria-label="Supprimer">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="trash-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path d="M3 6h18"></path>
-                                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="7">Aucun produit trouvé.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                       
-                    </div>
-                </form>
-                 <div class="row mt-4">
-  <div class="col-xxl-20">
-     {{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig') }}
-  </div>
-</div>
-            </div>
-        </div>
-    </div>
-</section>
+	<section class="cart-area pt-120 pb-120">
+		<div class="container">
+			<form method="get" action="{{ path('produit_admin') }}" class="d-flex mb-4">
+				<input type="text" name="q" value="{{ keyword|default('') }}" placeholder="Research for ..." class="form-control me-2" style="width: 300px;">
+				<button type="submit" class="btn btn-primary">Research</button>
+			</form>
+			<div class="row">
+				<h1>Table of products</h1>
+				<div class="col-12">
+					<form action="#">
+						<div class="table-content table-responsive">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+										<th>ID</th>
+										<th>ImgProd</th>
+										<th>NomProd</th>
+										<th>Prix</th>
+										<th>Quantité</th>
+										<th>Créé le</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for produit in produits %}
+										<tr>
+											<td>{{ produit.id }}</td>
+											<td>
+												<img src="{{ asset('uploads/' ~ produit.imgProd) }}" alt="" style="width: 90px; height: 90px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+											</td>
+											<td>{{ produit.nomProd }}</td>
+											<td>
+												<span class="amount">{{ produit.prix }}</span>
+											</td>
+											<td>
+												<span class="amount">{{ produit.quantity }}</span>
+											</td>
+											<td>{{ produit.createdAt|date('Y-m-d H:i') }}</td>
+											<td class="product-actions">
+												<div class="btn-group">
+													<form action="{{ path('produit.admin_delete', {'id': produit.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');">
+														<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ produit.id) }}">
+														<button type="submit" class="trash-button" aria-label="Supprimer">
+															<svg xmlns="http://www.w3.org/2000/svg" class="trash-icon" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+																<path d="M3 6h18"></path>
+																<path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+																<path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+																<line x1="10" y1="11" x2="10" y2="17"></line>
+																<line x1="14" y1="11" x2="14" y2="17"></line>
+															</svg>
+														</button>
+													</form>
+												</div>
+											</td>
+										</tr>
+									{% else %}
+										<tr>
+											<td colspan="7">Aucun produit trouvé.</td>
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+
+						</div>
+					</form>
+					<div class="row mt-4">
+						<div class="col-xxl-20">
+							{{ knp_pagination_render(pagination, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig') }}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
 {% endblock %}

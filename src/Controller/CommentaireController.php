@@ -192,39 +192,30 @@ public function delete($id, EntityManagerInterface $entityManager): RedirectResp
     #[Route('/comment/list/{id}', name: 'list_comments', methods: ['GET'])]
     public function listComments(int $id, EntityManagerInterface $em, Security $security): JsonResponse
     {
-        // Simuler un utilisateur (remplace par getUser() une fois l'authentification implémentée)
-        //$user = $em->getRepository(User::class)->find(1); // Assure-toi que cet utilisateur existe
         $user = $security->getUser();
-
-        // Récupérer le sondage depuis la base de données
         $sondage = $em->getRepository(Sondage::class)->find($id);
-    
+
         if (!$sondage) {
             throw $this->createNotFoundException('Sondage non trouvé');
         }
-    
-        // Récupérer les commentaires associés au sondage
+
         $commentaires = $sondage->getCommentaires();
-    
-        // Créer un tableau avec les données à envoyer en réponse JSON
         $commentsData = [];
+        
         foreach ($commentaires as $commentaire) {
+            $commentUser = $commentaire->getUser();
             $commentsData[] = [
                 'id' => $commentaire->getId(),
-                'user' => $commentaire->getUser()->getNom() . ' ' . $commentaire->getUser()->getPrenom(),
+                'user' => [
+                    'name' => $commentUser->getFullName(),
+                    'profilePicture' => $commentUser->getProfilePicture()
+                ],
                 'date' => $commentaire->getDateComment()->format('d M Y'),
-                'content' => $commentaire->getContenuComment(),
+                'content' => $commentaire->getContenuComment()
             ];
         }
-    
-        // Retourner une réponse JSON avec les commentaires et les autres informations
-        return new JsonResponse([
-            'comments' => $commentsData,
-            'user' => [
-                'id' => $user->getId(),
-                'name' => $user->getNom() . ' ' . $user->getPrenom(),
-            ]
-        ]);
+
+        return new JsonResponse($commentsData);
     }
     
 

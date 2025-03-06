@@ -95,3 +95,8 @@ services:
   App\EventListener\EventCreationListener:
         tags:
             - { name: kernel.event_listener, event: kernel.terminate }
+  App\Validator\Constraints\ValidEmailValidator:
+        arguments:
+            $logger: '@logger'
+        tags:
+            - { name: validator.constraint_validator }

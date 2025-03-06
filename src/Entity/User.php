@@ -11,7 +11,7 @@ use App\Enum\RoleEnum;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-
+use App\Validator\Constraints as AppAssert;
 
 
 
@@ -25,22 +25,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     //control saisis pour nopn , prenom
-    #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'Last name cannot be empty')]
-    #[Assert\Length(max: 255, maxMessage: 'Last name cannot exceed 255 characters')]
-    private ?string $nom = null;
+    // In your User entity class
 
-
-    #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'First name cannot be empty')]
-    #[Assert\Length(max: 255, maxMessage: 'First name cannot exceed 255 characters')]
+    #[Assert\Length(min: 2, minMessage: 'First name must be at least {{ limit }} characters long')]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-ZÀ-ÿ\s\'-]+$/u',
+        message: 'First name can only contain letters, spaces, hyphens and apostrophes'
+    )]
+    #[Assert\Regex(
+        pattern: '/^((?!\d).)*$/s',
+        message: 'First name cannot contain numbers'
+    )]
+    #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
-    //control saisis mail
-    #[Assert\Email(
-        message: 'The email "{{ value }}" is not a valid email address.',
-        mode: 'strict' // Enforces stricter validation (e.g., checks for valid domain names)
+    #[Assert\NotBlank(message: 'Last name cannot be empty')]
+    #[Assert\Length(min: 2, minMessage: 'Last name must be at least {{ limit }} characters long')]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-ZÀ-ÿ\s\'-]+$/u',
+        message: 'Last name can only contain letters, spaces, hyphens and apostrophes'
     )]
+    #[Assert\Regex(
+        pattern: '/^((?!\d).)*$/s',
+        message: 'Last name cannot contain numbers'
+    )]
+    #[ORM\Column(length: 255)]
+    private ?string $nom = null;
+
+    //control saisis mail
+    #[Assert\NotBlank(message: 'Email cannot be empty')]
+    #[AppAssert\ValidEmail]  // Using our custom validator
     #[ORM\Column(length: 255, unique: true)]
     private ?string $email = null;
 
@@ -57,7 +72,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private RoleEnum $role;
 
     //control saisis num
-    #[ORM\Column(length: 15, nullable: true)]
+    #[ORM\Column(length: 15, nullable: true, unique: true)]
     #[Assert\NotBlank(message: 'Phone number cannot be empty')]
     // #[Assert\Length(min: 8, max: 15, minMessage: 'Phone number must be at least 8 digits', maxMessage: 'Phone number cannot exceed 15 digits')]
     #[Assert\Regex(
@@ -65,7 +80,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         message: 'Invalid phone number'
     )]
     private ?string $tel = null;
-    
+
     // Profile picture field
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $profilePicture = null;
@@ -85,7 +100,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $confirmationTokenExpiresAt = null;
-    #[ORM\Column(type: 'datetime_immutable',nullable: true)]
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
@@ -116,51 +131,50 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Commande::class)]
     private Collection $commandes;
 
-// Modifier le constructeur pour initialiser cette collection
-public function __construct()
-{
-    $this->participations = new ArrayCollection();
-    $this->commentaires = new ArrayCollection();
-    $this->likes = new ArrayCollection();
-    $this->sondages = new ArrayCollection();
-    $this->no = new ArrayCollection(); // Remplacer no par participationsEvents
-    $this->commandes = new ArrayCollection();
-    $this->createdAt = new \DateTimeImmutable();
-    
- }
+    // Modifier le constructeur pour initialiser cette collection
+    public function __construct()
+    {
+        $this->participations = new ArrayCollection();
+        $this->commentaires = new ArrayCollection();
+        $this->likes = new ArrayCollection();
+        $this->sondages = new ArrayCollection();
+        $this->no = new ArrayCollection(); // Remplacer no par participationsEvents
+        $this->commandes = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+    }
     public function getId(): ?int
     {
         return $this->id;
     }
 
 
-// Ajouter les getters et setters pour cette propriété
-/**
- * @return Collection<int, ParticipationEvent>
- */
+    // Ajouter les getters et setters pour cette propriété
+    /**
+     * @return Collection<int, ParticipationEvent>
+     */
 
 
-public function addParticipationEvent(ParticipationEvent $participation): static
-{
-    if (!$this->no->contains($participation)) {
-        $this->no->add($participation);
-        $participation->setUser($this);
-    }
-
-    return $this;
-}
-
-public function removeParticipationEvent(ParticipationEvent $participation): static
-{
-    if ($this->no->removeElement($participation)) {
-        // set the owning side to null (unless already changed)
-        if ($participation->getUser() === $this) {
-            $participation->setUser(null);
+    public function addParticipationEvent(ParticipationEvent $participation): static
+    {
+        if (!$this->no->contains($participation)) {
+            $this->no->add($participation);
+            $participation->setUser($this);
         }
+
+        return $this;
     }
 
-    return $this;
-}
+    public function removeParticipationEvent(ParticipationEvent $participation): static
+    {
+        if ($this->no->removeElement($participation)) {
+            // set the owning side to null (unless already changed)
+            if ($participation->getUser() === $this) {
+                $participation->setUser(null);
+            }
+        }
+
+        return $this;
+    }
     public function getNom(): ?string
     {
         return $this->nom;
@@ -219,7 +233,7 @@ public function removeParticipationEvent(ParticipationEvent $participation): sta
         $this->tel = $tel;
         return $this;
     }
-    
+
     public function getProfilePicture(): ?string
     {
         return $this->profilePicture;
@@ -235,7 +249,7 @@ public function removeParticipationEvent(ParticipationEvent $participation): sta
     {
         return $this->role;
     }
-    
+
 
     public function setRole(RoleEnum $role): self
     {
@@ -296,7 +310,7 @@ public function removeParticipationEvent(ParticipationEvent $participation): sta
     public function getRoles(): array
     {
         // Ensure the role is always an array and includes ROLE_ prefix
-        return ['ROLE_' . strtoupper(preg_replace('/(?<!^)[A-Z]/', '_$0',$this->role->value))];
+        return ['ROLE_' . strtoupper(preg_replace('/(?<!^)[A-Z]/', '_$0', $this->role->value))];
     }
 
     public function getUserIdentifier(): string
@@ -400,7 +414,7 @@ public function removeParticipationEvent(ParticipationEvent $participation): sta
     }
     //IMEN //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   
+
 
     public function getCreatedAt(): \DateTimeImmutable
     {
