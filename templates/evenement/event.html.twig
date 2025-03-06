@@ -4,6 +4,22 @@
 
 {% block body %}
 <main>
+<!-- Affichage des messages flash -->
+<section class="pt-30">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        {% for label, messages in app.flashes %}
+          <div class="alert alert-{{ label }}">
+            {% for message in messages %}
+              <p>{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
   <style>
     /* Type d'événement */
     .open-event {
@@ -257,7 +273,7 @@
                   <h4>{{ evenement.startDate|date('d') }}</h4>
                   <p>{{ evenement.startDate|date('F, Y') }}</p>
                   {% if evenement.endDate %}
-                    <p><strong>Fin : </strong>{{ evenement.endDate|date('d F, Y') }}</p>
+                    <p><strong>End: </strong>{{ evenement.endDate|date('d F, Y') }}</p>
                   {% endif %}
                 </div>
                 <div class="event__content">
@@ -281,7 +297,7 @@
                       <ul>
                         <li>
                           <a href="#">
-                            Nom du Club : <span class="event__person-name">{{ evenement.club.nomClub }}</span>
+                            Club : <span class="event__person-name">{{ evenement.club.nomClub }}</span>
                           </a>
                         </li>
                       </ul>

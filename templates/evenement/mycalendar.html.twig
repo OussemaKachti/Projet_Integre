@@ -1,0 +1,211 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="calendar-container">
+       <h1 class="calendar-title" style="color: rgb(27, 5, 89);">My Events Calendar</h1>
+
+        <!-- Boutons de navigation entre vues -->
+        <div class="mb-3 text-center">
+            <a href="{{ path('my_events') }}" class="btn btn-secondary">Vue Liste</a>
+            <a href="{{ path('app_my_calendar') }}" class="btn btn-primary">Vue Calendrier</a>
+        </div>
+
+        <!-- Conteneur pour le calendrier avec style amélioré -->
+        <div id="calendar" class="fc-calendar-container"></div>
+    </div>
+
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
+    
+    <!-- Style personnalisé pour améliorer l'affichage -->
+    <style>
+       /* Conteneur principal du calendrier */
+.calendar-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 20px;
+    font-family: 'Arial', sans-serif;
+    background-color:rgb(230, 230, 235);
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Titre du calendrier */
+.calendar-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+/* Style du calendrier FullCalendar */
+.fc-calendar-container {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    background-color: #fff;
+    overflow: hidden;
+}
+
+/* Style des entêtes des jours de la semaine */
+.fc-col-header-cell {
+    background-color:rgb(27, 5, 89);
+    color: white;
+    padding: 10px 0 !important;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Animation de survol des cellules des jours */
+.fc-daygrid-day {
+    transition: background-color 0.2s, transform 0.2s ease;
+}
+
+.fc-daygrid-day:hover {
+    background-color:rgb(220, 221, 223);
+    transform: scale(1.05);
+}
+
+/* Style des événements dans le calendrier */
+.fc-event {
+    border-radius: 8px;
+    border: none;
+    padding: 8px;
+    font-size: 0.9em;
+    text-align: center;
+    font-weight: bold;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.fc-event:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Couleur par défaut des événements */
+.fc-event-default {
+    background-color:rgb(215, 222, 248);
+    color: white;
+}
+
+/* Amélioration des boutons de navigation */
+.fc-button-primary {
+    background-color: rgb(27, 5, 89)!important;
+    border-color: rgb(27, 5, 89) !important;
+    box-shadow: none !important;
+    font-size: 14px;
+    padding: 8px 15px;
+    border-radius: 5px;
+}
+
+.fc-button-primary:hover {
+    background-color:rgb(25, 5, 71) !important;
+    border-color: #rgb(25, 5, 71)!important;
+}
+
+/* Jour actuel */
+.fc-day-today {
+    background-color: rgba(161, 164, 227, 0.54) !important;
+}
+
+/* Événement avec des badges */
+.fc-event .fc-title {
+    font-size: 14px;
+}
+
+.fc-event .event-time {
+    font-size: 12px;
+    display: block;
+    margin-top: 3px;
+}
+
+/* Ajouter des icônes d'événement */
+.fc-event .event-icon {
+    margin-right: 8px;
+}
+
+    </style>
+
+    <!-- FullCalendar JS - Version corrigée -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/fr.global.min.js"></script>
+
+    <!-- Script JavaScript amélioré pour initialiser FullCalendar -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                height: 'auto',  // Hauteur automatique selon le contenu
+                aspectRatio: 1.8,  // Aspect ratio plus agréable
+                
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                
+                // Configuration esthétique
+                dayMaxEvents: true,  // Permet "plus" lien quand trop d'événements
+                navLinks: true,  // Jours/semaines cliquables
+                
+                // Thème personnalisé
+                themeSystem: 'standard',
+                
+                // Animation lors du changement de vue
+                firstDay: 1,  // Semaine commence le lundi
+                
+                events: function(info, successCallback, failureCallback) {
+                    fetch('{{ path('my_events_calendar') }}')
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Personnalisation des événements avec des couleurs variées
+                            data = data.map(event => {
+                                // Si aucune couleur n'est définie, utiliser une couleur par défaut
+                                if (!event.backgroundColor) {
+                                    event.backgroundColor = '#2007BFF';
+                                    event.borderColor = '#007BFF';
+                                }
+                                
+                                // Ajouter des effets visuels
+                                event.textColor = '#fff';
+                                return event;
+                            });
+                            
+                            successCallback(data);
+                        })
+                        .catch(error => {
+                            console.error('Error loading events:', error);
+                            failureCallback(error);
+                        });
+                },
+                
+                // Amélioration de l'affichage des événements
+                eventTimeFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    meridiem: false
+                },
+                
+                // Améliorer l'interaction
+                dateClick: function(info) {
+                    // Vous pouvez ajouter une action lors du clic sur une date
+                    console.log('Date clicked:', info.dateStr);
+                },
+                
+                eventClick: function(info) {
+                    // Vous pouvez ajouter une action lors du clic sur un événement
+                    console.log('Event clicked:', info.event.title);
+                }
+            });
+            
+            calendar.render();
+        });
+    </script>
+{% endblock %}

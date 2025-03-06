@@ -225,6 +225,18 @@
     </div>
   </section>
 
+
+<div class="event-view-navigation text-center my-4">
+  <a href="{{ path('app_my_calendar') }}" class="btn btn-lg position-relative" 
+     style="background-color: #003366; color: white; transition: all 0.3s;">
+    <i class="fas fa-calendar-alt me-2"></i>
+    Switch to Calendar View
+    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+      New
+      <span class="visually-hidden">new view</span>
+    </span>
+  </a>
+</div>
   <!-- Zone des événements -->
   <section class="event__area pt-50">
     <div class="container">
@@ -238,7 +250,7 @@
                     <h4>{{ evenement.startDate|date('d') }}</h4>
                     <p>{{ evenement.startDate|date('F, Y') }}</p>
                     {% if evenement.endDate %}
-                      <p><strong>Fin : </strong>{{ evenement.endDate|date('d F, Y') }}</p>
+                      <p><strong>End: </strong>{{ evenement.endDate|date('d F, Y') }}</p>
                     {% endif %}
                   </div>
                   <div class="event__content">
@@ -262,7 +274,7 @@
                         <ul>
                           <li>
                             <a href="#">
-                              Nom du Club : <span class="event__person-name">{{ evenement.club.nomClub }}</span>
+                               Club : <span class="event__person-name">{{ evenement.club.nomClub }}</span>
                             </a>
                           </li>
                         </ul>
