@@ -310,8 +310,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        // Ensure the role is always an array and includes ROLE_ prefix
-        return ['ROLE_' . strtoupper(preg_replace('/(?<!^)[A-Z]/', '_$0', $this->role->value))];
+        // All roles are now uppercase with underscores (NON_MEMBRE, MEMBRE, etc.)
+        return ['ROLE_' . $this->role->value];
     }
 
     public function getUserIdentifier(): string

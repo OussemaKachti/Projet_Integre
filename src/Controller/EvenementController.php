@@ -184,7 +184,13 @@ public function index(
      */
     private function canUserCreateEvent(?User $user): bool
     {
-        return $user && in_array($user->getRole(), [RoleEnum::PRESIDENT_CLUB, RoleEnum::ADMINISTRATEUR], true);
+        if (!$user) {
+            return false;
+        }
+        
+        $role = $user->getRole();
+        return $role === RoleEnum::PRESIDENT_CLUB || 
+               $role === RoleEnum::ADMINISTRATEUR;
     }
     
     
@@ -225,7 +231,13 @@ public function show(EvenementRepository $evenementRepository, EntityManagerInte
      */
     private function canUserManageEvent(?User $user): bool
     {
-        return $user && in_array($user->getRole(), [RoleEnum::PRESIDENT_CLUB, RoleEnum::ADMINISTRATEUR], true);
+        if (!$user) {
+            return false;
+        }
+        
+        $role = $user->getRole();
+        return $role === RoleEnum::PRESIDENT_CLUB || 
+               $role === RoleEnum::ADMINISTRATEUR;
     }
     
     private Environment $twig;

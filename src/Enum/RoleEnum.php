@@ -3,11 +3,11 @@ namespace App\Enum;
 
 enum RoleEnum: string
 {
-    case NON_MEMBRE = 'nonMembre';
-    case MEMBRE = 'membre';
-    case PRESIDENT_CLUB = 'presidentClub';
-    case ADMINISTRATEUR = 'administrateur';
-    case USER = 'user';
+    // Use uppercase variants matching the Java enum
+    case NON_MEMBRE = 'NON_MEMBRE';
+    case MEMBRE = 'MEMBRE';
+    case PRESIDENT_CLUB = 'PRESIDENT_CLUB';
+    case ADMINISTRATEUR = 'ADMINISTRATEUR';
 
     public static function getValues(): array
     {
