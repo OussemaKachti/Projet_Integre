@@ -74,8 +74,11 @@
                                        <div class="col-md-6">
                                            <div class="checkout-form-list">
                                                <label>Image <span class="required">*</span></label>
-                                               {{form_widget(form.imgProd,{'attr':{'class':'form-control'}})}}
-                                               
+                                               <div class="custom-file-upload">
+                                                  {{form_widget(form.imgProd,{'attr':{'class':'form-control', 'accept': 'image/*'}})}}
+                                                  <small class="text-muted">Format accepté: JPG, PNG, GIF (max: 5MB)</small>
+                                                  {{form_errors(form.imgProd,{'attr':{'class':'text-danger'}})}}
+                                               </div>
                                            </div>
                                            <div class="col-md-6">
                                            

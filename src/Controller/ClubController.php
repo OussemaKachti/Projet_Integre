@@ -246,45 +246,73 @@ public function index2(ClubRepository $clubRepository, EntityManagerInterface $e
         ]);
     }
 
-    //#[Route('/{id}', name: 'app_club_delete', methods: ['POST'])]
-   // public function delete(int $id, Request $request, EntityManagerInterface $entityManager): Response
-    /////////
-
-        //if ($this->isCsrfTokenValid('delete'.$club->getId(), $request->request->get('_token'))) {
-            //$entityManager->remove($club);
-            //$entityManager->flush();
-            //$this->addFlash('success', 'Club supprimé avec succès.');
-        //}
-
-        //return $this->redirectToRoute('app_club_index2');
-    //}
-
-
-        //if ($this->isCsrfTokenValid('delete'.$club->getId(), $request->request->get('_token'))) {
-            //$entityManager->remove($club);
-            //$entityManager->flush();
-            //$this->addFlash('success', 'Club supprimé avec succès.');
-        //}
-
-        //return $this->redirectToRoute('app_club_index2');
-    //}
-
-    #[Route('/clubdelete/{id}', name: 'app_club_delete')]
-    public function supprimerPoste(int $id, EntityManagerInterface $entityManager, ClubRepository $clubRepository): Response
+    #[Route('/clubdelete/{id}', name: 'app_club_delete', methods: ['GET', 'POST', 'DELETE'])]
+    public function deleteClub(int $id, EntityManagerInterface $entityManager, Request $request): Response
     {
-       // $club = $entityManager->getRepository(Club::class)->find($id);
-        $club = $clubRepository->findById($id);
-        if (!$club) {
-            // Post does not exist, redirect back
-           // $this->addFlash('error', 'Le poste n\'existe pas.');
-            return $this->redirectToRoute('app_club_index2');
+        try {
+            // First get the club to see if it exists
+            $club = $entityManager->getRepository(Club::class)->find($id);
+            
+            if (!$club) {
+                $this->addFlash('error', 'Le club n\'existe pas.');
+                return $this->redirectToRoute('app_club_index2');
+            }
+            
+            // Validate CSRF token if it's a POST request
+            if ($request->isMethod('POST') && !$this->isCsrfTokenValid('delete'.$club->getId(), $request->request->get('_token'))) {
+                $this->addFlash('error', 'Invalid CSRF token.');
+                return $this->redirectToRoute('app_club_index2');
+            }
+            
+            // Use direct SQL to delete the club and related records
+            $conn = $entityManager->getConnection();
+            
+            // Start transaction
+            $conn->beginTransaction();
+            
+            try {
+                // 1. Delete sondage-related records first
+                $conn->executeStatement('DELETE FROM reponse WHERE sondage_id IN (SELECT id FROM sondage WHERE club_id = :id)', ['id' => $id]);
+                $conn->executeStatement('DELETE FROM commentaire WHERE sondage_id IN (SELECT id FROM sondage WHERE club_id = :id)', ['id' => $id]);
+                $conn->executeStatement('DELETE FROM choix_sondage WHERE sondage_id IN (SELECT id FROM sondage WHERE club_id = :id)', ['id' => $id]);
+                $conn->executeStatement('DELETE FROM sondage WHERE club_id = :id', ['id' => $id]);
+                
+                // 2. Delete event-related records
+                $conn->executeStatement('DELETE FROM likes WHERE evenement_id IN (SELECT id FROM evenement WHERE club_id = :id)', ['id' => $id]);
+                $conn->executeStatement('DELETE FROM participation_event WHERE evenement_id IN (SELECT id FROM evenement WHERE club_id = :id)', ['id' => $id]);
+                $conn->executeStatement('DELETE FROM evenement WHERE club_id = :id', ['id' => $id]);
+                
+                // 3. Delete products & order details
+                $conn->executeStatement('DELETE FROM orderdetails WHERE produit_id IN (SELECT id FROM produit WHERE club_id = :id)', ['id' => $id]);
+                $conn->executeStatement('DELETE FROM produit WHERE club_id = :id', ['id' => $id]);
+                
+                // 4. Delete participations
+                $conn->executeStatement('DELETE FROM participation_membre WHERE club_id = :id', ['id' => $id]);
+                
+                // 5. Delete mission progress entries
+                $conn->executeStatement('DELETE FROM mission_progress WHERE club_id = :id', ['id' => $id]);
+                
+                // 6. Finally delete the club
+                $conn->executeStatement('DELETE FROM club WHERE id = :id', ['id' => $id]);
+                
+                // Commit transaction
+                $conn->commit();
+                
+                $this->addFlash('success', 'Le club a été supprimé avec succès.');
+            } catch (\Exception $e) {
+                // Rollback transaction on error
+                $conn->rollBack();
+                throw $e;
+            }
+            
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la suppression: ' . $e->getMessage());
+            
+            // Log full exception details
+            error_log('Club deletion error: ' . $e->getMessage());
+            error_log('Exception trace: ' . $e->getTraceAsString());
         }
-
-        // Remove the post from the database
-        $entityManager->remove($club);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Le poste a été supprimé avec succès.');
+        
         return $this->redirectToRoute('app_club_index2');
     }
 
@@ -312,27 +340,23 @@ public function index2(ClubRepository $clubRepository, EntityManagerInterface $e
             // Update the status to ACCEPTE
             $club->setStatus(StatutClubEnum::ACCEPTE);
 
-           
-    
-
             // Persist and flush the changes
             $entityManager->persist($club);
             $entityManager->flush();
-            $commande = $em->getRepository(Commande::class)->find($id); // Assurez-vous que le produit existe
-            $user=$commande->getUser()->getEmail();
-            $email = ($user)
-            ->from("amaltr249@gmail.com")
-            ////reccuperation  mailll
-            ->to($club->getPresident()->getEmail()) // Remplacer par l'email du client
-            ->subject('Validation')
-            ->html("
-                <p>Votre Commande a étè Confirmer !! </p>
+            
+            // Send email notification to club president
+            $email = (new Email())
+                ->from("amaltr249@gmail.com")
+                ->to($club->getPresident()->getEmail())
+                ->subject('Club Validation')
+                ->html("
+                    <p>Votre club a été accepté!</p>
                 ");
             
+            $mailer->send($email);
             
-                $mailer->send($email);
             // Add success message
-            //$this->addFlash('success', 'Club has been successfully accepted. Previous status: ' . $currentStatus);
+            $this->addFlash('success', 'Club has been successfully accepted.');
 
             // Redirect back to the index page
             return $this->redirectToRoute('app_club_index2');
@@ -364,5 +388,3 @@ public function index2(ClubRepository $clubRepository, EntityManagerInterface $e
         ]);
     }
 }
-
-

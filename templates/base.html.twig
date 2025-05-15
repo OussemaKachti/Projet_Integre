@@ -221,7 +221,7 @@
 										{% endif %}
 									</div>
 									<div class="header__btn ml-20">
-										<a href="{{path('app_com_home')}}" class="header-btn">Competition</a>
+										<a href="{{path('app_com_home')}}" class="header-btn">Menu</a>
 									</div>
 								</div>
 							</div>
@@ -258,11 +258,11 @@
 														<a href="{{ path('myclub')}}">my club</a>
 
 													</li>
-																				<li>
+																				{# <li>
 														<a href="{{ path('app_participation_membre_index')}}">participation</a>
 
-													</li>
-													{% if app.user and (app.user.role.value == 'presidentClub' or app.user.role.value == 'membre') %}
+													</li> #}
+													{% if app.user and (app.user.role.value == 'PRESIDENT_CLUB' or app.user.role.value == 'MEMBRE') %}
 														<li>
 															<a href="{{ path('app_sondage_index') }}">Polls</a>
 														</li>

@@ -7,7 +7,7 @@
 namespace App\Security;
 
 use App\Entity\User;
-use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -19,17 +19,19 @@ class UserChecker implements UserCheckerInterface
             return;
         }
 
-        if ($user->isDisabled()) {
-            throw new CustomUserMessageAccountStatusException('Your account has been disabled. Please contact an administrator.');
-        }
-        if (!$user->isVerified()) {
-            throw new CustomUserMessageAccountStatusException('Please verify your email before logging in.');
+        if ($user->getStatus() !== User::STATUS_ACTIVE) {
+            // Throw an exception with a custom message
+            throw new CustomUserMessageAuthenticationException('Your account has been deactivated. Please contact administration.');
         }
     }
 
-
     public function checkPostAuth(UserInterface $user): void
     {
-        // You can add additional checks after authentication if needed
+        if (!$user instanceof User) {
+            return;
+        }
+
+        // Update last login time
+        $user->updateLastLogin();
     }
 }

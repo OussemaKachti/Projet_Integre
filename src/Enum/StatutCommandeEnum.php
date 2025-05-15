@@ -3,9 +3,9 @@ namespace App\Enum;
 
 enum StatutCommandeEnum: string
 {
-    case EN_COURS = 'en_cours';
-    case CONFIRMEE= 'confirmee';
-    case ANNULEE = 'annulee';
+    case EN_COURS = 'EN_COURS';
+    case CONFIRMEE= 'CONFIRMEE';
+    case ANNULEE = 'ANNULEE';
 
     public static function getValues(): array
     {

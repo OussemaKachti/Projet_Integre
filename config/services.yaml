@@ -7,6 +7,7 @@
 parameters:
     event_images_directory: '%kernel.project_dir%/public/uploads/events'
     uploads_directory: "%kernel.project_dir%/public/uploads"
+    images_directory: '%kernel.project_dir%/public/images'
     
     profile_pictures_directory: "%kernel.project_dir%/public/uploads/profiles"
     huggingface_api_key: "%env(HUGGINGFACE_API_KEY)%"

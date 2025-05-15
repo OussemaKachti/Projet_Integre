@@ -22,9 +22,24 @@ class ProduitType extends AbstractType
             ->add('descProd')
             ->add('prix')
             ->add('imgProd', FileType::class,[
-                'required'=>false,
-                'mapped'=>false,
-                'constraints' =>[new Image(['maxSize'=>'8000k'])]
+                'label' => 'Image du produit', 
+                'required' => false,
+                'mapped' => false,
+                'attr' => [
+                    'accept' => 'image/*',
+                    'class' => 'form-control-file'
+                ],
+                'constraints' => [
+                    new Image([
+                        'maxSize' => '8M',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                            'image/gif',
+                        ],
+                        'mimeTypesMessage' => 'Veuillez télécharger une image valide (JPG, PNG, GIF)',
+                    ])
+                ],
             ])
             ->add('createdAt' ,DateType::class, [
                 'widget' => 'single_text',
@@ -47,6 +62,7 @@ class ProduitType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Produit::class,
+            'validation_groups' => ['Default', 'create'],
         ]);
     }
 }

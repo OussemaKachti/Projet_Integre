@@ -958,9 +958,9 @@ function renderRoleDistributionChart() {
     
     // Map the enum values to more readable labels
     const roleLabelsMap = {
-      'nonMembre': 'Non-Member',
-      'membre': 'Member',
-      'presidentClub': 'Club President',
+      'NON': 'Non-Member',
+      'MEMBRE': 'Member',
+      'PRESIDENT_CLUB': 'Club President',
       'user': 'Regular User'
       // administrateur is excluded as per requirements
     };
@@ -968,7 +968,7 @@ function renderRoleDistributionChart() {
     // Process the role distribution data
     role_distribution.forEach(item => {
       // Skip administrator role
-      if (item.role === 'administrateur') return;
+      if (item.role === 'ADMINISTRATEUR') return;
       
       // Use friendly name if available, otherwise use the original
       const roleLabel = roleLabelsMap[item.role] || item.role;

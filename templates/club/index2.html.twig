@@ -80,9 +80,12 @@
                                 <a href="{{ path('club_accepte', {'id': club.id}) }}" class="btn btn-success btn-sm" style="background-color: #28a745; border-color: #28a745; color: white;">
                                     <i class="fas fa-check-circle"></i> Accept
                                 </a>
-                                <a href="{{ path('app_club_delete', {'id': club.id}) }}" class="btn btn-light btn-sm" style="background-color: #f8d7da; border-color: #f5c6cb; color: #721c24;" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce club ?');">
-                                    <i class="fas fa-trash-alt"></i> Delete
-                                </a>
+                                <form method="post" action="{{ path('app_club_delete', {'id': club.id}) }}" style="display: inline-block;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ club.id) }}">
+                                    <button type="submit" class="btn btn-light btn-sm" style="background-color: #f8d7da; border-color: #f5c6cb; color: #721c24;" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce club ?');">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     {% else %}

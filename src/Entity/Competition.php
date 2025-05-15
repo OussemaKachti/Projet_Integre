@@ -74,14 +74,13 @@ class Competition
     #[Assert\Choice(callback: [GoalTypeEnum::class, 'cases'], message: "Invalid goal type.")]
     private ?GoalTypeEnum $goalType = GoalTypeEnum::EVENT_COUNT;
 
-
-    
-
+    #[ORM\ManyToMany(targetEntity: Club::class, inversedBy: "competitions")]
+    private Collection $clubs;
 
     public function __construct() {
         $this->missionProgresses = new ArrayCollection();
-        $this->status = "pending"; // ✅ Ensure the default value is properly set        $this->clubs = new ArrayCollection();
-
+        $this->status = "pending"; // ✅ Ensure the default value is properly set
+        $this->clubs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -222,8 +221,26 @@ public function getClubsCompleted(): int
     return $this->missionProgresses->filter(fn($mp) => $mp->getIsCompleted())->count();
 }
 
+/**
+ * @return Collection<int, Club>
+ */
+public function getClubs(): Collection
+{
+    return $this->clubs;
+}
 
+public function addClub(Club $club): self
+{
+    if (!$this->clubs->contains($club)) {
+        $this->clubs->add($club);
+    }
+    return $this;
+}
 
-
+public function removeClub(Club $club): self
+{
+    $this->clubs->removeElement($club);
+    return $this;
+}
 
 }

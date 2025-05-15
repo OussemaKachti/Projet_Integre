@@ -33,20 +33,15 @@ class Produit
 
     #[ORM\Column]
     #[Assert\NotBlank (message:"price is required")]
+    #[Assert\Positive(message:"Price must be positive")]
     #[Assert\Type(
-        type: 'integer',
+        type: 'float',
         message: 'The value {{ value }} is not a valid {{ type }}.',
     )]
     private ?float $prix = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\NotBlank (message:"image is required")]
-    #[Assert\Image(
-        minWidth: 200,
-        maxWidth: 400,
-        minHeight: 200,
-        maxHeight: 400,
-    )]
+    #[Assert\NotBlank(message:"image is required", groups: ["create"])]
     private ?string $imgProd = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -59,9 +54,10 @@ class Produit
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\NotBlank (message:"quantity is required")]
+    #[Assert\Positive(message:"Quantity must be positive")]
     #[Assert\Type(
-        type: 'integer',
-        message: 'The value {{ value }} is not a valid {{ type }}.',
+        type: 'numeric',
+        message: 'The value {{ value }} is not a valid number.',
     )]
     private ?string $quantity = null;
 

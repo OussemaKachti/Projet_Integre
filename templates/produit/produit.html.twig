@@ -4,7 +4,7 @@
 
 {% block body %}
          <!-- breadcrumb area start -->
-         <section class="breadcrumb__area include-bg pt-150 pb-150 breadcrumb__overlay" data-background="https://img.freepik.com/premium-photo/background-shopping_931878-79292.jpg">
+         <section class="breadcrumb_area include-bg pt-150 pb-150 breadcrumb_overlay" data-background="https://img.freepik.com/premium-photo/background-shopping_931878-79292.jpg">
             <div class="container">
                <div class="row">
                   <div class="col-xxl-12">
@@ -28,7 +28,7 @@
                     <div class="col-lg-6 d-flex justify-content-center">
                         <div class="course__img w-img mb-30" style="max-width: 100%;">
                              <a href="{{ path('app_produit_show', {'id': produit.id})}}">
-                        <img src="{{ asset('uploads/' ~ produit.imgProd) }}" alt="">
+                        <img src="{{ produit.imgProd ? asset('uploads/' ~ produit.imgProd) : asset('front_assets/img/t_shirt.jpeg') }}" alt="{{ produit.nomProd }}">
                     </a>
                         </div>
                     </div>

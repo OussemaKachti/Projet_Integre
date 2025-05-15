@@ -162,6 +162,32 @@ class Club
     {
         return $this->participations;
     }
+
+    /**
+     * @return Collection<int, Competition>
+     */
+    public function getCompetitions(): Collection
+    {
+        return $this->competitions;
+    }
+
+    public function addCompetition(Competition $competition): self
+    {
+        if (!$this->competitions->contains($competition)) {
+            $this->competitions->add($competition);
+            $competition->addClub($this);
+        }
+        return $this;
+    }
+
+    public function removeCompetition(Competition $competition): self
+    {
+        if ($this->competitions->removeElement($competition)) {
+            $competition->removeClub($this);
+        }
+        return $this;
+    }
+
     public function getPresident(): ?User
     {
         return $this->president;
